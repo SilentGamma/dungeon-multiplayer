@@ -32,10 +32,10 @@ export function updateWrestler(run,p){
 export function grapple(run,p){
  const now=run.time||0;if(!p.grappleTarget&&!beginGrapple(run,p)){p.nextAttack=now+.2;return false;}
  const target=[...run.players,...run.enemies].find(q=>q.id===p.grappleTarget);p.grappleTarget=null;if(!target)return false;
- p.nextAttack=now+.2;target.grabbedBy=null;const a=p.angle||0;target.throwing={room:roomOf(target),vx:Math.cos(a)*12*WIDTH,vy:Math.sin(a)*12*WIDTH,contact:{},from:p.id};if(target.hp>0)target.stunUntil=now+1.5;return true;
+ p.nextAttack=now+.2;target.grabbedBy=null;const a=p.wrestlerState==='orbit'?p.wrestlerAngle+(now-p.wrestlerOrbitStarted)*8+Math.PI/2:(p.angle||0);target.angle=a;target.throwing={room:roomOf(target),vx:Math.cos(a)*12*WIDTH,vy:Math.sin(a)*12*WIDTH,contact:{},from:p.id};if(target.hp>0)target.stunUntil=now+1.5;return true;
 }
 export function updateGrapples(run){
- const all=[...run.players,...run.enemies];for(const target of all){if(!target.grabbedBy)continue;const holder=run.players.find(p=>p.id===target.grabbedBy);if(!holder||holder.hp<=0||holder.arrived||!holder.holding){target.grabbedBy=null;if(holder)holder.grappleTarget=null;continue}const cx=Math.floor(holder.x),cy=Math.floor(holder.y);const orbit=holder.wrestlerState==='orbit'?(run.time-holder.wrestlerOrbitStarted)*8+holder.wrestlerAngle:holder.angle;target.x=Math.max(cx+.02,Math.min(cx+.98,holder.x+Math.cos(orbit)*WIDTH*1.5));target.y=Math.max(cy+.02,Math.min(cy+.98,holder.y+Math.sin(orbit)*WIDTH*1.5));target.reviveProgress=0}
+ const all=[...run.players,...run.enemies];for(const target of all){if(!target.grabbedBy)continue;const holder=run.players.find(p=>p.id===target.grabbedBy);if(!holder||holder.hp<=0||holder.arrived||!holder.holding){target.grabbedBy=null;if(holder)holder.grappleTarget=null;continue}const cx=Math.floor(holder.x),cy=Math.floor(holder.y);const orbit=holder.wrestlerState==='orbit'?(run.time-holder.wrestlerOrbitStarted)*8+holder.wrestlerAngle:holder.angle;target.angle=orbit+Math.PI/2;target.x=Math.max(cx+.02,Math.min(cx+.98,holder.x+Math.cos(orbit)*WIDTH*1.5));target.y=Math.max(cy+.02,Math.min(cy+.98,holder.y+Math.sin(orbit)*WIDTH*1.5));target.reviveProgress=0}
 }
 export function updateThrows(run,dt){
  const now=run.time||0,entities=[...run.players,...run.enemies];

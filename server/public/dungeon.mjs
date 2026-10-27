@@ -28,7 +28,10 @@ export function generateDungeon(random=Math.random){
   if(branches<3)continue;
   const doors={};for(const room of used)for(const n of edges[room])if(n>room){const kind=Math.floor(random()*3);doors[doorKey(room,n)]=kind===0?[]:kind===1?[[.12,.34],[.66,.88]]:[[.06,.24],[.41,.59],[.76,.94]];if(kind===0){const start=.16+random()*.4;doors[doorKey(room,n)]=[[start,start+.28]]}}
   const goal=path.at(-1),mapOptions=[...used].filter(i=>i!==goal&&i!==startRoom),mapRoom=mapOptions[Math.floor(random()*mapOptions.length)];
-  return {edges,doors,startRoom,goal,mapRoom,mapCollected:false,minPathTiles:path.length};
+  // Along each branch, leave one or two safe rooms between encounters.
+  const enemyRooms=Array(SIZE*SIZE).fill(false),queue=[[startRoom,-1,0,2+Math.floor(random()*2)]];
+  while(queue.length){const [room,parent,distance,nextEncounter]=queue.shift();let d=distance,limit=nextEncounter;if(room!==startRoom&&room!==goal&&d>=limit){enemyRooms[room]=true;d=0;limit=2+Math.floor(random()*2)}for(const n of edges[room])if(n!==parent)queue.push([n,room,d+1,limit]);}
+  return {edges,doors,startRoom,goal,mapRoom,enemyRooms,mapCollected:false,minPathTiles:path.length};
  }
  throw Error('Could not generate a valid dungeon. Try again.');
 }
@@ -41,7 +44,7 @@ export function collectMap(run,p){if(!run.mapCollected&&Math.hypot(p.x-(run.mapR
 export function createRun(players,random=Math.random){const dungeon=generateDungeon(random);const startRoom=dungeon.startRoom;const run={...dungeon,startRoom,tick:0,time:0,failed:false,players:players.map((p,i)=>{const angle=-Math.PI*(.2+random()*.6);return {...p,x:startRoom%SIZE+.5+(players.length>1?Math.cos(i*2*Math.PI/players.length)*.085:0),y:Math.floor(startRoom/SIZE)+.5+(players.length>1?Math.sin(i*2*Math.PI/players.length)*.085:0),vx:Math.cos(angle)*roleFor(p.color).speed*WIDTH,vy:Math.sin(angle)*roleFor(p.color).speed*WIDTH,angle,holding:false,shielding:false,hp:roleFor(p.color).hp,maxHp:roleFor(p.color).hp,shield:roleFor(p.color).shield,maxShield:roleFor(p.color).shield,invulnerableUntil:.8,arrived:false,inputSeq:0}})};run.enemies=[];run.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);run.lockedRooms=Array(SIZE*SIZE).fill(false);refreshEnemyActivity(run,random);return run}
 export function applyInput(run,id,m){
  const p=run.players.find(p=>p.id===id);if(!p||p.hp<=0||p.arrived||p.throwing||run.time<(p.stunUntil||0)||run.failed||!Number.isSafeInteger(m.seq)||m.seq<=p.inputSeq||typeof m.holding!=='boolean')return false;
- p.inputSeq=m.seq;if(p.reviving){p.holding=false;p.shielding=false;return true}
+ p.inputSeq=m.seq;if(p.reviving){if(m.holding&&m.attack!==true){p.reviveAvoidTarget=p.reviving;p.reviving=null;p.shielding=false}else{p.holding=false;p.shielding=false;return true}}
  if(p.color==='teal'){
   if(p.wrestlerState){if(!m.holding||m.attack!==true){p.wrestlerReleased=true;if(m.cancel===true)p.wrestlerCancel=true}return true}
   if(m.holding&&m.attack===true){startWrestler(run,p);return true}

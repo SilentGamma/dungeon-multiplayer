@@ -6,7 +6,7 @@ export const ROLES=Object.freeze({
  gold:{name:'Brute',hp:16,shield:20,speed:6,damage:10,cooldown:.75,shape:'disjoint-circle'},
  green:{name:'Chef',hp:12,shield:15,speed:6,damage:3,cooldown:.3,shape:'curved-cone'},
  blue:{name:'Sniper',hp:10,shield:4,speed:10,damage:10,cooldown:1,shape:'skinny-cone',single:true},
- teal:{name:'Wrestler',description:'Attack to lunge forward with your shield and grab on contact. A caught target circles you; release to throw. A missed lunge stops you and lowers your shield. Requires shield.',hp:14,shield:12,speed:12,damage:2,cooldown:.2,shape:'small-circle',single:true},
+ teal:{name:'Wrestler',description:'Attack to lunge forward with your shield and grab on contact. A caught target circles you; release to throw in the direction of its spin. A missed lunge stops you and lowers your shield. Requires shield.',hp:14,shield:12,speed:12,damage:2,cooldown:.2,shape:'small-circle',single:true},
  lime:{name:'Joker',hp:8,shield:1,speed:12,damage:9,cooldown:.15,shape:'small-cone'}
 });
 export const roleFor=color=>ROLES[color]||ROLES.green;

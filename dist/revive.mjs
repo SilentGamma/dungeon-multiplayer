@@ -2,10 +2,10 @@ export const REVIVE_SECONDS=8,REVIVE_RADIUS=.055;
 const sameRoom=(a,b)=>Math.floor(a.x)===Math.floor(b.x)&&Math.floor(a.y)===Math.floor(b.y);
 export function prepareRevives(run){
   const now=run.time||0;
-  for(const p of run.players){p.reviving=null;if(p.hp<=0){p.shielding=false;p.holding=false;p.arrived=false;p.reviverId=null;p.reviverIds=[]}}
+  for(const p of run.players){if(p.reviveAvoidTarget){const q=run.players.find(x=>x.id===p.reviveAvoidTarget);if(!q||!sameRoom(p,q)||Math.hypot(p.x-q.x,p.y-q.y)>REVIVE_RADIUS)p.reviveAvoidTarget=null}p.reviving=null;if(p.hp<=0){p.shielding=false;p.holding=false;p.arrived=false;p.reviverId=null;p.reviverIds=[]}}
   for(const p of run.players){
     if(p.hp<=0||p.arrived||p.wrestlerState||now<(p.stunUntil||0)||now<(p.reviveInterruptedUntil||0))continue;
-    const target=run.players.filter(q=>q.id!==p.id&&!q.deceased&&q.hp<=0&&!q.throwing&&!q.grabbedBy&&sameRoom(p,q)&&Math.hypot(p.x-q.x,p.y-q.y)<=REVIVE_RADIUS).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y))[0];
+    const target=run.players.filter(q=>q.id!==p.id&&q.id!==p.reviveAvoidTarget&&!q.deceased&&q.hp<=0&&!q.throwing&&!q.grabbedBy&&sameRoom(p,q)&&Math.hypot(p.x-q.x,p.y-q.y)<=REVIVE_RADIUS).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y))[0];
     if(!target)continue;
     p.reviving=target.id;p.shielding=false;p.holding=false;
     target.reviverIds.push(p.id);target.reviverId=target.reviverIds[0];
