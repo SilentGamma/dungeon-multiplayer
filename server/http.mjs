@@ -1,3 +1,4 @@
+import {createDiagnostics} from './diagnostics.mjs';
 import http from 'node:http';
 import {randomBytes,randomInt} from 'node:crypto';
 import {Session} from './session.mjs';
@@ -11,13 +12,14 @@ const publicDir=fileURLToPath(new URL('./public/',import.meta.url));
 // supply game state. A production deployment requires durable room routing.
 export function createGameServer(){
  const rooms=new Map(),credentials=new Map(),streams=new Map(),connections=new Map();
+ const diagnostics=createDiagnostics();
  const reply=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(body))};
  const token=()=>randomBytes(24).toString('hex');
  function code(){for(let i=0;i<100;i++){const value=String(randomInt(1000000)).padStart(6,'0');if(!rooms.has(value))return value}throw Error('Unable to allocate a lobby.')}
  const publish=(id,full=false)=>{const room=rooms.get(id),group=streams.get(id);if(!room||!group)return;for(const res of group){if(res.writableNeedDrain){if(!res.waitingDrain){res.waitingDrain=true;res.once('drain',()=>{res.waitingDrain=false;if(res.destroyed)return;const latest=rooms.get(id);if(latest){res.entityCache.clear();res.write(`data: ${JSON.stringify(fullFor(latest,res.viewerId))}\n\n`)}})}continue}const message=full||room.phase!=='playing'?fullFor(room,res.viewerId):frameFor(room,res.viewerId,res.entityCache);if(!message)continue;if(full)res.entityCache.clear();res.write(`data: ${JSON.stringify(message)}\n\n`)}};
  const server=http.createServer(async(req,res)=>{
   try{
-   const url=new URL(req.url,'http://localhost');if(req.method==='GET'&&url.pathname==='/health')return reply(res,200,{ok:true});if(req.method==='GET'&&url.pathname==='/api/rooms')return reply(res,200,{rooms:[...rooms.values()].filter(r=>r.visibility==='public'&&r.phase==='lobby'&&!r.closed&&r.players.length<8).map(r=>({code:r.code,name:r.players[0]?.name+'’s lobby',count:r.players.length}))});
+   const url=new URL(req.url,'http://localhost');if(req.method==='GET'&&url.pathname==='/health')return reply(res,200,{ok:true,diagnostics:diagnostics.snapshot()});if(req.method==='GET'&&url.pathname==='/api/rooms')return reply(res,200,{rooms:[...rooms.values()].filter(r=>r.visibility==='public'&&r.phase==='lobby'&&!r.closed&&r.players.length<8).map(r=>({code:r.code,name:r.players[0]?.name+'’s lobby',count:r.players.length}))});
    const key=(req.headers.authorization||'').replace(/^Bearer /,'');const auth=credentials.get(key);
    if(req.method==='GET'&&url.pathname==='/api/events'){
     if(!auth)return reply(res,401,{error:'Unauthorized'});const room=rooms.get(auth.code);if(!room)return reply(res,404,{error:'Lobby closed'});
@@ -35,7 +37,7 @@ export function createGameServer(){
    if(url.pathname==='/api/input')return reply(res,ok?200:409,{ok});publish(auth.code,true);return reply(res,ok?200:409,{ok,state:fullFor(room,auth.id)});
   }catch(error){return reply(res,400,{error:error.message})}
  });
- let last=performance.now(),lastBroadcast=last;const timer=setInterval(()=>{const now=performance.now(),dt=(now-last)/1000;last=now;for(const [id,room] of rooms){room.tick(dt);if(room.closed&&!room._finishedAt)room._finishedAt=now;if(room._finishedAt&&now-room._finishedAt>30000){for(const res of streams.get(id)||[])res.end();streams.delete(id);rooms.delete(id);for(const [key,auth] of credentials)if(auth.code===id)credentials.delete(key)}}if(now-lastBroadcast>=100){for(const id of streams.keys()){const room=rooms.get(id);if(room?.phase==='playing'||room?.phase==='ended')publish(id)}lastBroadcast=now}},1000/60);
+ let last=performance.now(),lastBroadcast=last;const timer=setInterval(()=>{const now=performance.now(),dt=(now-last)/1000;last=now;for(const [id,room] of rooms){room.tick(dt);if(room.closed&&!room._finishedAt)room._finishedAt=now;if(room._finishedAt&&now-room._finishedAt>30000){for(const res of streams.get(id)||[])res.end();streams.delete(id);rooms.delete(id);for(const [key,auth] of credentials)if(auth.code===id)credentials.delete(key)}}if(now-lastBroadcast>=100){for(const id of streams.keys()){const room=rooms.get(id);if(room?.phase==='playing'||room?.phase==='ended')publish(id)}lastBroadcast=now}diagnostics.observe(now,dt*1000,performance.now()-now)},1000/60);
  server.on('close',()=>{clearInterval(timer);for(const group of streams.values())for(const res of group)res.end()});
  return server;
 }

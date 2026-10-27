@@ -5,3 +5,5 @@ body.in-game{overflow:hidden}body.in-game>header,body.in-game>footer,body.in-gam
 .color-panel{max-width:440px;margin:24px 0}.color-panel label{font-weight:700;font-size:14px}.color-panel select{margin-bottom:4px}.color-panel p{margin:7px 0 0}.color-swatch{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #738474;margin-right:9px;vertical-align:middle}
 
 #ping{font-size:11px;color:#c1d1c4;white-space:nowrap;font-variant-numeric:tabular-nums}#ping[data-state=slow]{color:#ffce83}#ping[data-state=ok]{color:#a8edbf}@media(max-width:650px){#ping{font-size:10px;order:5;flex:1 1 100%}}
+
+#serverstats{font-size:11px;color:#c1d1c4;white-space:nowrap;font-variant-numeric:tabular-nums}@media(max-width:650px){#serverstats{font-size:10px;order:6;flex:1 1 100%}}
