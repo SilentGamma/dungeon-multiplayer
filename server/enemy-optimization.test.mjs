@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {stepCombat,enemiesInRoom,removeDefeatedEnemies,updateRoomLocks} from '../dist/combat.mjs';
+const player={id:'p',color:'coral',x:1.5,y:2.5,hp:12,maxHp:12,shield:0,invulnerableUntil:0,arrived:false};
+const walker={id:'w',room:11,type:'walker',mode:'walking',x:1.5,y:2.5,vx:0,vy:0,hp:7,active:true};
+const sleeping={id:'s',room:13,type:'sleeper',mode:'sleeping',x:3.5,y:2.5,vx:0,vy:0,hp:12,active:false};
+const run={players:[player],enemies:[walker,sleeping],edges:Array.from({length:25},()=>[]),lockedRooms:Array(25).fill(false),time:1};
+run.lockedRooms[11]=true;
+assert.deepEqual(enemiesInRoom(run,11),[walker]);assert.deepEqual(enemiesInRoom(run,13),[sleeping]);
+stepCombat(run,0,()=>.5);assert.equal(player.hp,12,'contact outside an attack causes no damage');assert(walker.attackWindupUntil>run.time);
+run.time=1.21;stepCombat(run,0,()=>.5);assert.equal(player.hp,10,'the active attack window damages nearby players');
+walker.hp=0;removeDefeatedEnemies(run);updateRoomLocks(run);
+assert.deepEqual(enemiesInRoom(run,11),[]);assert.equal(run.enemies.length,1);assert.equal(run.lockedRooms[11],false);
+console.log('PASS: enemies indexed by room, attack-only contact damage, removal, and room unlock');

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server/run.mjs",
-    "test": "node server/session.test.mjs && node server/http.test.mjs && node server/stream.test.mjs && node server/performance.test.mjs && node server/render.test.mjs && node server/room-lock.test.mjs && node server/interpolation.test.mjs && node server/input-buffer.test.mjs && node server/ping.test.mjs && node server/deceased.test.mjs && node server/disconnect.test.mjs",
+    "test": "node server/session.test.mjs && node server/http.test.mjs && node server/stream.test.mjs && node server/performance.test.mjs && node server/render.test.mjs && node server/room-lock.test.mjs && node server/interpolation.test.mjs && node server/input-buffer.test.mjs && node server/ping.test.mjs && node server/deceased.test.mjs && node server/disconnect.test.mjs && node server/enemy-optimization.test.mjs",
     "dev": "node server/run.mjs"
   }
 }
