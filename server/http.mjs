@@ -28,7 +28,7 @@ export function createGameServer(){
    if(url.pathname==='/api/create'||url.pathname==='/api/join'){
     const id=token(),key=token();let room;
     if(url.pathname==='/api/create'){if(rooms.size>=100)return reply(res,503,{error:'Server is full'});const roomCode=code();room=new Session({code:roomCode,visibility:body.visibility==='public'?'public':'private'});rooms.set(roomCode,room)}else room=rooms.get(String(body.code));
-    if(!room)return reply(res,404,{error:'Lobby not found'});const player=room.join({id,name:body.name});credentials.set(key,{id,code:room.code});publish(room.code,true);return reply(res,200,{token:key,player,code:room.code,state:fullFor(room,id)});
+    if(!room)return reply(res,404,{error:'Lobby not found'});const player=room.join({id,name:body.name});credentials.set(key,{id,code:room.code});publish(room.code,true);return reply(res,200,{token:key,player,code:room.code,serverNow:Date.now(),state:fullFor(room,id)});
    }
    if(!auth)return reply(res,401,{error:'Unauthorized'});const room=rooms.get(auth.code);if(!room)return reply(res,404,{error:'Lobby closed'});
    let ok=false;if(url.pathname==='/api/role')ok=room.choose(auth.id,body.color);else if(url.pathname==='/api/start')ok=room.start(auth.id);else if(url.pathname==='/api/input')ok=room.input(auth.id,body);else if(url.pathname==='/api/leave'){ok=room.leave(auth.id);credentials.delete(key)}else return reply(res,404,{error:'Not found'});
