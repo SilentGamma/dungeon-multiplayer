@@ -21,6 +21,6 @@ export function updateThrows(run,dt){
  const xdest=q.x<cx+radius?room-1:room+1,xd=q.x<cx+radius?cx>0:cx<4;if((q.x<cx+radius||q.x>cx+1-radius)&&!(xd&&canCross(xdest,q.y-cy))){q.x=Math.max(cx+radius,Math.min(cx+1-radius,q.x));t.vx=-t.vx*.75;t.vy*=.75;hit=true}
  const ydest=q.y<cy+radius?room-5:room+5,yd=q.y<cy+radius?cy>0:cy<4;if((q.y<cy+radius||q.y>cy+1-radius)&&!(yd&&canCross(yd,q.x-cx))){q.y=Math.max(cy+radius,Math.min(cy+1-radius,q.y));t.vy=-t.vy*.75;t.vx*=.75;hit=true}if(!q.type){t.room=roomOf(q)}
  if(hit&&q.type)q.hp=Math.max(0,q.hp-5);
- for(const other of entities){if(other===q||other.arrived||other.hp<=0)continue;const touching=Math.hypot(q.x-other.x,q.y-other.y)<WIDTH*1.2,was=t.contact[other.id];t.contact[other.id]=touching;if(touching&&!was){if(other.type)other.hp=Math.max(0,other.hp-5);else if(!other.throwing)damagePlayer(run,other,5);if(q.type)q.hp=Math.max(0,q.hp-5);t.vx*=-.75;t.vy*=-.75}}
+ for(const other of entities){if(other===q||other.arrived||other.hp<=0)continue;const touching=Math.abs(q.x-other.x)<WIDTH*1.2&&Math.abs(q.y-other.y)<WIDTH*1.2&&Math.hypot(q.x-other.x,q.y-other.y)<WIDTH*1.2,was=t.contact[other.id];t.contact[other.id]=touching;if(touching&&!was){if(other.type)other.hp=Math.max(0,other.hp-5);else if(!other.throwing)damagePlayer(run,other,5);if(q.type)q.hp=Math.max(0,q.hp-5);t.vx*=-.75;t.vy*=-.75}}
  }
 }

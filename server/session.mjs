@@ -12,7 +12,7 @@ export class Session {
  }
  choose(id,color){if(this.closed||this.phase!=='lobby'||!Object.hasOwn(ROLES,color))return false;const p=this.players.find(p=>p.id===id);if(!p||this.players.some(q=>q.id!==id&&q.color===color))return false;p.color=color;return true;}
  start(id){if(this.closed||this.phase!=='lobby'||!this.players.length||this.players[0].id!==id)return false;this.run=createRun(this.players,this.random);this.phase='playing';return true;}
- input(id,message){return !this.closed&&this.phase==='playing'&&this.players.some(p=>p.id===id)&&applyInput(this.run,id,message);}
+ input(id,message){if(this.closed||this.phase!=='playing'||!this.players.some(p=>p.id===id))return false;const p=this.run.players.find(p=>p.id===id);const movementPress=message?.holding===true&&message.attack!==true&&!p.holding;if(movementPress&&(this.run.time||0)+1e-9<(p.nextMoveInputAt||0))return false;const ok=applyInput(this.run,id,message);if(ok&&movementPress)p.nextMoveInputAt=(this.run.time||0)+.2;return ok;}
  tick(elapsed){if(this.closed||this.phase!=='playing')return;this.accumulator+=Math.max(0,Math.min(Number.isFinite(elapsed)?elapsed:0,.25));while(this.accumulator>=1/60){const win=step(this.run,1/60,this.random);this.accumulator-=1/60;if(win||this.run.failed){this.phase='ended';this.closed=true;this.endReason=win?'won':'lost';break;}}}
  leave(id){const i=this.players.findIndex(p=>p.id===id);if(i<0)return false;if(this.phase==='playing'||i===0){this.phase='ended';this.closed=true;this.endReason='disconnected';}else this.players.splice(i,1);return true;}
  snapshot(){return structuredClone({code:this.code,visibility:this.visibility,phase:this.phase,players:this.players,run:this.run,endReason:this.endReason});}
