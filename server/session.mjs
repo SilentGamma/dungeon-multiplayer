@@ -1,0 +1,19 @@
+// Authoritative room logic, independent of any particular connection transport.
+import {createRun,step,applyInput} from '../dist/dungeon.mjs';
+import {ROLES} from '../dist/roles.mjs';
+
+export class Session {
+ constructor({code,visibility='private',random=Math.random}){this.visibility=visibility;this.code=code;this.random=random;this.phase='lobby';this.players=[];this.run=null;this.accumulator=0;this.closed=false;this.endReason=null;}
+ join({id,name}){
+  if(this.closed||this.phase!=='lobby')throw Error('Lobby is no longer accepting players.');
+  if(typeof id!=='string'||!id||id.length>128||typeof name!=='string'||!name.trim()||name.length>20||this.players.some(p=>p.id===id))throw Error('Invalid player.');
+  const color=Object.keys(ROLES).find(c=>!this.players.some(p=>p.color===c));if(!color)throw Error('Lobby is full.');
+  const player={id,name:name.trim(),color};this.players.push(player);return {...player};
+ }
+ choose(id,color){if(this.closed||this.phase!=='lobby'||!Object.hasOwn(ROLES,color))return false;const p=this.players.find(p=>p.id===id);if(!p||this.players.some(q=>q.id!==id&&q.color===color))return false;p.color=color;return true;}
+ start(id){if(this.closed||this.phase!=='lobby'||!this.players.length||this.players[0].id!==id)return false;this.run=createRun(this.players,this.random);this.phase='playing';return true;}
+ input(id,message){return !this.closed&&this.phase==='playing'&&this.players.some(p=>p.id===id)&&applyInput(this.run,id,message);}
+ tick(elapsed){if(this.closed||this.phase!=='playing')return;this.accumulator+=Math.max(0,Math.min(Number.isFinite(elapsed)?elapsed:0,.25));while(this.accumulator>=1/60){const win=step(this.run,1/60,this.random);this.accumulator-=1/60;if(win||this.run.failed){this.phase='ended';this.closed=true;this.endReason=win?'won':'lost';break;}}}
+ leave(id){const i=this.players.findIndex(p=>p.id===id);if(i<0)return false;if(this.phase==='playing'||i===0){this.phase='ended';this.closed=true;this.endReason='disconnected';}else this.players.splice(i,1);return true;}
+ snapshot(){return structuredClone({code:this.code,visibility:this.visibility,phase:this.phase,players:this.players,run:this.run,endReason:this.endReason});}
+}
