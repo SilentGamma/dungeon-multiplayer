@@ -3,7 +3,7 @@ import {WIDTH,roleFor} from './roles.mjs';
 const roomOf=p=>Math.floor(p.y)*5+Math.floor(p.x);
 export function beginGrapple(run,p){
  const now=run.time||0;if(now<(p.nextAttack||0)||p.grappleTarget)return false;
- const targets=[...(run.enemies||[]).filter(e=>e.hp>0),...run.players.filter(q=>q.id!==p.id&&!q.arrived)].filter(q=>!q.grabbedBy&&!q.throwing&&roomOf(q)===roomOf(p)&&Math.hypot(q.x-p.x,q.y-p.y)<=WIDTH*1.5).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+ const targets=[...(run.enemies||[]).filter(e=>e.hp>0),...run.players.filter(q=>q.id!==p.id&&!q.arrived&&!q.deceased)].filter(q=>!q.grabbedBy&&!q.throwing&&roomOf(q)===roomOf(p)&&Math.hypot(q.x-p.x,q.y-p.y)<=WIDTH*1.5).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  const target=targets[0];if(!target)return false;p.grappleTarget=target.id;target.grabbedBy=p.id;target.holding=false;target.shielding=false;target.reviving=null;target.reviveProgress=0;return true;
 }
 export function grapple(run,p){

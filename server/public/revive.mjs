@@ -5,7 +5,7 @@ export function prepareRevives(run){
   for(const p of run.players){p.reviving=null;if(p.hp<=0){p.shielding=false;p.holding=false;p.arrived=false;p.reviverId=null;p.reviverIds=[]}}
   for(const p of run.players){
     if(p.hp<=0||p.arrived||now<(p.stunUntil||0)||now<(p.reviveInterruptedUntil||0))continue;
-    const target=run.players.filter(q=>q.id!==p.id&&q.hp<=0&&!q.throwing&&!q.grabbedBy&&sameRoom(p,q)&&Math.hypot(p.x-q.x,p.y-q.y)<=REVIVE_RADIUS).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y))[0];
+    const target=run.players.filter(q=>q.id!==p.id&&!q.deceased&&q.hp<=0&&!q.throwing&&!q.grabbedBy&&sameRoom(p,q)&&Math.hypot(p.x-q.x,p.y-q.y)<=REVIVE_RADIUS).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y))[0];
     if(!target)continue;
     p.reviving=target.id;p.shielding=false;p.holding=false;
     target.reviverIds.push(p.id);target.reviverId=target.reviverIds[0];
@@ -14,7 +14,7 @@ export function prepareRevives(run){
 }
 export function advanceRevives(run,dt){
   for(const target of run.players){
-    if(target.hp>0||!target.reviverId)continue;
+    if(target.deceased||target.hp>0||!target.reviverId)continue;
     const active=(target.reviverIds||[]).map(id=>run.players.find(p=>p.id===id)).filter(p=>p&&p.hp>0&&p.reviving===target.id&&sameRoom(p,target)&&Math.hypot(p.x-target.x,p.y-target.y)<=REVIVE_RADIUS);
     if(!active.length||target.throwing){target.reviveProgress=0;target.reviverId=null;continue}
     target.reviverId=active[0].id;target.reviveProgress=(target.reviveProgress||0)+dt*(1+.2*(active.length-1));
