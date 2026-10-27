@@ -1,0 +1,14 @@
+{
+  "name": "dungeon-game-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/run.mjs",
+    "test": "node server/session.test.mjs && node server/http.test.mjs && node server/stream.test.mjs",
+    "dev": "node server/run.mjs"
+  }
+}
