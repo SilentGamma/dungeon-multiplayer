@@ -1,7 +1,7 @@
 import {SIZE} from '../dist/world.mjs';
 // Per-player presentation snapshots: never used for authoritative combat.
 const RANGE=1.35, POSITION_ERROR=.008, KEYFRAME_SECONDS=.8;
-const playerFields=['id','name','color','deceased','hp','maxHp','shield','maxShield','arrived','holding','shielding','angle','reviving','reviverId','reviveProgress','stunUntil','attackUntil','attackGraceUntil','blockUntil','hurtUntil','invisibleUntil','throwing','grabbedBy'];
+const playerFields=['id','name','color','deceased','hp','maxHp','shield','maxShield','arrived','holding','shielding','angle','reviving','reviverId','reviveProgress','stunUntil','attackUntil','attackGraceUntil','blockUntil','hurtUntil','shieldBreakUntil','invisibleUntil','throwing','grabbedBy'];
 const enemyFields=['id','room','type','hp','maxHp','mode','hitUntil','lungeAngle','active','attackWindupUntil','attackActiveUntil'];
 function near(run,viewer,entity){if(viewer.id===entity.id)return true;const a=Math.floor(viewer.y)*SIZE+Math.floor(viewer.x),b=Math.floor(entity.y)*SIZE+Math.floor(entity.x);return (a===b||run.edges[a]?.includes(b))&&Math.hypot(entity.x-viewer.x,entity.y-viewer.y)<=RANGE}
 function velocity(e,player){if(player&&(e.holding||e.reviving||e.arrived||e.hp<=0||e.grabbedBy||e.throwing))return [0,0];if(!player&&(e.active===false||e.grabbedBy||e.throwing||(e.type==='sleeper'&&e.mode!=='lunging')))return [0,0];return [Number.isFinite(e.vx)?e.vx:0,Number.isFinite(e.vy)?e.vy:0]}
