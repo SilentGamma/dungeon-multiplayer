@@ -2,15 +2,22 @@ import {roleFor,inAttack,WIDTH} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
 export const roomOf=p=>Math.min(4,Math.max(0,Math.floor(p.y)))*5+Math.min(4,Math.max(0,Math.floor(p.x)));
 export function isEnemyRoom(run,room){return room!==run.goal&&run.edges[room]?.length>0&&((room%5+Math.floor(room/5))%2===1)}
-export function spawnEnemies(run,random=Math.random,onlyRoom=null){const enemies=[];for(let room=0;room<25;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const type=random()<.5?'walker':'sleeper',angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){x=room%5+.15+random()*.7;y=Math.floor(room/5)+.15+random()*.7;if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*.19,vy:Math.sin(angle)*.19,hp:type==='walker'?7:12,maxHp:type==='walker'?7:12,mode:type==='walker'?'walking':'sleeping',lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
-// Generate a room once on approach. Distant rooms retain their state but do not simulate.
+export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){const enemies=[];for(let room=0;room<25;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const type=random()<.5?'walker':'sleeper',angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){const dx=fromRoom===null?0:(room%5)-(fromRoom%5),dy=fromRoom===null?0:Math.floor(room/5)-Math.floor(fromRoom/5);x=room%5+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/5)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*.19,vy:Math.sin(angle)*.19,hp:type==='walker'?7:12,maxHp:type==='walker'?7:12,mode:type==='walker'?'walking':'sleeping',lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
+// Distant encounters retain their state but do not simulate.
 export function refreshEnemyActivity(run,random=Math.random){
  const nearby=new Set();for(const p of run.players){const room=roomOf(p),x=room%5,y=Math.floor(room/5);nearby.add(room);if(x>0)nearby.add(room-1);if(x<4)nearby.add(room+1);if(y>0)nearby.add(room-5);if(y<4)nearby.add(room+5)}
  run.spawnedEnemyRooms??=Array(25).fill(false);run.enemies??=[];
- for(const room of nearby)if(isEnemyRoom(run,room)&&!run.spawnedEnemyRooms[room]){run.spawnedEnemyRooms[room]=true;run.enemies.push(...spawnEnemies(run,random,room))}
- for(const e of run.enemies){const active=nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
+  for(const e of run.enemies){const active=nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
  return nearby;
 }
+// Spawn an encounter only on first entry; the approach side selects the opposite spawn zone.
+export function enterRoom(run,fromRoom,toRoom,random=Math.random){
+ if(fromRoom===toRoom||!isEnemyRoom(run,toRoom))return false;
+ run.spawnedEnemyRooms??=Array(25).fill(false);run.lockedRooms??=Array(25).fill(false);run.enemies??=[];
+ if(run.spawnedEnemyRooms[toRoom])return false;
+ run.spawnedEnemyRooms[toRoom]=true;const enemies=spawnEnemies(run,random,toRoom,fromRoom);run.enemies.push(...enemies);run.lockedRooms[toRoom]=enemies.some(e=>e.hp>0);return true;
+}
+export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<25;room++)if(run.lockedRooms[room]&&!run.enemies.some(e=>e.room===room&&e.hp>0))run.lockedRooms[room]=false}
 function clearPath(run,a,b){
  const ar=roomOf(a),br=roomOf(b);if(ar===br)return true;
  if(!run.edges[ar]?.includes(br))return false;
