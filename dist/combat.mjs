@@ -1,13 +1,14 @@
+import {SIZE} from './world.mjs';
 import {roleFor,inAttack,WIDTH} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
-export const roomOf=p=>Math.min(4,Math.max(0,Math.floor(p.y)))*5+Math.min(4,Math.max(0,Math.floor(p.x)));
-export function isEnemyRoom(run,room){return room!==run.goal&&run.edges[room]?.length>0&&((room%5+Math.floor(room/5))%2===1)}
-export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){const enemies=[];for(let room=0;room<25;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const type=random()<.5?'walker':'sleeper',angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){const dx=fromRoom===null?0:(room%5)-(fromRoom%5),dy=fromRoom===null?0:Math.floor(room/5)-Math.floor(fromRoom/5);x=room%5+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/5)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*.19,vy:Math.sin(angle)*.19,hp:type==='walker'?7:12,maxHp:type==='walker'?7:12,mode:type==='walker'?'walking':'sleeping',lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
+export const roomOf=p=>Math.min(SIZE-1,Math.max(0,Math.floor(p.y)))*SIZE+Math.min(SIZE-1,Math.max(0,Math.floor(p.x)));
+export function isEnemyRoom(run,room){return room!==run.goal&&run.edges[room]?.length>0&&((room%SIZE+Math.floor(room/SIZE))%2===1)}
+export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){const enemies=[];for(let room=0;room<SIZE*SIZE;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const type=random()<.5?'walker':'sleeper',angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){const dx=fromRoom===null?0:(room%SIZE)-(fromRoom%SIZE),dy=fromRoom===null?0:Math.floor(room/SIZE)-Math.floor(fromRoom/SIZE);x=room%SIZE+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/SIZE)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*.19,vy:Math.sin(angle)*.19,hp:type==='walker'?7:12,maxHp:type==='walker'?7:12,mode:type==='walker'?'walking':'sleeping',lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
 // Derived room index is kept outside the networked game state.
 const roomIndexes=new WeakMap();
 export function enemiesInRoom(run,room){
  const enemies=run.enemies||[];let cache=roomIndexes.get(run);
- if(!cache||cache.source!==enemies||cache.length!==enemies.length){const rooms=Array.from({length:25},()=>[]);for(const enemy of enemies)if(rooms[enemy.room])rooms[enemy.room].push(enemy);cache={source:enemies,length:enemies.length,rooms};roomIndexes.set(run,cache)}
+ if(!cache||cache.source!==enemies||cache.length!==enemies.length){const rooms=Array.from({length:SIZE*SIZE},()=>[]);for(const enemy of enemies)if(rooms[enemy.room])rooms[enemy.room].push(enemy);cache={source:enemies,length:enemies.length,rooms};roomIndexes.set(run,cache)}
  return cache.rooms[room]||[];
 }
 export function removeDefeatedEnemies(run){
@@ -18,23 +19,23 @@ export function removeDefeatedEnemies(run){
 }
 // Distant encounters retain their state but do not simulate.
 export function refreshEnemyActivity(run,random=Math.random){
- const nearby=new Set();for(const p of run.players){const room=roomOf(p),x=room%5,y=Math.floor(room/5);nearby.add(room);if(x>0)nearby.add(room-1);if(x<4)nearby.add(room+1);if(y>0)nearby.add(room-5);if(y<4)nearby.add(room+5)}
- run.spawnedEnemyRooms??=Array(25).fill(false);run.enemies??=[];
+ const nearby=new Set();for(const p of run.players){const room=roomOf(p),x=room%SIZE,y=Math.floor(room/SIZE);nearby.add(room);if(x>0)nearby.add(room-1);if(x<SIZE-1)nearby.add(room+1);if(y>0)nearby.add(room-SIZE);if(y<SIZE-1)nearby.add(room+SIZE)}
+ run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];
   for(const e of run.enemies){const active=nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil','attackWindupUntil','attackActiveUntil','nextContactAttack'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
  return nearby;
 }
 // Spawn an encounter only on first entry; the approach side selects the opposite spawn zone.
 export function enterRoom(run,fromRoom,toRoom,random=Math.random){
  if(fromRoom===toRoom||!isEnemyRoom(run,toRoom))return false;
- run.spawnedEnemyRooms??=Array(25).fill(false);run.lockedRooms??=Array(25).fill(false);run.enemies??=[];
+ run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.lockedRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];
  if(run.spawnedEnemyRooms[toRoom])return false;
  run.spawnedEnemyRooms[toRoom]=true;const enemies=spawnEnemies(run,random,toRoom,fromRoom);run.enemies.push(...enemies);run.lockedRooms[toRoom]=enemies.some(e=>e.hp>0);return true;
 }
-export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<25;room++)if(run.lockedRooms[room]&&!enemiesInRoom(run,room).some(e=>e.hp>0))run.lockedRooms[room]=false}
+export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<SIZE*SIZE;room++)if(run.lockedRooms[room]&&!enemiesInRoom(run,room).some(e=>e.hp>0))run.lockedRooms[room]=false}
 function clearPath(run,a,b){
  const ar=roomOf(a),br=roomOf(b);if(ar===br)return true;
  if(!run.edges[ar]?.includes(br))return false;
- const ax=ar%5,ay=Math.floor(ar/5),bx=br%5,by=Math.floor(br/5),horizontal=ay===by;
+ const ax=ar%SIZE,ay=Math.floor(ar/SIZE),bx=br%SIZE,by=Math.floor(br/SIZE),horizontal=ay===by;
  const border=horizontal?(bx>ax?ax+1:ax):(by>ay?ay+1:ay),denom=horizontal?b.x-a.x:b.y-a.y;if(!denom)return false;
  const t=(border-(horizontal?a.x:a.y))/denom;if(t<0||t>1)return false;
  const pos=horizontal?(a.y+(b.y-a.y)*t-ay):(a.x+(b.x-a.x)*t-ax),key=`${Math.min(ar,br)}:${Math.max(ar,br)}`;
@@ -68,7 +69,7 @@ export function attack(run,p){
  if(p.color==='green')for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&clearPath(run,p,q)&&inAttack(p,q)&&Math.hypot(q.x-p.x,q.y-p.y)<=2*WIDTH)q.hp=Math.min(q.maxHp,q.hp+5);
  return true;
 }
-export function stepCombat(run,dt,random=Math.random){const now=run.time||0;for(const p of run.players)finalDraw(run,p);for(const room of new Set(run.players.map(roomOf).flatMap(r=>[r,...(r%5?[r-1]:[]),...(r%5<4?[r+1]:[]),...(r>=5?[r-5]:[]),...(r<20?[r+5]:[])])))for(const e of enemiesInRoom(run,room)){if(e.active===false||e.hp<=0)continue;while(e.poisonNext&&e.poisonNext<=now&&e.poisonNext<=e.poisonUntil){e.hp=Math.max(0,e.hp-2);e.poisonNext+=1}if(e.hp<=0||e.throwing||e.grabbedBy||now<(e.stunUntil||0))continue;const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&roomOf(p)===e.room);const visibleTargets=targets.filter(p=>now>=(p.invisibleUntil||0));if(e.type==='sleeper'){const nearest=visibleTargets.reduce((best,p)=>!best||Math.hypot(p.x-e.x,p.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?p:best,null);if(e.mode==='lunging'&&now>=e.lungeUntil){e.mode='resting';e.nextLunge=now+SLEEP_REST}if(e.mode==='resting'&&now>=e.nextLunge)e.mode='sleeping';if(e.mode==='waking'&&now>=e.wakeUntil){e.mode='lunging';e.lungeUntil=now+.32;e.vx=Math.cos(e.lungeAngle)*.82;e.vy=Math.sin(e.lungeAngle)*.82}else if(e.mode==='sleeping'&&nearest&&now>=(e.nextLunge||0)&&Math.hypot(nearest.x-e.x,nearest.y-e.y)<=SLEEP_RADIUS){e.mode='waking';e.wakeUntil=now+SLEEP_WAKE;e.lungeAngle=Math.atan2(nearest.y-e.y,nearest.x-e.x)}}if(e.type==='walker'||e.mode==='lunging'){const loX=e.room%5+ENEMY_RADIUS,hiX=e.room%5+1-ENEMY_RADIUS,loY=Math.floor(e.room/5)+ENEMY_RADIUS,hiY=Math.floor(e.room/5)+1-ENEMY_RADIUS;e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.x<loX||e.x>hiX){e.x=Math.max(loX,Math.min(hiX,e.x));e.vx=-e.vx;if(e.type==='walker'){const a=Math.atan2(e.vy,e.vx)+(random()-.5)*.2;e.vy=Math.sin(a)*.19;e.vx=Math.sign(e.vx)*Math.sqrt(Math.max(0,.19**2-e.vy**2))}}if(e.y<loY||e.y>hiY){e.y=Math.max(loY,Math.min(hiY,e.y));e.vy=-e.vy}}if(e.type==='walker'){
+export function stepCombat(run,dt,random=Math.random){const now=run.time||0;for(const p of run.players)finalDraw(run,p);for(const room of new Set(run.players.map(roomOf).flatMap(r=>[r,...(r%SIZE?[r-1]:[]),...(r%SIZE<SIZE-1?[r+1]:[]),...(r>=SIZE?[r-SIZE]:[]),...(r<SIZE*(SIZE-1)?[r+SIZE]:[])])))for(const e of enemiesInRoom(run,room)){if(e.active===false||e.hp<=0)continue;while(e.poisonNext&&e.poisonNext<=now&&e.poisonNext<=e.poisonUntil){e.hp=Math.max(0,e.hp-2);e.poisonNext+=1}if(e.hp<=0||e.throwing||e.grabbedBy||now<(e.stunUntil||0))continue;const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&roomOf(p)===e.room);const visibleTargets=targets.filter(p=>now>=(p.invisibleUntil||0));if(e.type==='sleeper'){const nearest=visibleTargets.reduce((best,p)=>!best||Math.hypot(p.x-e.x,p.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?p:best,null);if(e.mode==='lunging'&&now>=e.lungeUntil){e.mode='resting';e.nextLunge=now+SLEEP_REST}if(e.mode==='resting'&&now>=e.nextLunge)e.mode='sleeping';if(e.mode==='waking'&&now>=e.wakeUntil){e.mode='lunging';e.lungeUntil=now+.32;e.vx=Math.cos(e.lungeAngle)*.82;e.vy=Math.sin(e.lungeAngle)*.82}else if(e.mode==='sleeping'&&nearest&&now>=(e.nextLunge||0)&&Math.hypot(nearest.x-e.x,nearest.y-e.y)<=SLEEP_RADIUS){e.mode='waking';e.wakeUntil=now+SLEEP_WAKE;e.lungeAngle=Math.atan2(nearest.y-e.y,nearest.x-e.x)}}if(e.type==='walker'||e.mode==='lunging'){const loX=e.room%SIZE+ENEMY_RADIUS,hiX=e.room%SIZE+1-ENEMY_RADIUS,loY=Math.floor(e.room/SIZE)+ENEMY_RADIUS,hiY=Math.floor(e.room/SIZE)+1-ENEMY_RADIUS;e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.x<loX||e.x>hiX){e.x=Math.max(loX,Math.min(hiX,e.x));e.vx=-e.vx;if(e.type==='walker'){const a=Math.atan2(e.vy,e.vx)+(random()-.5)*.2;e.vy=Math.sin(a)*.19;e.vx=Math.sign(e.vx)*Math.sqrt(Math.max(0,.19**2-e.vy**2))}}if(e.y<loY||e.y>hiY){e.y=Math.max(loY,Math.min(hiY,e.y));e.vy=-e.vy}}if(e.type==='walker'){
  if(e.attackWindupUntil&&now>=e.attackWindupUntil){e.attackWindupUntil=0;e.attackActiveUntil=now+.25;e.nextContactAttack=now+1.1}
  if(!e.attackWindupUntil&&now>=(e.attackActiveUntil||0)&&now>=(e.nextContactAttack||0)&&visibleTargets.some(p=>Math.hypot(e.x-p.x,e.y-p.y)<.09))e.attackWindupUntil=now+.2;
  }
