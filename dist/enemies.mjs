@@ -10,3 +10,15 @@ export const enemyFor=enemy=>ENEMIES[typeof enemy==='string'?enemy:enemy.type]||
 export const enemyRadius=enemy=>enemyFor(enemy).radius;
 export const eligibleEnemies=round=>Object.keys(ENEMIES).filter(type=>ENEMIES[type].rounds.includes(round));
 export const SLAM_RADIUS=.07,SLAM_INTERVAL=3,SLAM_WINDUP=.6;
+// Difficulty is fixed when a dungeon is created, so disconnects cannot heal enemies.
+export const enemyHealthMultiplier=teamSize=>1+.3*Math.floor(Math.max(1,teamSize)/2);
+export const scaledEnemyHealth=(type,teamSize)=>Math.ceil(enemyFor(type).hp*enemyHealthMultiplier(teamSize));
+export const FLAPPER_TURN_INTERVAL=2;
+const FLAPPER_PATTERN=[0,0,1,0,-1];
+export function turnFlapper(enemy,now){
+ enemy.nextDirectionAt??=now+FLAPPER_TURN_INTERVAL;
+ if(now+1e-9<enemy.nextDirectionAt)return;
+ enemy.nextDirectionAt=now+FLAPPER_TURN_INTERVAL;
+ const turn=FLAPPER_PATTERN[(enemy.directionStep||0)%FLAPPER_PATTERN.length];enemy.directionStep=(enemy.directionStep||0)+1;
+ if(turn){const vx=enemy.vx;enemy.vx=-enemy.vy*turn;enemy.vy=vx*turn}
+}

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {createRoleCarousel} from './public/role-carousel.mjs';
+class Element{constructor(){this.handlers=new Map();this.style={setProperty(){}};this.textContent='';this.disabled=false}addEventListener(type,fn){this.handlers.set(type,fn)}fire(type,e={}){return this.handlers.get(type)?.({preventDefault(){},...e})}}
+const root=new Element(),els=new Map();root.querySelector=selector=>{if(!els.has(selector))els.set(selector,new Element());return els.get(selector)};const el=id=>root.querySelector('#'+id);const chosen=[];const carousel=createRoleCarousel(root,async color=>{chosen.push(color)});
+let players=[{id:'me',name:'Me',color:'coral'},{id:'friend',name:'Friend',color:'purple'}];carousel.set(players,'me');assert.equal(el('role-name').textContent,'Brawler');assert.equal(el('role-select').textContent,'Selected');assert(el('role-select').disabled);
+el('role-next').fire('click');assert.equal(el('role-name').textContent,'Perfumer');assert.equal(el('role-status').textContent,'Taken by Friend');assert(el('role-select').disabled);await el('role-select').fire('click');assert.equal(chosen.length,0,'cannot choose another player role');
+root.fire('keydown',{key:'ArrowRight'});assert.equal(el('role-name').textContent,'Dancer');assert(!el('role-select').disabled);await el('role-select').fire('click');assert.equal(chosen[0],'pink');
+el('role-stage').fire('pointerdown',{pointerId:1,clientX:200,clientY:50});el('role-stage').fire('pointerup',{pointerId:1,clientX:100,clientY:55});assert.equal(el('role-name').textContent,'Brute');
+for(let i=0;i<8;i++)el('role-next').fire('click');assert.equal(el('role-name').textContent,'Brute','carousel wraps');carousel.set(players,'me');assert.equal(el('role-name').textContent,'Brute','membership updates preserve browsing');
+carousel.set([{id:'new',name:'New',color:'blue'}],'new');assert.equal(el('role-name').textContent,'Sniper');assert(el('role-select').disabled,'new lobby focuses the assigned role');
+console.log('PASS: carousel selection, arrows, keyboard, swipe, wraparound and unique role availability');

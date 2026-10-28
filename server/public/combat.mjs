@@ -1,12 +1,12 @@
 import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
-import {enemyFor,enemyRadius,eligibleEnemies,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
+import {enemyFor,enemyRadius,eligibleEnemies,scaledEnemyHealth,turnFlapper,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
 import {obstaclesInRoom,touchesSquare,resolveWalls,wallBlocksLine} from './obstacles.mjs';
 import {SIZE,PLAYER_RADIUS,SPEED_MULTIPLIER} from './world.mjs';
 import {roleFor,inAttack,WIDTH} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,SHIELD_RADIUS=.075,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
 export const roomOf=p=>Math.min(SIZE-1,Math.max(0,Math.floor(p.y)))*SIZE+Math.min(SIZE-1,Math.max(0,Math.floor(p.x)));
 export function isEnemyRoom(run,room){return room!==run.goal&&room!==run.startRoom&&run.edges[room]?.length>0&&(run.enemyRooms?!!run.enemyRooms[room]:((room%SIZE+Math.floor(room/SIZE))%2===1))}
-export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){const enemies=[];for(let room=0;room<SIZE*SIZE;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const pool=eligibleEnemies(run.round||1),type=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))],spec=enemyFor(type),angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){const dx=fromRoom===null?0:(room%SIZE)-(fromRoom%SIZE),dy=fromRoom===null?0:Math.floor(room/SIZE)-Math.floor(fromRoom/SIZE);x=room%SIZE+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/SIZE)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)&&!obstaclesInRoom(run,room).some(o=>touchesSquare({x,y},spec.radius+.015,o)))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*spec.speed,vy:Math.sin(angle)*spec.speed,hp:spec.hp,maxHp:spec.hp,mode:type==='sleeper'?'sleeping':'walking',nextSlam:(run.time||0)+SLAM_INTERVAL,lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
+export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){const enemies=[];for(let room=0;room<SIZE*SIZE;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const pool=eligibleEnemies(run.round||1),type=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))],spec=enemyFor(type),angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){const dx=fromRoom===null?0:(room%SIZE)-(fromRoom%SIZE),dy=fromRoom===null?0:Math.floor(room/SIZE)-Math.floor(fromRoom/SIZE);x=room%SIZE+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/SIZE)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)&&!obstaclesInRoom(run,room).some(o=>touchesSquare({x,y},spec.radius+.015,o)))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*spec.speed,vy:Math.sin(angle)*spec.speed,hp:scaledEnemyHealth(type,run.teamSize??run.players.filter(p=>!p.deceased).length),maxHp:scaledEnemyHealth(type,run.teamSize??run.players.filter(p=>!p.deceased).length),directionStep:i%5,nextDirectionAt:(run.time||0)+2,mode:type==='sleeper'?'sleeping':'walking',nextSlam:(run.time||0)+SLAM_INTERVAL,lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
 // Derived room index is kept outside the networked game state.
 const roomIndexes=new WeakMap();
 export function enemiesInRoom(run,room){
@@ -24,7 +24,7 @@ export function removeDefeatedEnemies(run){
 export function refreshEnemyActivity(run,random=Math.random){
  const nearby=new Set();for(const p of run.players){const room=roomOf(p),x=room%SIZE,y=Math.floor(room/SIZE);nearby.add(room);if(x>0)nearby.add(room-1);if(x<SIZE-1)nearby.add(room+1);if(y>0)nearby.add(room-SIZE);if(y<SIZE-1)nearby.add(room+SIZE)}
  run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];
-  for(const e of run.enemies){const active=nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil','attackWindupUntil','attackActiveUntil','nextContactAttack','nextSlam','slamWindupUntil','slamUntil'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
+  for(const e of run.enemies){const active=nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil','attackWindupUntil','attackActiveUntil','nextContactAttack','nextDirectionAt','nextSlam','slamWindupUntil','slamUntil'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
  return nearby;
 }
 // Spawn an encounter only on first entry; the approach side selects the opposite spawn zone.
@@ -93,7 +93,7 @@ function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arriv
 function moveEnemy(run,e,dt,random){
  const r=enemyRadius(e),spec=enemyFor(e),loX=e.room%SIZE+r,hiX=e.room%SIZE+1-r,loY=Math.floor(e.room/SIZE)+r,hiY=Math.floor(e.room/SIZE)+1-r,oldX=e.x,oldY=e.y;
  e.x+=e.vx*dt;e.y+=e.vy*dt;
- if(e.x<loX||e.x>hiX){e.x=Math.max(loX,Math.min(hiX,e.x));e.vx=-e.vx;if(e.type!=='sleeper'&&e.mode!=='lunging'){const a=Math.atan2(e.vy,e.vx)+(random()-.5)*.2;e.vy=Math.sin(a)*spec.speed;e.vx=Math.sign(e.vx)*Math.sqrt(Math.max(0,spec.speed**2-e.vy**2))}}
+ if(e.x<loX||e.x>hiX){e.x=Math.max(loX,Math.min(hiX,e.x));e.vx=-e.vx;if(e.type!=='sleeper'&&e.type!=='flapper'&&e.mode!=='lunging'){const a=Math.atan2(e.vy,e.vx)+(random()-.5)*.2;e.vy=Math.sin(a)*spec.speed;e.vx=Math.sign(e.vx)*Math.sqrt(Math.max(0,spec.speed**2-e.vy**2))}}
  if(e.y<loY||e.y>hiY){e.y=Math.max(loY,Math.min(hiY,e.y));e.vy=-e.vy}
  const wall=resolveWalls(run,e,oldX,oldY,r);if(wall.xHit)e.vx=-e.vx;if(wall.yHit)e.vy=-e.vy;
 }
@@ -119,6 +119,7 @@ export function stepCombat(run,dt,random=Math.random){
    if(!e.slamWindupUntil)moveEnemy(run,e,dt,random);
    repelFromShields(run,e);continue;
   }
+  if(e.type==='flapper')turnFlapper(e,now);
   if(e.type==='walker'||e.type==='flapper'||e.mode==='lunging')moveEnemy(run,e,dt,random);
   if(e.type==='walker'||e.type==='flapper'){
    if(e.attackWindupUntil&&now>=e.attackWindupUntil){e.attackWindupUntil=0;e.attackActiveUntil=now+.25;e.nextContactAttack=now+1.1}
