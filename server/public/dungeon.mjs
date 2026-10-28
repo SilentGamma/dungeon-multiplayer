@@ -1,11 +1,11 @@
 import {generateObstacles,resolveWalls} from './obstacles.mjs';
-import {SIZE} from './world.mjs';
+import {SIZE,PLAYER_RADIUS} from './world.mjs';
 export {SIZE} from './world.mjs';
 import {grapple,beginGrapple,startWrestler,updateWrestler,updateGrapples,updateThrows} from './throw.mjs';
 import {roleFor,WIDTH,advanceAim} from './roles.mjs';
 import {prepareRevives,advanceRevives} from './revive.mjs';
 import {refreshEnemyActivity,enterRoom,updateRoomLocks,removeDefeatedEnemies,attack,stepCombat,stepHazards,PLAYER_HP} from './combat.mjs';
-export const ROOM_SIZE=2,SPEED=.72/ROOM_SIZE,RADIUS=.035/ROOM_SIZE,AIM_SPEED=3.6;
+export const ROOM_SIZE=2,SPEED=.72/ROOM_SIZE,RADIUS=PLAYER_RADIUS,AIM_SPEED=3.6;
 export function neighbors(i){const x=i%SIZE,y=Math.floor(i/SIZE);return [y>0?i-SIZE:-1,x<SIZE-1?i+1:-1,y<SIZE-1?i+SIZE:-1,x>0?i-1:-1].filter(n=>n>=0)}
 export function distances(edges,starts){const d=Array(edges.length).fill(Infinity),q=[...starts];for(const n of q)d[n]=0;for(let k=0;k<q.length;k++)for(const n of edges[q[k]])if(d[n]===Infinity){d[n]=d[q[k]]+1;q.push(n)}return d}
 export function generateDungeon(random=Math.random){
