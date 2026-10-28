@@ -5,7 +5,7 @@ const descriptions={coral:'A close-range fighter. Raise your shield just before 
 export function createRoleCarousel(root,onChoose){
  const el=id=>root.querySelector('#'+id);let players=[],me=null,index=0,pending=false;
  function draw(){const color=roles[index],role=roleFor(color),mine=players.find(p=>p.id===me),owner=players.find(p=>p.color===color&&p.id!==me),selected=mine?.color===color;
-  el('role-name').textContent=role.name;el('role-color').textContent=colorName(color);el('role-description').textContent=role.description||descriptions[color]||'';
+  el('role-name').textContent=role.name;el('role-color').textContent=colorName(color)+' · '+role.speedClass;el('role-description').textContent=role.description||descriptions[color]||'';
   el('role-stage').style.setProperty('--role-color',colorFor(color));el('role-avatar').style.backgroundColor=colorFor(color);el('role-counter').textContent=`${index+1} / ${roles.length}`;
   el('role-health').textContent=role.hp;el('role-shield').textContent=role.shield;el('role-damage').textContent=role.damage;el('role-cooldown').textContent=role.cooldown+'s';
   el('role-status').textContent=owner?'Taken by '+owner.name:selected?'Your selected role':'Available';
