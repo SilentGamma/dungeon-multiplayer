@@ -8,9 +8,9 @@ Assets are saved in `server/public/` in this repository. Portraits are 512 × 51
 
 | Role | Color | Portrait | Token |
 |---|---|---|---|
-| brawler | coral peach #ffad83 | brawler-portrait-v2.webp | brawler-token-v2.webp |
-| chef | mint green #99efb1 | chef-portrait-v2.webp | chef-token-v2.webp |
-| wrestler | teal cyan #79e2e4 | wrestler-portrait-v2.webp | wrestler-token-v2.webp |
+| brawler | coral peach #ffad83 | brawler-portrait-v2.webp | brawler-token-v3.webp |
+| chef | mint green #99efb1 | chef-portrait-v2.webp | chef-token-v3.webp |
+| wrestler | teal cyan #79e2e4 | wrestler-portrait-v2.webp | wrestler-token-v3.webp |
 | joker | green lime #a9e64b | joker-portrait-v2.webp | joker-token-v2.webp |
 
 ## Original portrait prompts (v1)
@@ -60,3 +60,7 @@ Built-in image generation was used to edit all four portraits and all four token
 The displayed token diameter matches a Normal enemy, about 32% larger than before. This display-only radius does not alter collision, shield, attack, movement, door or enemy statistics.
 
 Full selected revision prompt set: [ARTWORK-v2-prompts.md](ARTWORK-v2-prompts.md).
+
+## Minimal token revision (v3)
+
+Brawler, Chef, and Wrestler tokens now match the unchanged Joker token with sparse facial features, bold shapes and consistent circular framing. Selection portraits are unchanged. Final built-in generation prompts and saved asset paths: [ARTWORK-v3-prompts.md](ARTWORK-v3-prompts.md).

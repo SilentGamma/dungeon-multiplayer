@@ -1,9 +1,9 @@
 // Display size only; authoritative movement and collision radii are unchanged.
 export const PLAYER_VISUAL_RADIUS=.026;
 export const ROLE_ART=Object.freeze({
- coral:{name:'Brawler',portrait:'/brawler-portrait-v2.webp',token:'/brawler-token-v2.webp'},
- green:{name:'Chef',portrait:'/chef-portrait-v2.webp',token:'/chef-token-v2.webp'},
- teal:{name:'Wrestler',portrait:'/wrestler-portrait-v2.webp',token:'/wrestler-token-v2.webp'},
+ coral:{name:'Brawler',portrait:'/brawler-portrait-v2.webp',token:'/brawler-token-v3.webp'},
+ green:{name:'Chef',portrait:'/chef-portrait-v2.webp',token:'/chef-token-v3.webp'},
+ teal:{name:'Wrestler',portrait:'/wrestler-portrait-v2.webp',token:'/wrestler-token-v3.webp'},
  lime:{name:'Joker',portrait:'/joker-portrait-v2.webp',token:'/joker-token-v2.webp'}
 });
 const tokens=new Map();

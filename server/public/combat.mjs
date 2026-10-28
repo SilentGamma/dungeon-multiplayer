@@ -48,7 +48,7 @@ function guarded(run,p){return run.players.some(b=>b!==p&&b.hp>0&&!b.arrived&&b.
 function down(p){p.hp=0;p.holding=false;p.shielding=false;p.arrived=false;p.reviving=null;p.attackUntil=0;clearPoison(p);p.stunUntil=0}
 export function damagePlayer(run,p,damage,random=Math.random){
  const now=run.time||0;if(p.hp<=0||p.arrived||guarded(run,p))return false;
- if(p.shielding&&p.shield>0){p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;p.hurtUntil=now+.22;if(!p.shield){p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
+ if(p.shielding&&p.shield>0){p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;if(!p.shield){p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
  p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p);return true;
 }
 function jokerGambit(run,p,random){
@@ -89,7 +89,9 @@ function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
  return true;
 }
 function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}
-function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||roomOf(p)!==e.room||!clearPath(run,e,p))continue;const r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(e.room%SIZE+r,Math.min(e.room%SIZE+1-r,p.x+nx*reach));e.y=Math.max(Math.floor(e.room/SIZE)+r,Math.min(Math.floor(e.room/SIZE)+1-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;if(dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
+// Hold non-attacking enemies at the shield boundary through their windup.
+// Bouncing them away before an attack activates makes shield contact miss.
+function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||roomOf(p)!==e.room||!clearPath(run,e,p))continue;const r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(e.room%SIZE+r,Math.min(e.room%SIZE+1-r,p.x+nx*reach));e.y=Math.max(Math.floor(e.room/SIZE)+r,Math.min(Math.floor(e.room/SIZE)+1-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;const attacking=e.type==='sleeper'?e.mode==='lunging':run.time<(e.attackActiveUntil||0);if(attacking&&dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
 function moveEnemy(run,e,dt,random){
  const r=enemyRadius(e),spec=enemyFor(e),loX=e.room%SIZE+r,hiX=e.room%SIZE+1-r,loY=Math.floor(e.room/SIZE)+r,hiY=Math.floor(e.room/SIZE)+1-r,oldX=e.x,oldY=e.y;
  e.x+=e.vx*dt;e.y+=e.vy*dt;
@@ -126,7 +128,7 @@ export function stepCombat(run,dt,random=Math.random){
    if(!e.attackWindupUntil&&now>=(e.attackActiveUntil||0)&&now>=(e.nextContactAttack||0)&&visible.some(p=>clearPath(run,e,p)&&Math.hypot(e.x-p.x,e.y-p.y)<(p.shielding&&p.shield>0?SHIELD_RADIUS+enemyRadius(e)+.02:.09)))e.attackWindupUntil=now+.2;
   }
   const attacking=e.type==='sleeper'?e.mode==='lunging':now<(e.attackActiveUntil||0);
-  if(attacking)for(const p of targets){const reach=enemyRadius(e)+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS);if(Math.abs(e.x-p.x)<=reach&&Math.abs(e.y-p.y)<=reach&&Math.hypot(e.x-p.x,e.y-p.y)<=reach)enemyHit(run,e,p,random,{poison:e.type==='flapper'})}
+  if(attacking)for(const p of targets){const reach=enemyRadius(e)+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS)+1e-7;if(Math.abs(e.x-p.x)<=reach&&Math.abs(e.y-p.y)<=reach&&Math.hypot(e.x-p.x,e.y-p.y)<=reach)enemyHit(run,e,p,random,{poison:e.type==='flapper'})}
   repelFromShields(run,e);
  }
  for(const p of run.players)resolveSwing(run,p);run.failed=run.players.length>0&&run.players.every(p=>p.hp<=0);
