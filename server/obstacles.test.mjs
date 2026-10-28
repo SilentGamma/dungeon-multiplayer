@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createRun,step,SIZE,generateDungeon} from '../dist/dungeon.mjs';
+import {stepCombat,stepHazards,SHIELD_RADIUS,attack} from '../dist/combat.mjs';
+import {resolveWalls,touchesSquare,wallBlocksLine} from '../dist/obstacles.mjs';
+function fixture(){const r=createRun([{id:'p',name:'P',color:'coral'}]);r.obstacles=[];r.enemies=[];r.time=1;r.goal=0;r.mapRoom=0;const p=r.players[0];p.x=1.5;p.y=2.5;p.vx=.28;p.vy=0;p.invulnerableUntil=0;return [r,p]}
+let [r,p]=fixture();p.holding=true;p.shielding=true;const before=p.shield;r.enemies=[{id:'e',type:'walker',room:15,x:p.x+SHIELD_RADIUS+.01,y:p.y,vx:0,vy:0,hp:7,maxHp:7,active:true,mode:'walking',attackActiveUntil:3}];stepCombat(r,0);assert.equal(p.shield,before-2,'shield edge intercepts enemy attack');assert.equal(p.hp,p.maxHp);
+[r,p]=fixture();const spike={id:'s',room:15,type:'spikes',x:1.45,y:2.45,size:.1};r.obstacles=[spike];const health=p.hp;stepHazards(r);assert.equal(p.hp,health-1);stepHazards(r);assert.equal(p.hp,health-1,'standing in spikes does not damage every frame');p.x=1.8;stepHazards(r);p.x=1.5;stepHazards(r);assert.equal(p.hp,health-2,'entering again causes one new damage tick');
+[r,p]=fixture();r.obstacles=[spike];p.x=1.29;p.shielding=true;const shield=p.shield;stepHazards(r);assert.equal(p.shield,shield-1,'spikes contacting shield damage shield before body');assert.equal(p.hp,p.maxHp);
+[r,p]=fixture();const wall={id:'w',room:15,type:'wall',x:1.6,y:2.4,size:.15};r.obstacles=[wall];p.x=1.57;p.y=2.5;const hit=resolveWalls(r,p,1.56,2.5,.0175);assert(!hit.xHit);p.x=1.59;assert(resolveWalls(r,p,1.57,2.5,.0175).xHit);assert(Math.abs(p.x-(wall.x-.0175))<1e-8);assert(wallBlocksLine(r,{x:1.5,y:2.5},{x:1.8,y:2.5}));
+p.x=1.55;p.vx=.28;p.vy=0;for(let i=0;i<30;i++)step(r,1/60);assert(p.vx<0,'player bounces off wall');
+[r,p]=fixture();r.obstacles=[wall];p.x=1.58;p.angle=0;p.nextAttack=0;r.enemies=[{id:'e',room:15,type:'walker',hp:7,x:1.77,y:2.5}];attack(r,p);assert.equal(r.enemies[0].hp,7,'attacks do not pass through obstacle walls');
+let one=0,two=0,three=0,safe=0,enemy=0;let seed=12345;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+for(let k=0;k<150;k++){const d=generateDungeon(random);for(const doors of Object.values(d.doors)){if(doors.length===1)one++;else if(doors.length===2)two++;else three++}for(let room=0;room<d.edges.length;room++){const obs=d.obstacles.filter(o=>o.room===room);if(room===d.startRoom||room===d.goal){assert.equal(obs.length,0);continue}if(!d.edges[room].length)continue;if(d.enemyRooms[room]){assert(obs.length<=2);enemy+=obs.length}else{assert(obs.length>=3&&obs.length<=4);safe+=obs.length}for(const o of obs){assert(!touchesSquare({x:room%SIZE+.5,y:Math.floor(room/SIZE)+.5},.1,o),'room center remains clear');assert(o.x>room%SIZE+.15&&o.y>Math.floor(room/SIZE)+.15)}}}
+const all=one+two+three;assert(one/all>.45&&two/all>.28&&three/all<.12);assert(safe>enemy);
+console.log('PASS: matching shield reach, spike entry ticks, wall bounce and occlusion, obstacle density and weighted entrances');
