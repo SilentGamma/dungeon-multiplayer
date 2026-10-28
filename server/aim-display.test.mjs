@@ -1,8 +1,9 @@
+import {PLAYER_VISUAL_RADIUS} from './public/role-art.mjs';
 import assert from 'node:assert/strict';
-import {createRun,RADIUS} from '../dist/dungeon.mjs';
+import {createRun} from '../dist/dungeon.mjs';
 import {gameView} from './public/game.mjs';
 let now=0,frame,points=[],body=null;const handlers={},inputs=[];
-const context=()=>new Proxy({arc(x,y,r){if(r===RADIUS)body={x,y}},moveTo(x,y){points.push([x,y])}},{get(o,k){return k in o?o[k]:(()=>{})},set(o,k,v){o[k]=v;return true}});
+const context=()=>new Proxy({arc(x,y,r){if(r===PLAYER_VISUAL_RADIUS)body={x,y}},moveTo(x,y){points.push([x,y])}},{get(o,k){return k in o?o[k]:(()=>{})},set(o,k,v){o[k]=v;return true}});
 const elements=new Map();function element(id){if(!elements.has(id))elements.set(id,{hidden:false,style:{},textContent:'',disabled:false,addEventListener(){},setAttribute(){}});return elements.get(id)}
 globalThis.document={getElementById:element,createElement(){return {getContext:context}},addEventListener(){},hidden:false};globalThis.addEventListener=()=>{};globalThis.requestAnimationFrame=f=>(frame=f,1);globalThis.cancelAnimationFrame=()=>{};globalThis.devicePixelRatio=1;Object.defineProperty(globalThis,'performance',{value:{now:()=>now},configurable:true});
 const canvas={width:0,height:0,getContext:context,getBoundingClientRect:()=>({width:900,height:700}),addEventListener(name,fn){handlers[name]=fn},setPointerCapture(){}};const view=gameView({canvas,me:'p',onInput:m=>inputs.push(m)});const run=createRun([{id:'p',name:'P',color:'coral'}]);run.round=1;const p=run.players[0];p.vx=.28;p.vy=0;p.angle=0;view.set(run);

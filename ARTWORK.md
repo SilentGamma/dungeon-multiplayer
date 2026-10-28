@@ -1,6 +1,6 @@
 # Character artwork
 
-Polished from the user's original notebook sketches using the built-in image-generation tool. Four square selection portraits and four transparent circular tokens use each role's monochromatic color. Gameplay uses the original player radius and collision rules; the art is a visual skin.
+Polished from the user's original notebook sketches using the built-in image-generation tool. Four square selection portraits and four transparent circular tokens use each role's monochromatic color. Gameplay uses the original collision rules. The displayed player radius is 0.026 room units, matching Normal enemies, while the collision radius remains 0.0196875 (about 32% larger display only).
 
 ## Final assets
 
@@ -8,12 +8,12 @@ Assets are saved in `server/public/` in this repository. Portraits are 512 × 51
 
 | Role | Color | Portrait | Token |
 |---|---|---|---|
-| brawler | coral peach #ffad83 | brawler-portrait-v1.webp | brawler-token-v1.webp |
-| chef | mint green #99efb1 | chef-portrait-v1.webp | chef-token-v1.webp |
-| wrestler | teal cyan #79e2e4 | wrestler-portrait-v1.webp | wrestler-token-v1.webp |
-| joker | lime yellow-green #e1ea82 | joker-portrait-v1.webp | joker-token-v1.webp |
+| brawler | coral peach #ffad83 | brawler-portrait-v2.webp | brawler-token-v2.webp |
+| chef | mint green #99efb1 | chef-portrait-v2.webp | chef-token-v2.webp |
+| wrestler | teal cyan #79e2e4 | wrestler-portrait-v2.webp | wrestler-token-v2.webp |
+| joker | green lime #a9e64b | joker-portrait-v2.webp | joker-token-v2.webp |
 
-## Portrait prompts
+## Original portrait prompts (v1)
 
 Reference image: the user's original notebook photograph. Each prompt isolates the specified portrait and ignores the other panels and bottom-row tokens.
 
@@ -33,7 +33,7 @@ Use case: sketch-to-render. Edit target: the attached photograph of the user's o
 
 Use case: sketch-to-render. Edit target: the attached photograph of the user's original game-character sketches. Create ONE polished square character-selection PORTRAIT of Joker, lower-right portrait sketch. Long asymmetrical cartoon face, one larger eye, bulbous nose, swept quiff on the left and curved jester-cap tip with a tiny bell on the right, enormous mischievous toothy grin and pointed chin. Preserve the drawing's expression and face. This is the user's original jester character, no franchise imagery or clown makeup. Ignore all other panels and bottom-row tokens for this output. Preserve the user's design, not a redesign. Style: bold expressive cartoon ink illustration, clean confident outlines, strong graphic cel shading with subtle crosshatching, professional indie-game character art. Color palette: strictly monochromatic lime yellow-green #e1ea82; near-black olive shadows, lime midtones and pale yellow-green highlights; no other hues. Strong value contrast between near-black contours/shadows, rich colored middle tones and crisp light highlights; avoid washed-out pastel rendering. Square 1024x1024 composition, head and upper shoulders fill the frame comfortably with a small safe margin, uncluttered very dark same-hue backdrop with a restrained graphic halo. Crisp face readable at 160px. No notebook paper, photograph texture, text, labels, frame, logos or watermark. Deliver only the final single portrait.
 
-## Token prompts
+## Original token prompts (v1)
 
 Reference image 1: the notebook photograph. Reference image 2: the corresponding polished portrait. Genuine alpha transparency requested outside each circular token.
 
@@ -52,3 +52,11 @@ Use case: sketch-to-render. Asset type: tiny circular in-game player TOKEN for w
 ### joker
 
 Use case: sketch-to-render. Asset type: tiny circular in-game player TOKEN for joker. Image 1 is the user's original drawing; edit specifically fourth bottom-row circle: a simple round face with two tiny eyes and raised brows, an enormous dark mischievous triangular grin with bright chunky teeth; preserve the very simple smile-token silhouette rather than a full jester portrait. Image 2 supplies the polished character identity and monochromatic palette only. Create ONE circular face icon, not a portrait bust. Faithfully clean up the user's bottom-row token design. Strict monochromatic palette: lime yellow-green #e1ea82, near-black olive ink, pale yellow-green highlights; no additional hues. Bold dark ink shapes, very high contrast, simple cel-shaded fills, crisp thick features that remain instantly readable at 24 pixels. Use at most 3 tonal values plus ink; no crosshatching, no tiny texture. Entire face stays inside a perfect circle occupying 96% of the square canvas, centered, with a thin dark circular perimeter. The circle interior is opaque role color. Actual transparent background outside the circular icon, no cast shadow, no text, no labels, no UI mockup, no extra icons. Square 1024x1024 asset.
+
+## Readability revision (v2)
+
+Built-in image generation was used to edit all four portraits and all four tokens. The first Brawler redesign was retained; the subsequent shading finish was used as the style reference across the four portraits. Brawler retains the selected first redesign's angular face and eye, female identity, shaggy bangs and ponytail, with the revised graphic shading. Joker is greener lime (#a9e64b) with exactly one visible upper tooth. Tokens use flat role-color fills and dark bold features, without rendered highlights, shadows, gloss or fine hatching. The source references were the corresponding v1 generated assets.
+
+The displayed token diameter matches a Normal enemy, about 32% larger than before. This display-only radius does not alter collision, shield, attack, movement, door or enemy statistics.
+
+Full selected revision prompt set: [ARTWORK-v2-prompts.md](ARTWORK-v2-prompts.md).
