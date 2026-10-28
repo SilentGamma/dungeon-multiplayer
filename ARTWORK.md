@@ -1,6 +1,6 @@
 # Character artwork
 
-Polished from the user's original notebook sketches using the built-in image-generation tool. Four square selection portraits and four transparent circular tokens use each role's monochromatic color. Gameplay uses the original collision rules. The displayed player radius is 0.026 room units, matching Normal enemies, while the collision radius remains 0.0196875 (about 32% larger display only).
+Polished from the user's original notebook sketches using the built-in image-generation tool. Eight square selection portraits and eight transparent circular tokens use each role's monochromatic color. Gameplay uses the original collision rules. The displayed player radius is 0.026 room units, matching Normal enemies, while the collision radius remains 0.0196875 (about 32% larger display only).
 
 ## Final assets
 
@@ -12,6 +12,10 @@ Assets are saved in `server/public/` in this repository. Portraits are 512 × 51
 | chef | mint green #99efb1 | chef-portrait-v2.webp | chef-token-v3.webp |
 | wrestler | teal cyan #79e2e4 | wrestler-portrait-v2.webp | wrestler-token-v3.webp |
 | joker | green lime #a9e64b | joker-portrait-v2.webp | joker-token-v2.webp |
+| brute | gold #ffcf78 | brute-portrait-v1.webp | brute-token-v1.webp |
+| sniper | blue #9ebdff | sniper-portrait-v1.webp | sniper-token-v1.webp |
+| perfumer | purple #d8b1ff | perfumer-portrait-v1.webp | perfumer-token-v1.webp |
+| dancer | pink #fca1bd | dancer-portrait-v1.webp | dancer-token-v1.webp |
 
 ## Original portrait prompts (v1)
 
@@ -64,3 +68,7 @@ Full selected revision prompt set: [ARTWORK-v2-prompts.md](ARTWORK-v2-prompts.md
 ## Minimal token revision (v3)
 
 Brawler, Chef, and Wrestler tokens now match the unchanged Joker token with sparse facial features, bold shapes and consistent circular framing. Selection portraits are unchanged. Final built-in generation prompts and saved asset paths: [ARTWORK-v3-prompts.md](ARTWORK-v3-prompts.md).
+
+## Remaining cast
+
+Brute, Sniper, Perfumer and Dancer were polished from the second user sketch sheet, including its bottom-row token designs. Brute’s jagged mass is her weapon. All four portraits follow the established cel shading; all four tokens follow Joker’s minimal graphic style. [Final prompts and saved asset paths](ARTWORK-remaining-prompts.md).
