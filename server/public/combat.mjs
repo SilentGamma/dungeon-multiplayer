@@ -1,6 +1,7 @@
+import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
 import {enemyFor,enemyRadius,eligibleEnemies,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
 import {obstaclesInRoom,touchesSquare,resolveWalls,wallBlocksLine} from './obstacles.mjs';
-import {SIZE,PLAYER_RADIUS} from './world.mjs';
+import {SIZE,PLAYER_RADIUS,SPEED_MULTIPLIER} from './world.mjs';
 import {roleFor,inAttack,WIDTH} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,SHIELD_RADIUS=.075,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
 export const roomOf=p=>Math.min(SIZE-1,Math.max(0,Math.floor(p.y)))*SIZE+Math.min(SIZE-1,Math.max(0,Math.floor(p.x)));
@@ -44,7 +45,7 @@ function clearPath(run,a,b){
  return (run.doors?.[key]||[[.34,.66]]).some(([lo,hi])=>pos>=lo&&pos<=hi);
 }
 function guarded(run,p){return run.players.some(b=>b!==p&&b.hp>0&&!b.arrived&&b.color==='gold'&&b.shielding&&b.shield>0&&clearPath(run,b,p)&&Math.hypot(b.x-p.x,b.y-p.y)<=3*WIDTH)}
-function down(p){p.hp=0;p.holding=false;p.shielding=false;p.arrived=false;p.reviving=null;p.attackUntil=0;p.poisonUntil=0;p.poisonNext=0;p.stunUntil=0}
+function down(p){p.hp=0;p.holding=false;p.shielding=false;p.arrived=false;p.reviving=null;p.attackUntil=0;clearPoison(p);p.stunUntil=0}
 export function damagePlayer(run,p,damage,random=Math.random){
  const now=run.time||0;if(p.hp<=0||p.arrived||guarded(run,p))return false;
  if(p.shielding&&p.shield>0){p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;p.hurtUntil=now+.22;if(!p.shield){p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
@@ -55,7 +56,7 @@ function jokerGambit(run,p,random){
  const near=(x,n)=>clearPath(run,p,x)&&Math.hypot(p.x-x.x,p.y-x.y)<=n*WIDTH;
  if(outcome===0){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,6))damagePlayer(run,q,20,random);for(const e of run.enemies||[])if(e.hp>0&&near(e,6)){e.hp=Math.max(0,e.hp-20);e.hitUntil=now+.2;}down(p)}
  else if(outcome===1)p.invisibleUntil=now+7;
- else if(outcome===2){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&near(q,2))q.hp=Math.min(q.maxHp,q.hp+10)}
+ else if(outcome===2){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&near(q,2))healAlly(p,q,10)}
  else if(outcome===3){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,2)){q.stunUntil=now+1.5;q.reviving=null;q.reviveInterruptedUntil=now+1.5}for(const e of run.enemies||[])if(e.hp>0&&near(e,2))e.stunUntil=now+1.5}
  else if(outcome===4)p.airUntil=now+5;
  else p.finalDrawUntil=now+1;
@@ -69,8 +70,8 @@ function resolveSwing(run,p){
  const role=roleFor(p.color),aim={...p,angle:swing.angle};
  let enemies=(run.enemies||[]).filter(e=>e.hp>0&&!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  if(role.single)enemies=swing.hits.size?[]:enemies.slice(0,1);
- for(const e of enemies){swing.hits.add(e.id);e.hp=Math.max(0,e.hp-swing.damage);e.hitUntil=now+.2;if(p.color==='green'){if(!e.poisonUntil||e.poisonUntil<=now)e.poisonNext=now+1;e.poisonUntil=now+5}}
- for(const q of run.players){if(q===p||q.hp<=0||q.arrived||swing.healed.has(q.id)||!clearPath(run,p,q)||Math.hypot(q.x-p.x,q.y-p.y)>2*WIDTH)continue;const heal=p.color==='purple'&&swing.hits.size?3:p.color==='green'&&inAttack(aim,q)?5:0;if(heal){q.hp=Math.min(q.maxHp,q.hp+heal);swing.healed.add(q.id)}}
+ for(const e of enemies){swing.hits.add(e.id);e.hp=Math.max(0,e.hp-swing.damage);e.hitUntil=now+.2;if(p.color==='green')applyPoison(e,now,{refresh:true})}
+ for(const q of run.players){if(q===p||q.hp<=0||q.arrived||swing.healed.has(q.id)||!clearPath(run,p,q)||Math.hypot(q.x-p.x,q.y-p.y)>2*WIDTH)continue;const heal=p.color==='purple'&&swing.hits.size?3:p.color==='green'&&inAttack(aim,q)?5:0;if(heal){healAlly(p,q,heal);swing.healed.add(q.id)}}
 }
 export function attack(run,p){
  const now=run.time||0,role=roleFor(p.color);if(p.hp<=0||p.arrived||p.reviving||p.throwing||p.grabbedBy||now<(p.stunUntil||0)||now<(p.nextAttack||0))return false;
@@ -84,10 +85,11 @@ function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
  if(shielded&&p.color==='coral'&&now-(p.shieldRaisedAt||0)<=.3){e.hp=Math.max(0,e.hp-2);e.hitUntil=now+.2;e.vx*=-1;e.vy*=-1}
  damagePlayer(run,p,enemyFor(e).damage,random);p.invulnerableUntil=now+HIT_COOLDOWN;p.reviving=null;p.reviveInterruptedUntil=now+HIT_COOLDOWN;
  if(p.hp>0&&stun){p.stunUntil=Math.max(p.stunUntil||0,now+stun);p.holding=false;p.shielding=false;p.usingAttack=false;p.wrestlerState=null;}
- if(poison&&p.hp>0&&now>=(p.stunUntil||0)&&now>=(p.poisonUntil||0)){p.poisonUntil=now+5;p.poisonNext=now+1}
+ if(poison&&p.hp>0)applyPoison(p,now)
  return true;
 }
-function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){p.poisonUntil=0;p.poisonNext=0;return}while(p.poisonNext&&p.poisonNext<=now&&p.poisonNext<=p.poisonUntil){p.poisonNext+=1;if(guarded(run,p))continue;p.hp=Math.max(0,p.hp-2);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0){down(p);break}}}
+function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}
+function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||roomOf(p)!==e.room||!clearPath(run,e,p))continue;const r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(e.room%SIZE+r,Math.min(e.room%SIZE+1-r,p.x+nx*reach));e.y=Math.max(Math.floor(e.room/SIZE)+r,Math.min(Math.floor(e.room/SIZE)+1-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;if(dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
 function moveEnemy(run,e,dt,random){
  const r=enemyRadius(e),spec=enemyFor(e),loX=e.room%SIZE+r,hiX=e.room%SIZE+1-r,loY=Math.floor(e.room/SIZE)+r,hiY=Math.floor(e.room/SIZE)+1-r,oldX=e.x,oldY=e.y;
  e.x+=e.vx*dt;e.y+=e.vy*dt;
@@ -100,14 +102,14 @@ export function stepCombat(run,dt,random=Math.random){
  const rooms=new Set(run.players.map(roomOf).flatMap(r=>[r,...(r%SIZE?[r-1]:[]),...(r%SIZE<SIZE-1?[r+1]:[]),...(r>=SIZE?[r-SIZE]:[]),...(r<SIZE*(SIZE-1)?[r+SIZE]:[])]));
  for(const room of rooms)for(const e of enemiesInRoom(run,room)){
   if(e.active===false||e.hp<=0)continue;
-  while(e.poisonNext&&e.poisonNext<=now&&e.poisonNext<=e.poisonUntil){e.hp=Math.max(0,e.hp-2);e.hitUntil=now+.2;e.poisonNext+=1}
+  tickPoison(e,now,damage=>{e.hp=Math.max(0,e.hp-damage);e.hitUntil=now+.2})
   if(e.hp<=0||e.throwing||e.grabbedBy||now<(e.stunUntil||0))continue;
   const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&(roomOf(p)===e.room||(p.shielding&&p.shield>0&&run.edges[e.room]?.includes(roomOf(p))))),visible=targets.filter(p=>now>=(p.invisibleUntil||0));
   if(e.type==='sleeper'){
    const nearest=visible.reduce((best,p)=>!best||Math.hypot(p.x-e.x,p.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?p:best,null);
    if(e.mode==='lunging'&&now>=e.lungeUntil){e.mode='resting';e.nextLunge=now+SLEEP_REST}
    if(e.mode==='resting'&&now>=e.nextLunge)e.mode='sleeping';
-   if(e.mode==='waking'&&now>=e.wakeUntil){e.mode='lunging';e.lungeUntil=now+.32;e.vx=Math.cos(e.lungeAngle)*.82;e.vy=Math.sin(e.lungeAngle)*.82}
+   if(e.mode==='waking'&&now>=e.wakeUntil){e.mode='lunging';e.lungeUntil=now+.32;e.vx=Math.cos(e.lungeAngle)*.82*SPEED_MULTIPLIER;e.vy=Math.sin(e.lungeAngle)*.82*SPEED_MULTIPLIER}
    else if(e.mode==='sleeping'&&nearest&&now>=(e.nextLunge||0)&&Math.hypot(nearest.x-e.x,nearest.y-e.y)<=SLEEP_RADIUS&&clearPath(run,e,nearest)){e.mode='waking';e.wakeUntil=now+SLEEP_WAKE;e.lungeAngle=Math.atan2(nearest.y-e.y,nearest.x-e.x)}
   }
   if(e.type==='creeper'){
@@ -115,7 +117,7 @@ export function stepCombat(run,dt,random=Math.random){
    if(!e.slamWindupUntil&&now>=e.nextSlam-SLAM_WINDUP){e.slamWindupUntil=e.nextSlam;e.mode='winding'}
    if(e.slamWindupUntil&&now>=e.slamWindupUntil){e.slamWindupUntil=0;e.nextSlam=now+SLAM_INTERVAL;e.slamUntil=now+.25;e.mode='walking';for(const p of targets){const reach=SLAM_RADIUS+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS);if(Math.hypot(p.x-e.x,p.y-e.y)<=reach)enemyHit(run,e,p,random,{stun:1.5})}}
    if(!e.slamWindupUntil)moveEnemy(run,e,dt,random);
-   continue;
+   repelFromShields(run,e);continue;
   }
   if(e.type==='walker'||e.type==='flapper'||e.mode==='lunging')moveEnemy(run,e,dt,random);
   if(e.type==='walker'||e.type==='flapper'){
@@ -124,6 +126,7 @@ export function stepCombat(run,dt,random=Math.random){
   }
   const attacking=e.type==='sleeper'?e.mode==='lunging':now<(e.attackActiveUntil||0);
   if(attacking)for(const p of targets){const reach=enemyRadius(e)+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS);if(Math.abs(e.x-p.x)<=reach&&Math.abs(e.y-p.y)<=reach&&Math.hypot(e.x-p.x,e.y-p.y)<=reach)enemyHit(run,e,p,random,{poison:e.type==='flapper'})}
+  repelFromShields(run,e);
  }
  for(const p of run.players)resolveSwing(run,p);run.failed=run.players.length>0&&run.players.every(p=>p.hp<=0);
 }

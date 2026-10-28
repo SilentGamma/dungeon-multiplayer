@@ -12,6 +12,6 @@ const run=createRun([{id:'a',name:'A',color:'blue'}]);run.enemies=[];run.obstacl
 const sniper=run.players[0];sniper.x=run.startRoom%7+.5;sniper.y=Math.floor(run.startRoom/7)+.5;sniper.vx=.35;sniper.vy=0;
 assert(applyInput(run,'a',{seq:1,holding:true,attack:true}));
 const {x,y}=sniper;for(let i=0;i<30;i++)step(run,1/60);
-assert.equal(sniper.x,x);assert.equal(sniper.y,y);assert(Math.abs(sniper.angle-.36)<1e-8);assert.equal(sniper.attackAngle,sniper.angle);
-assert(applyInput(run,'a',{seq:2,holding:false,attack:false}));assert(!sniper.holding);assert(!sniper.usingAttack);assert(Math.abs(Math.atan2(sniper.vy,sniper.vx)-.36)<1e-8);assert(sniper.attackUntil>run.time);
+assert.equal(sniper.x,x);assert.equal(sniper.y,y);assert(Math.abs(sniper.angle-.288)<1e-8);assert.equal(sniper.attackAngle,sniper.angle);
+assert(applyInput(run,'a',{seq:2,holding:false,attack:false}));assert(!sniper.holding);assert(!sniper.usingAttack);assert(Math.abs(Math.atan2(sniper.vy,sniper.vx)-.288)<1e-8);assert(sniper.attackUntil>run.time);
 console.log('PASS: rectangular Sniper range, 20%-speed held scope, stationary aiming and release direction');

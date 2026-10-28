@@ -1,11 +1,11 @@
 import {generateObstacles,resolveWalls} from './obstacles.mjs';
-import {SIZE,PLAYER_RADIUS} from './world.mjs';
+import {SIZE,PLAYER_RADIUS,SPEED_MULTIPLIER} from './world.mjs';
 export {SIZE} from './world.mjs';
 import {grapple,beginGrapple,startWrestler,updateWrestler,updateGrapples,updateThrows} from './throw.mjs';
 import {roleFor,WIDTH,advanceAim} from './roles.mjs';
 import {prepareRevives,advanceRevives} from './revive.mjs';
 import {refreshEnemyActivity,enterRoom,updateRoomLocks,removeDefeatedEnemies,attack,stepCombat,stepHazards,PLAYER_HP} from './combat.mjs';
-export const ROOM_SIZE=2,SPEED=.72/ROOM_SIZE,RADIUS=PLAYER_RADIUS,AIM_SPEED=3.6;
+export const ROOM_SIZE=2,SPEED=.72/ROOM_SIZE*SPEED_MULTIPLIER,RADIUS=PLAYER_RADIUS,AIM_SPEED=3.6*SPEED_MULTIPLIER;
 export function neighbors(i){const x=i%SIZE,y=Math.floor(i/SIZE);return [y>0?i-SIZE:-1,x<SIZE-1?i+1:-1,y<SIZE-1?i+SIZE:-1,x>0?i-1:-1].filter(n=>n>=0)}
 export function distances(edges,starts){const d=Array(edges.length).fill(Infinity),q=[...starts];for(const n of q)d[n]=0;for(let k=0;k<q.length;k++)for(const n of edges[q[k]])if(d[n]===Infinity){d[n]=d[q[k]]+1;q.push(n)}return d}
 export const MIN_PATH_ROOMS=Object.freeze([5,6,6,7,8]);
@@ -48,7 +48,7 @@ export function collectMap(run,p){if(!run.mapCollected&&Math.hypot(p.x-(run.mapR
 export function createRun(players,random=Math.random,round=1){const dungeon=generateDungeon(random,round);const startRoom=dungeon.startRoom;const run={...dungeon,startRoom,round,tick:0,time:0,failed:false,players:players.map((p,i)=>{const angle=-Math.PI*(.2+random()*.6);return {...p,x:startRoom%SIZE+.5+(players.length>1?Math.cos(i*2*Math.PI/players.length)*.085:0),y:Math.floor(startRoom/SIZE)+.5+(players.length>1?Math.sin(i*2*Math.PI/players.length)*.085:0),vx:Math.cos(angle)*roleFor(p.color).speed*WIDTH,vy:Math.sin(angle)*roleFor(p.color).speed*WIDTH,angle,holding:false,shielding:false,hp:roleFor(p.color).hp,maxHp:roleFor(p.color).hp,shield:roleFor(p.color).shield,maxShield:roleFor(p.color).shield,invulnerableUntil:.8,arrived:false,inputSeq:0}})};run.enemies=[];run.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);run.lockedRooms=Array(SIZE*SIZE).fill(false);refreshEnemyActivity(run,random);return run}
 export function applyInput(run,id,m){
  const p=run.players.find(p=>p.id===id);if(!p||p.hp<=0||p.arrived||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||run.failed||!Number.isSafeInteger(m.seq)||m.seq<=p.inputSeq||typeof m.holding!=='boolean')return false;
- p.inputSeq=m.seq;if(p.reviving){if(m.holding&&m.attack!==true){p.reviveAvoidTarget=p.reviving;p.reviving=null;p.shielding=false}else{p.holding=false;p.shielding=false;return true}}
+ if(m.holding&&m.attack===true&&!p.usingAttack&&!p.wrestlerState&&run.time<(p.nextAttack||0))return false;p.inputSeq=m.seq;if(p.reviving){if(m.holding&&m.attack!==true){p.reviveAvoidTarget=p.reviving;p.reviving=null;p.shielding=false}else{p.holding=false;p.shielding=false;return true}}
  if(p.color==='teal'){
   if(p.wrestlerState){if(!m.holding||m.attack!==true){p.wrestlerReleased=true;if(m.cancel===true)p.wrestlerCancel=true}return true}
   if(m.holding&&m.attack===true){startWrestler(run,p);return true}
