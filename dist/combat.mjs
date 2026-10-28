@@ -59,9 +59,9 @@ function jokerGambit(run,p,random){
  else if(outcome===4)p.airUntil=now+5;
  else p.finalDrawUntil=now+1;
 }
-function finalDraw(run,p){if(!p.finalDrawUntil||p.hp<=0||p.arrived)return;const now=run.time||0;if(now>p.finalDrawUntil){p.finalDrawUntil=0;return}const targets=[...run.players.filter(q=>q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)),...(run.enemies||[]).filter(e=>e.hp>0)].filter(q=>clearPath(run,p,q)).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y));const target=targets[0];if(target){if(run.players.includes(target))down(target);else target.hp=0;p.finalDrawUntil=0}}
+function finalDraw(run,p){if(!p.finalDrawUntil||p.hp<=0||p.arrived||p.throwing||p.grabbedBy)return;const now=run.time||0;if(now>p.finalDrawUntil){p.finalDrawUntil=0;return}const targets=[...run.players.filter(q=>q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)),...(run.enemies||[]).filter(e=>e.hp>0)].filter(q=>clearPath(run,p,q)).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y));const target=targets[0];if(target){if(run.players.includes(target))down(target);else target.hp=0;p.finalDrawUntil=0}}
 export function attack(run,p){
- const now=run.time||0,role=roleFor(p.color);if(p.hp<=0||p.arrived||p.reviving||now<(p.stunUntil||0)||now<(p.nextAttack||0))return false;
+ const now=run.time||0,role=roleFor(p.color);if(p.hp<=0||p.arrived||p.reviving||p.throwing||p.grabbedBy||now<(p.stunUntil||0)||now<(p.nextAttack||0))return false;
  p.nextAttack=now+role.cooldown;p.attackUntil=now+.24;p.invulnerableUntil=Math.max(p.invulnerableUntil||0,now+ATTACK_IFRAMES);p.attackGraceUntil=now+ATTACK_IFRAMES;
  let enemies=(run.enemies||[]).filter(e=>e.hp>0&&clearPath(run,p,e)&&inAttack(p,e)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));if(role.single)enemies=enemies.slice(0,1);
  let damage=role.damage;if(p.color==='pink'&&now>=(p.lungeReadyAt||15)){damage=12;p.lungeReadyAt=now+15;p.lungeUntil=now+.2;p.lungeAngle=p.angle;p.invulnerableUntil=Math.max(p.invulnerableUntil,now+.2)}
