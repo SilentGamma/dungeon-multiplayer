@@ -1,3 +1,4 @@
+import {attachInputSockets} from './input-socket.mjs';
 import {createDiagnostics} from './diagnostics.mjs';
 import http from 'node:http';
 import {randomBytes,randomInt} from 'node:crypto';
@@ -37,6 +38,7 @@ export function createGameServer({onSessionCreated}={}){
    if(url.pathname==='/api/input')return reply(res,ok?200:409,{ok});publish(auth.code,true);return reply(res,ok?200:409,{ok,state:fullFor(room,auth.id)});
   }catch(error){return reply(res,400,{error:error.message})}
  });
+ attachInputSockets(server,{credentials,rooms,diagnostics});
  let last=performance.now(),lastBroadcast=last;const timer=setInterval(()=>{const now=performance.now(),dt=(now-last)/1000;last=now;for(const [id,room] of rooms){const before=room.phase;room.tick(dt);if(before!==room.phase&&room.phase==='completed')publish(id,true);if(room.closed&&!room._finishedAt)room._finishedAt=now;if(room._finishedAt&&now-room._finishedAt>30000){for(const res of streams.get(id)||[])res.end();streams.delete(id);rooms.delete(id);for(const [key,auth] of credentials)if(auth.code===id)credentials.delete(key)}}if(now-lastBroadcast>=100){for(const id of streams.keys()){const room=rooms.get(id);if(room?.phase==='playing'||room?.phase==='ended')publish(id)}lastBroadcast=now}diagnostics.observe(now,dt*1000,performance.now()-now)},1000/60);
  server.on('close',()=>{clearInterval(timer);for(const group of streams.values())for(const res of group)res.end()});
  return server;

@@ -12,7 +12,7 @@ const scale=Math.min(900/1.12,700/.97);
 const settle=()=>{for(let i=0;i<90;i++){now+=1000/30;frame(now)}};
 const cameraX=()=> (450-cameraTranslation.x)/scale;
 const cameraY=()=> (350-cameraTranslation.y)/scale;
-next.players[0].x=1.2;next.players[0].y=2.3;next.enemies=[];next.lockedRooms.fill(false);view.set(structuredClone(next));settle();
+next.players[0].vx=0;next.players[0].vy=0;next.players[0].x=1.2;next.players[0].y=2.3;next.enemies=[];next.lockedRooms.fill(false);view.set(structuredClone(next));settle();
 assert(Math.abs(cameraX()-1.2)<.001&&Math.abs(cameraY()-2.3)<.001,'safe-room camera follows the player');
 next.players[0].x=2.1;next.players[0].y=2.2;view.set(structuredClone(next));settle();
 assert(Math.abs(cameraX()-2.1)<.001,'camera follows across safe-room doorways');

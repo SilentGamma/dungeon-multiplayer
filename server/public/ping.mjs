@@ -7,7 +7,7 @@ export function pingSummary(samples, now) {
   const spike=last.ms>=250 && last.ms>=baseline+100;
   return {recent,peak:Math.max(...recent.map(s=>s.ms)),spike};
 }
-export function createPingMonitor(element,serverElement=null) {
+export function createPingMonitor(element,serverElement=null,{probe=null}={}) {
   let stopped=false, timer=null, timeout=null, pending=null, samples=[], spikeUntil=0;
   function show(text,state){element.textContent=text;element.dataset.state=state}
   async function measure(){
@@ -17,9 +17,8 @@ export function createPingMonitor(element,serverElement=null) {
     const waiting=setTimeout(()=>{if(!stopped&&pending===controller)show('Ping: waiting…','slow')},2000);
     timeout=setTimeout(()=>controller.abort(),5000);
     try {
-      const response=await fetch('/health',{cache:'no-store',signal:controller.signal});
-      if(!response.ok)throw Error('Ping failed');
-      const data=await response.json();
+      let data;if(probe)data=await probe(controller.signal);else{const response=await fetch('/health',{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error('Ping failed');data=await response.json()}
+      if(stopped||controller.signal.aborted)return;
       const now=performance.now(),ms=Math.round(now-start);
       if(serverElement&&data.diagnostics){const d=data.diagnostics;serverElement.textContent=`Server delay: ${d.tickDelayPeakMs} ms peak · CPU: ${d.cpuCorePercent===null?'measuring':d.cpuCorePercent+'% of a core'}`;}
       samples.push({time:now,ms});
