@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createRun,applyInput,step,AIM_SPEED} from '../dist/dungeon.mjs';
+import {inAttack,WIDTH,advanceAim} from '../dist/roles.mjs';
+const p={color:'blue',x:0,y:0,angle:0};
+assert(inAttack(p,{x:10.79*WIDTH,y:.49*WIDTH}));
+assert(!inAttack(p,{x:10.81*WIDTH,y:0}));
+assert(!inAttack(p,{x:5*WIDTH,y:.51*WIDTH}));
+assert(!inAttack(p,{x:-.01,y:0}));
+advanceAim({},p,1,AIM_SPEED);assert.equal(p.angle,AIM_SPEED);
+p.angle=0;p.usingAttack=true;advanceAim({},p,1,AIM_SPEED);assert.equal(p.angle,AIM_SPEED*.5);
+const run=createRun([{id:'a',name:'A',color:'blue'}]);run.enemies=[];run.obstacles=[];
+const sniper=run.players[0];sniper.x=run.startRoom%7+.5;sniper.y=Math.floor(run.startRoom/7)+.5;sniper.vx=.35;sniper.vy=0;
+assert(applyInput(run,'a',{seq:1,holding:true,attack:true}));
+const {x,y}=sniper;for(let i=0;i<30;i++)step(run,1/60);
+assert.equal(sniper.x,x);assert.equal(sniper.y,y);assert(Math.abs(sniper.angle-.9)<1e-8);assert.equal(sniper.attackAngle,sniper.angle);
+assert(applyInput(run,'a',{seq:2,holding:false,attack:false}));assert(!sniper.holding);assert(!sniper.usingAttack);assert(Math.abs(Math.atan2(sniper.vy,sniper.vx)-.9)<1e-8);assert(sniper.attackUntil>run.time);
+console.log('PASS: rectangular Sniper range, half-speed held scope, stationary aiming and release direction');
