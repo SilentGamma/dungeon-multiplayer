@@ -2,7 +2,7 @@
 
 Keys remain hidden until a teammate physically enters their key room. The entered-room bit persists for the dungeon, matching the shared spawn behavior of enemy encounters. Entering still locks the room, and collecting the key still opens it for everyone. Sending a pot through a doorway does not activate an encounter or reveal a key.
 
-After map collection, the blinking yellow compass points directly at the goal room's center. It does not compute a route or point toward a doorway, so approaching a door cannot reverse the pointer. The compass disappears for downed or arrived players, as before.
+After map collection, the blinking yellow compass points directly at the goal room's center. It does not compute a route or point toward a doorway, so approaching a door cannot reverse the pointer. It is drawn as an overlay outside room/fog clipping, keeping it visible beside walls. The compass disappears for downed or arrived players, as before.
 
 Normal rooms can generate 0–4 pots, including start and goal rooms. Placement avoids players, map and key pickups, goal circles, obstacles and room boundaries. The large Warden arena is treated as one logical room for its 0–4-pot budget; its start room has its own budget.
 
