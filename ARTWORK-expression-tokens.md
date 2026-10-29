@@ -1,0 +1,15 @@
+# Expression-first player tokens
+
+Generated with the built-in image editing tool; original portraits are unchanged. Final game assets are `server/public/brawler-token-v4.webp`, `chef-token-v4.webp`, and `wrestler-token-v4.webp`, 128×128 lossless WebP with alpha. These replace v3 via role-art.mjs. Inputs were the corresponding v3 tokens.
+
+## brawler
+
+Use case: precise-object-edit. Edit target is the supplied player token, not the portrait. Create a matching tiny in-game circular token. Remove all face contours: no cheek, jaw, head silhouette, nose, ears, hair outline, facial anatomy lines, beard or moustache. A flat filled role-color circular disk with a thick near-black outer rim is the ONLY head shape. Expression floats directly on the disk: very bold brows, large simple eyes and a large expressive mouth. Flat two-color graphic, absolutely no shading, lighting, gradients or small details. High contrast, legible at 32px. Centered square canvas, circle fills 94% width, transparent outside circle. Preserve strict monochrome role palette. No text. coral orange #ff8c66, near-black ink. Female Brawler: fierce determined brows angled inward, wide shouting mouth with single flat teeth block. No hair, no face contour.
+
+## chef
+
+Use case: precise-object-edit. Edit target is the supplied player token, not the portrait. Create a matching tiny in-game circular token. Remove all face contours: no cheek, jaw, head silhouette, nose, ears, hair outline, facial anatomy lines, beard or moustache. A flat filled role-color circular disk with a thick near-black outer rim is the ONLY head shape. Expression floats directly on the disk: very bold brows, large simple eyes and a large expressive mouth. Flat two-color graphic, absolutely no shading, lighting, gradients or small details. High contrast, legible at 32px. Centered square canvas, circle fills 94% width, transparent outside circle. Preserve strict monochrome role palette. No text. mint green #99efb1, near-black green ink. Chef: happy confident smiling eyes, huge open joyous smile. KEEP the signature puffy chef hat at top with a simple thick outline and mint fill. No moustache or face outline. Hat and expression are the only features.
+
+## wrestler
+
+Use case: precise-object-edit. Edit target is the supplied player token, not the portrait. Create a matching tiny in-game circular token. Remove all face contours: no cheek, jaw, head silhouette, nose, ears, hair outline, facial anatomy lines, beard or moustache. A flat filled role-color circular disk with a thick near-black outer rim is the ONLY head shape. Expression floats directly on the disk: very bold brows, large simple eyes and a large expressive mouth. Flat two-color graphic, absolutely no shading, lighting, gradients or small details. High contrast, legible at 32px. Centered square canvas, circle fills 94% width, transparent outside circle. Preserve strict monochrome role palette. No text. bright teal #63e6df, near-black teal ink. Wrestler: bold fierce squared brows and very wide gritted-teeth grin rendered as one block, no tiny tooth divisions. No mohawk, hair, beard, face contour or nose.

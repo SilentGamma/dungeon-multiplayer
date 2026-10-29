@@ -2,11 +2,10 @@ import {ROLE_ART,preloadTokens} from './role-art.mjs';
 import {ROLES,roleFor} from './roles.mjs';
 import {colorFor,colorName} from './colors.mjs';
 const roles=Object.keys(ROLES);
-const descriptions={coral:'A close-range fighter. Raise your shield just before a hit to counterattack.',purple:'Precise attacks heal nearby teammates when they connect.',pink:'Fast movement with a powerful lunge that charges over time.',gold:'A sturdy defender who protects nearby teammates while shielding.',green:'Poison enemies and heal teammates caught in your attack.',lime:'An unpredictable fighter whose shield cycles through six Gambit outcomes.'};
 export function createRoleCarousel(root,onChoose){
  const el=id=>root.querySelector('#'+id);let players=[],me=null,index=0,pending=false;
  function draw(){const color=roles[index],role=roleFor(color),mine=players.find(p=>p.id===me),owner=players.find(p=>p.color===color&&p.id!==me),selected=mine?.color===color;
-  el('role-name').textContent=role.name;el('role-color').textContent=colorName(color)+' · '+role.speedClass;el('role-description').textContent=role.description||descriptions[color]||'';
+  el('role-name').textContent=role.name;el('role-color').textContent=colorName(color)+' · '+role.speedClass;
   el('role-stage').style.setProperty('--role-color',colorFor(color));el('role-avatar').style.backgroundColor=colorFor(color);const art=ROLE_ART[color],avatar=el('role-avatar');avatar.className='role-avatar'+(art?' has-portrait':'');avatar.style.backgroundImage=art?'url('+art.portrait+')':'';el('role-counter').textContent=`${index+1} / ${roles.length}`;
   el('role-health').textContent=role.hp;el('role-shield').textContent=role.shield;el('role-damage').textContent=role.damage;el('role-cooldown').textContent=role.cooldown+'s';
   el('role-status').textContent=owner?'Taken by '+owner.name:selected?'Your selected role':'Available';

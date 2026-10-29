@@ -1,9 +1,9 @@
 // Display size only; authoritative movement and collision radii are unchanged.
 export const PLAYER_VISUAL_RADIUS=.026;
 export const ROLE_ART=Object.freeze({
- coral:{name:'Brawler',portrait:'/brawler-portrait-v4.webp',token:'/brawler-token-v3.webp'},
- green:{name:'Chef',portrait:'/chef-portrait-v4.webp',token:'/chef-token-v3.webp'},
- teal:{name:'Wrestler',portrait:'/wrestler-portrait-v3.webp',token:'/wrestler-token-v3.webp'},
+ coral:{name:'Brawler',portrait:'/brawler-portrait-v4.webp',token:'/brawler-token-v4.webp'},
+ green:{name:'Chef',portrait:'/chef-portrait-v4.webp',token:'/chef-token-v4.webp'},
+ teal:{name:'Wrestler',portrait:'/wrestler-portrait-v3.webp',token:'/wrestler-token-v4.webp'},
  gold:{name:'Brute',portrait:'/brute-portrait-v3.webp',token:'/brute-token-v1.webp'},
  blue:{name:'Sniper',portrait:'/sniper-portrait-v3.webp',token:'/sniper-token-v3.webp'},
  purple:{name:'Perfumer',portrait:'/perfumer-portrait-v1.webp',token:'/perfumer-token-v1.webp'},
