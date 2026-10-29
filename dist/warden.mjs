@@ -1,4 +1,4 @@
-import {enemyFor,scaledEnemyHealth} from './enemies.mjs';
+import {enemyFor,scaledEnemyHealth,FLAPPER_TURN_INTERVAL} from './enemies.mjs';
 import {damagePlayer,SHIELD_RADIUS,HIT_COOLDOWN} from './combat.mjs';
 import {PLAYER_RADIUS,SIZE} from './world.mjs';
 import {inArena,tileOf} from './arena.mjs';
@@ -10,7 +10,7 @@ export function stepWarden(run,dt){
  if(!run.bossActive)return;
  if(!boss.throwing&&!boss.grabbedBy&&run.time>=(boss.stunUntil||0)){
   if(run.time>=boss.nextSpawn){boss.nextSpawn=run.time+15;const count=run.enemies.filter(e=>e.type==='flapper'&&e.hp>0).length;
-   for(let i=0;i<Math.min(2,6-count);i++){const spec=enemyFor('flapper'),a=(run.spawnSerial||0)*2.4+i*Math.PI;const x=Math.max(1.1,Math.min(4.9,boss.x+Math.cos(a)*.2)),y=Math.max(1.1,Math.min(4.9,boss.y+Math.sin(a)*.2));run.enemies.push({id:'warden-flapper-'+(run.spawnSerial=(run.spawnSerial||0)+1),type:'flapper',x,y,room:Math.floor(y)*SIZE+Math.floor(x),vx:Math.cos(a)*spec.speed,vy:Math.sin(a)*spec.speed,hp:scaledEnemyHealth('flapper',run.teamSize),maxHp:scaledEnemyHealth('flapper',run.teamSize),mode:'walking',active:true,nextDirectionAt:run.time+2,directionStep:i})}
+   for(let i=0;i<Math.min(2,6-count);i++){const spec=enemyFor('flapper'),a=(run.spawnSerial||0)*2.4+i*Math.PI;const x=Math.max(1.1,Math.min(4.9,boss.x+Math.cos(a)*.2)),y=Math.max(1.1,Math.min(4.9,boss.y+Math.sin(a)*.2));run.enemies.push({id:'warden-flapper-'+(run.spawnSerial=(run.spawnSerial||0)+1),type:'flapper',x,y,room:Math.floor(y)*SIZE+Math.floor(x),vx:Math.cos(a)*spec.speed,vy:Math.sin(a)*spec.speed,hp:scaledEnemyHealth('flapper',run.teamSize),maxHp:scaledEnemyHealth('flapper',run.teamSize),mode:'walking',active:true,nextDirectionAt:run.time+FLAPPER_TURN_INTERVAL,directionStep:i})}
   }
   if(run.time>=boss.nextBlast){boss.nextBlast=run.time+8;const offset=(boss.blastStep++%2)*Math.PI/4;
    for(let i=0;i<4;i++){const a=offset+i*Math.PI/2;run.projectiles.push({id:'blast-'+(run.blastSerial=(run.blastSerial||0)+1),x:boss.x+Math.cos(a)*.13,y:boss.y+Math.sin(a)*.13,vx:Math.cos(a)*.55,vy:Math.sin(a)*.55,expires:run.time+10})}

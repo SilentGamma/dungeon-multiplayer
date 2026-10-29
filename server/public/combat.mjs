@@ -1,13 +1,34 @@
 import {arenaRoom,inArena,roomBounds,sameArea,tileOf} from './arena.mjs';
 import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
-import {enemyFor,enemyRadius,eligibleEnemies,scaledEnemyHealth,turnFlapper,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
+import {enemyFor,enemyRadius,eligibleEnemies,scaledEnemyHealth,turnFlapper,FLAPPER_TURN_INTERVAL,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
 import {obstaclesInRoom,touchesSquare,resolveWalls,wallBlocksLine} from './obstacles.mjs';
 import {SIZE,PLAYER_RADIUS,SPEED_MULTIPLIER} from './world.mjs';
 import {roleFor,inAttack,WIDTH} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,SHIELD_RADIUS=.075,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
 export const roomOf=p=>Math.min(SIZE-1,Math.max(0,Math.floor(p.y)))*SIZE+Math.min(SIZE-1,Math.max(0,Math.floor(p.x)));
 export function isEnemyRoom(run,room){return room!==run.goal&&room!==run.startRoom&&run.edges[room]?.length>0&&(run.enemyRooms?!!run.enemyRooms[room]:((room%SIZE+Math.floor(room/SIZE))%2===1))}
-export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){const enemies=[];for(let room=0;room<SIZE*SIZE;room++){if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;const roll=random(),count=roll<.6?2:roll<.82?3:roll<.94?4:5;for(let i=0;i<count;i++){const pool=eligibleEnemies(run.round||1),type=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))],spec=enemyFor(type),angle=random()*Math.PI*2;let x,y;for(let j=0;j<30;j++){const dx=fromRoom===null?0:(room%SIZE)-(fromRoom%SIZE),dy=fromRoom===null?0:Math.floor(room/SIZE)-Math.floor(fromRoom/SIZE);x=room%SIZE+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/SIZE)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)&&!obstaclesInRoom(run,room).some(o=>touchesSquare({x,y},spec.radius+.015,o)))break}enemies.push({id:`${room}-${i}`,room,type,x,y,vx:Math.cos(angle)*spec.speed,vy:Math.sin(angle)*spec.speed,hp:scaledEnemyHealth(type,run.teamSize??run.players.filter(p=>!p.deceased).length),maxHp:scaledEnemyHealth(type,run.teamSize??run.players.filter(p=>!p.deceased).length),directionStep:i%5,nextDirectionAt:(run.time||0)+2,mode:type==='sleeper'?'sleeping':'walking',nextSlam:(run.time||0)+SLAM_INTERVAL,lungeUntil:0,nextLunge:0,hitUntil:0})}}return enemies}
+export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){
+ const enemies=[];
+ for(let room=0;room<SIZE*SIZE;room++){
+  if((onlyRoom!==null&&room!==onlyRoom)||!isEnemyRoom(run,room))continue;
+  // Room budgets count encounter slots; a Flapper pair shares one slot.
+  const roll=random(),slots=roll<.6?2:roll<.82?3:roll<.94?4:5,pool=eligibleEnemies(run.round||1);
+  for(let slot=0;slot<slots;slot++){
+   const type=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))],spec=enemyFor(type);
+   for(let member=0;member<(type==='flapper'?2:1);member++){
+    const angle=random()*Math.PI*2;let x,y;
+    for(let j=0;j<30;j++){
+     const dx=fromRoom===null?0:(room%SIZE)-(fromRoom%SIZE),dy=fromRoom===null?0:Math.floor(room/SIZE)-Math.floor(fromRoom/SIZE);
+     x=room%SIZE+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/SIZE)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);
+     if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)&&!obstaclesInRoom(run,room).some(o=>touchesSquare({x,y},spec.radius+.015,o)))break;
+    }
+    const hp=scaledEnemyHealth(type,run.teamSize??run.players.filter(p=>!p.deceased).length);
+    enemies.push({id:`${room}-${slot}${member?'-pair':''}`,spawnSlot:slot,room,type,x,y,vx:Math.cos(angle)*spec.speed,vy:Math.sin(angle)*spec.speed,hp,maxHp:hp,directionStep:(slot+member)%5,nextDirectionAt:(run.time||0)+FLAPPER_TURN_INTERVAL,mode:type==='sleeper'?'sleeping':'walking',nextSlam:(run.time||0)+SLAM_INTERVAL,lungeUntil:0,nextLunge:0,hitUntil:0});
+   }
+  }
+ }
+ return enemies;
+}
 // Derived room index is kept outside the networked game state.
 const roomIndexes=new WeakMap();
 export function enemiesInRoom(run,room){
