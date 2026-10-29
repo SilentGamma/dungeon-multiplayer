@@ -1,3 +1,4 @@
+import {collectKey,mapReady} from './keys.mjs';
 import {bossLayout,inArena} from './arena.mjs';
 import {createWarden,stepWarden} from './warden.mjs';
 import {doorKey,entrances,passable} from './doors.mjs';
@@ -35,20 +36,35 @@ export function generateDungeon(random=Math.random,round=1){
   }
   if(branches<3)continue;
   const doors={};for(const room of used)for(const n of edges[room])if(n>room){const doorRoll=random(),kind=doorRoll<.55?0:doorRoll<.93?1:2;doors[doorKey(room,n)]=kind===0?[]:kind===1?[[.12,.34],[.66,.88]]:[[.06,.24],[.41,.59],[.76,.94]];if(kind===0){const start=.16+random()*.4;doors[doorKey(room,n)]=[[start,start+.28]]}}
-  const goal=path.at(-1),mapOptions=[...used].filter(i=>i!==goal&&i!==startRoom),mapRoom=mapOptions[Math.floor(random()*mapOptions.length)];
+  const goal=path.at(-1);
   // Along each branch, leave one or two safe rooms between encounters.
   const enemyRooms=Array(SIZE*SIZE).fill(false),queue=[[startRoom,-1,0,2+Math.floor(random()*2)]];
   while(queue.length){const [room,parent,distance,nextEncounter]=queue.shift();let d=distance,limit=nextEncounter;if(room!==startRoom&&room!==goal&&d>=limit){enemyRooms[room]=true;d=0;limit=2+Math.floor(random()*2)}for(const n of edges[room])if(n!==parent)queue.push([n,room,d+1,limit]);}
   // The last approach is always an encounter; keep its immediate neighbors safe.
   const finalEncounter=path.at(-2);for(const n of edges[finalEncounter])enemyRooms[n]=false;enemyRooms[finalEncounter]=true;
+  // Key rooms use safe rooms, with a 5:1 preference for branches off the goal path.
+  const pathSet=new Set(path),candidates=[...used].filter(room=>room!==startRoom&&room!==goal&&!enemyRooms[room]);
+  const keyRooms=[],keyCount=Math.min(candidates.length,1+Math.floor(random()*3));
+  for(let i=0;i<keyCount;i++){
+   const total=candidates.reduce((n,room)=>n+(pathSet.has(room)?1:5),0);let choice=random()*total,index=candidates.length-1;
+   for(let j=0;j<candidates.length;j++){choice-=pathSet.has(candidates[j])?1:5;if(choice<0){index=j;break}}
+   keyRooms.push(candidates.splice(index,1)[0]);
+  }
+  // Axis corridors stay clear of the quadrant obstacles, so every key is reachable.
+  const offsets=[[.5,.25],[.75,.5],[.5,.75],[.25,.5]],keyItems=keyRooms.map(room=>{const [x,y]=offsets[Math.floor(random()*offsets.length)];return {room,x:room%SIZE+x,y:Math.floor(room/SIZE)+y}});
+  const distance=distances(edges,[startRoom]),nearKeys=keyRooms.filter(room=>distance[room]<=3);
+  const farRooms=[...used].filter(room=>room!==goal&&room!==startRoom&&distance[room]>3),ordinaryMaps=farRooms.filter(room=>!keyRooms.includes(room));
+  const mapOptions=nearKeys.length?nearKeys:ordinaryMaps.length?ordinaryMaps:farRooms;
+  if(!mapOptions.length)continue;
+  const mapRoom=mapOptions[Math.floor(random()*mapOptions.length)],mapRewardRoom=keyRooms.includes(mapRoom)?mapRoom:null;
   const obstacles=generateObstacles(edges,enemyRooms,startRoom,goal,random);
-  return {edges,doors,startRoom,goal,mapRoom,enemyRooms,obstacles,mapCollected:false,minPathTiles:path.length};
+  return {edges,doors,startRoom,goal,mapRoom,mapRewardRoom,keyRooms,keyItems,collectedKeys:0,enemyRooms,obstacles,mapCollected:false,minPathTiles:path.length};
  }
  throw Error('Could not generate a valid dungeon. Try again.');
 }
 export function routeToGoal(run,start){const previous=Array(run.edges.length).fill(-1),q=[start];previous[start]=start;for(let k=0;k<q.length;k++){const i=q[k];if(i===run.goal)break;for(const n of run.edges[i])if(previous[n]===-1){previous[n]=i;q.push(n)}}if(previous[run.goal]===-1)return [];const path=[run.goal];while(path[0]!==start)path.unshift(previous[path[0]]);return path}
 export function navigationTarget(run,p){if(!run.mapCollected||p.hp<=0||p.arrived)return null;const start=Math.floor(p.y)*SIZE+Math.floor(p.x),path=routeToGoal(run,start);if(!path.length)return null;if(path.length===1)return {x:run.goal%SIZE+.5,y:Math.floor(run.goal/SIZE)+.5,nextRoom:run.goal};const next=path[1],horizontal=Math.abs(next-start)===1;const options=entrances(run,start,next).map(([lo,hi])=>{const t=(lo+hi)/2;return {x:horizontal?(next>start?start%SIZE+1:start%SIZE):start%SIZE+t,y:horizontal?Math.floor(start/SIZE)+t:(next>start?Math.floor(start/SIZE)+1:Math.floor(start/SIZE)),nextRoom:next}});return options.sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0]||null}
-export function collectMap(run,p){if(run.kind==='boss')return false;if(!run.mapCollected&&Math.hypot(p.x-(run.mapRoom%SIZE+.5),p.y-(Math.floor(run.mapRoom/SIZE)+.5))<.11){run.mapCollected=true;run.mapFoundBy=p.name;return true}return false}
+export function collectMap(run,p){collectKey(run,p);if(!mapReady(run))return false;if(!run.mapCollected&&Math.hypot(p.x-(run.mapRoom%SIZE+.5),p.y-(Math.floor(run.mapRoom/SIZE)+.5))<.11){run.mapCollected=true;run.mapFoundBy=p.name;return true}return false}
 export function createRun(players,random=Math.random,round=1){const dungeon=round===6?bossLayout():generateDungeon(random,round);const startRoom=dungeon.startRoom;const run={...dungeon,startRoom,round,teamSize:players.filter(p=>!p.deceased).length,tick:0,time:0,failed:false,players:players.map((p,i)=>{const angle=-Math.PI/2+i*Math.PI/4;return {...p,x:startRoom%SIZE+.5+Math.cos(angle)*.14,y:Math.floor(startRoom/SIZE)+.5+Math.sin(angle)*.14,vx:0,vy:0,awaitingLaunch:true,angle,holding:false,shielding:false,hp:roleFor(p.color).hp,maxHp:roleFor(p.color).hp,shield:roleFor(p.color).shield,maxShield:roleFor(p.color).shield,invulnerableUntil:.8,arrived:false,inputSeq:0}})};run.enemies=round===6?[createWarden(run.teamSize)]:[];if(round===6){run.projectiles=[];run.bossActive=false;run.bossDefeated=false;run.bossHp=run.enemies[0].hp;run.bossMaxHp=run.enemies[0].maxHp}run.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);run.lockedRooms=Array(SIZE*SIZE).fill(false);refreshEnemyActivity(run,random);return run}
 export function applyInput(run,id,m){
  const p=run.players.find(p=>p.id===id);if(!p||p.hp<=0||p.arrived||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||run.failed||!Number.isSafeInteger(m.seq)||m.seq<=p.inputSeq||typeof m.holding!=='boolean')return false;

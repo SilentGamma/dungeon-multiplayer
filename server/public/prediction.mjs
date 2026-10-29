@@ -1,3 +1,4 @@
+import {keyPending} from './keys.mjs';
 import {movePlayer} from './movement.mjs';
 import {roleFor,WIDTH,advanceAim} from './roles.mjs';
 import {AIM_SPEED} from './dungeon.mjs';
@@ -13,7 +14,7 @@ export function createPrediction(id){
    if(locked(sim,p)||p.reviving||p.predictedGoal)continue;
    if(p.wrestlerState==='lunging'&&sim.time>=(p.wrestlerUntil||0)){p.wrestlerState=null;p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0;continue}
    if(p.holding&&p.wrestlerState!=='lunging'){if(!p.usingAttack||p.color==='blue'){advanceAim(sim,p,dt,AIM_SPEED);if(p.usingAttack)p.attackAngle=p.angle}continue}
-   movePlayer(sim,p,dt,{onEnter:(_,to)=>{if(sim.enemyRooms?.[to]&&!sim.spawnedEnemyRooms?.[to]&&sim.lockedRooms)sim.lockedRooms[to]=true},onSubstep:()=>{if(sim.kind!=='boss'&&Math.hypot(p.x-(sim.goal%SIZE+.5),p.y-(Math.floor(sim.goal/SIZE)+.5))<.14){p.predictedGoal=true;p.vx=0;p.vy=0;return true}return false}});
+   movePlayer(sim,p,dt,{onEnter:(_,to)=>{if(((sim.enemyRooms?.[to]&&!sim.spawnedEnemyRooms?.[to])||keyPending(sim,to))&&sim.lockedRooms)sim.lockedRooms[to]=true},onSubstep:()=>{if(sim.kind!=='boss'&&Math.hypot(p.x-(sim.goal%SIZE+.5),p.y-(Math.floor(sim.goal/SIZE)+.5))<.14){p.predictedGoal=true;p.vx=0;p.vy=0;return true}return false}});
   }}
   function apply(m){if(locked(sim,p))return;if(p.awaitingLaunch&&!(p.vx||p.vy))m={...m,attack:false};if(m.holding&&m.attack&&sim.time<(p.nextAttack||0)&&!p.usingAttack)return;
    if(p.reviving){if(m.holding&&!m.attack)p.reviving=null;else return}

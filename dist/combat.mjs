@@ -1,3 +1,4 @@
+import {keyPending} from './keys.mjs';
 import {arenaRoom,inArena,roomBounds,sameArea,tileOf} from './arena.mjs';
 import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
 import {enemyFor,enemyRadius,eligibleEnemies,scaledEnemyHealth,turnFlapper,FLAPPER_TURN_INTERVAL,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
@@ -52,12 +53,14 @@ export function refreshEnemyActivity(run,random=Math.random){
 }
 // Spawn an encounter only on first entry; the approach side selects the opposite spawn zone.
 export function enterRoom(run,fromRoom,toRoom,random=Math.random){
- if(fromRoom===toRoom||!isEnemyRoom(run,toRoom))return false;
+ if(fromRoom===toRoom)return false;
+ if(keyPending(run,toRoom)){run.lockedRooms??=Array(SIZE*SIZE).fill(false);run.lockedRooms[toRoom]=true;return true}
+ if(!isEnemyRoom(run,toRoom))return false;
  run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.lockedRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];
  if(run.spawnedEnemyRooms[toRoom])return false;
  run.spawnedEnemyRooms[toRoom]=true;const enemies=spawnEnemies(run,random,toRoom,fromRoom);run.enemies.push(...enemies);run.lockedRooms[toRoom]=enemies.some(e=>e.hp>0);return true;
 }
-export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<SIZE*SIZE;room++)if(run.lockedRooms[room]&&!enemiesInRoom(run,room).some(e=>e.hp>0))run.lockedRooms[room]=false}
+export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<SIZE*SIZE;room++)if(run.lockedRooms[room]&&!keyPending(run,room)&&!enemiesInRoom(run,room).some(e=>e.hp>0))run.lockedRooms[room]=false}
 function clearPath(run,a,b){
  if(wallBlocksLine(run,a,b))return false;const ar=roomOf(a),br=roomOf(b);if(ar===br)return true;
  if(inArena(run,a)&&inArena(run,b))return true;if(!run.edges[ar]?.includes(br))return false;

@@ -5,7 +5,7 @@ import {ENEMIES,enemyHealthMultiplier,scaledEnemyHealth,turnFlapper} from '../di
 for(let size=1;size<=8;size++){
  assert(Math.abs(enemyHealthMultiplier(size)-(1+.3*Math.floor(size/2)))<1e-10);
  for(const [type,spec] of Object.entries(ENEMIES)){assert.equal(scaledEnemyHealth(type,size),Math.ceil(spec.hp*(1+.3*Math.floor(size/2))));}
- const players=Array.from({length:size},(_,i)=>({id:'p'+i,name:'P'+i,color:'coral'}));const run=createRun(players,Math.random,5);run.edges=Array.from({length:49},()=>[]);run.edges[15]=[14];run.enemyRooms=Array(49).fill(false);run.enemyRooms[15]=true;run.startRoom=14;run.goal=0;run.obstacles=[];
+ const players=Array.from({length:size},(_,i)=>({id:'p'+i,name:'P'+i,color:'coral'}));const run=createRun(players,Math.random,5);run.keyRooms=[];run.keyItems=[];run.collectedKeys=0;run.mapRewardRoom=null;run.edges=Array.from({length:49},()=>[]);run.edges[15]=[14];run.enemyRooms=Array(49).fill(false);run.enemyRooms[15]=true;run.startRoom=14;run.goal=0;run.obstacles=[];
  const enemies=spawnEnemies(run,()=>.5,15,14);assert(new Set(enemies.map(e=>e.spawnSlot)).size>=2&&new Set(enemies.map(e=>e.spawnSlot)).size<=5);for(const e of enemies){assert.equal(e.hp,scaledEnemyHealth(e.type,size));assert.equal(e.maxHp,e.hp);assert.equal(ENEMIES[e.type].damage,{walker:3,sleeper:4,flapper:2,creeper:5}[e.type])}
  run.players.at(-1).deceased=true;for(const e of spawnEnemies(run,()=>.5,15,14))assert.equal(e.hp,scaledEnemyHealth(e.type,size),'difficulty stays fixed for the current dungeon');
 }

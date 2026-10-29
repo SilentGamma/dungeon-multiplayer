@@ -18,7 +18,7 @@ for(let i=0;i<300;i++){
 // Rooms beyond the old 5x5 boundary must permit movement in both axes.
 for(const axis of ['x','y']){
  const r=createRun([{id:'p',name:'P',color:'coral'}]);const p=r.players[0];
- r.edges=Array.from({length:SIZE*SIZE},()=>[]);r.lockedRooms=Array(SIZE*SIZE).fill(false);r.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);r.enemies=[];r.goal=0;r.mapRoom=1;
+ r.keyRooms=[];r.keyItems=[];r.collectedKeys=0;r.mapRewardRoom=null;r.edges=Array.from({length:SIZE*SIZE},()=>[]);r.lockedRooms=Array(SIZE*SIZE).fill(false);r.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);r.enemies=[];r.goal=0;r.mapRoom=1;
  p.x=axis==='x'?4.985:6.5;p.y=axis==='x'?6.5:4.985;p.vx=axis==='x'?.28:0;p.vy=axis==='y'?.28:0;
  const room=Math.floor(p.y)*SIZE+Math.floor(p.x),next=room+(axis==='x'?1:SIZE);r.edges[room].push(next);r.edges[next].push(room);r.doors={[`${room}:${next}`]:[[.2,.8]]};
  for(let i=0;i<15&&Math.floor(p[axis])===4;i++)step(r,1/60);

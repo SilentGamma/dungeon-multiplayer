@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRun,applyInput,step,SIZE} from '../dist/dungeon.mjs';
 import {damagePlayer} from '../dist/combat.mjs';
 import {roleFor} from '../dist/roles.mjs';
-function fixture(){const run=createRun([{id:'p',name:'Wrestler',color:'teal'}]);const p=run.players[0];p.x=1.4;p.y=2.5;p.vx=.42;p.vy=0;p.invulnerableUntil=0;run.edges=Array.from({length:SIZE*SIZE},()=>[]);run.goal=0;run.mapRoom=0;run.enemies=[];run.obstacles=[];run.time=1;return [run,p]}
+function fixture(){const run=createRun([{id:'p',name:'Wrestler',color:'teal'}]);const p=run.players[0];p.x=1.4;p.y=2.5;p.vx=.42;p.vy=0;p.invulnerableUntil=0;run.keyRooms=[];run.keyItems=[];run.collectedKeys=0;run.mapRewardRoom=null;run.edges=Array.from({length:SIZE*SIZE},()=>[]);run.goal=0;run.mapRoom=0;run.enemies=[];run.obstacles=[];run.time=1;return [run,p]}
 const tick=(run,n)=>{for(let i=0;i<n;i++)step(run,1/60,()=>.5)};
 let [run,p]=fixture();
 assert(applyInput(run,p.id,{seq:1,holding:true,attack:true}));assert.equal(p.wrestlerState,'lunging');assert(p.shielding);const x=p.x;
