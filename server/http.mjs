@@ -1,4 +1,4 @@
-import {publicOrigin,renderSeo,robotsText,sitemapXml} from './seo.mjs';
+import {publicOrigin,renderSeo,robotsText,sitemapXml,legacyRedirect} from './seo.mjs';
 import {attachInputSockets} from './input-socket.mjs';
 import {createDiagnostics} from './diagnostics.mjs';
 import http from 'node:http';
@@ -22,6 +22,7 @@ export function createGameServer({onSessionCreated}={}){
  const server=http.createServer(async(req,res)=>{
   try{
    const url=new URL(req.url,'http://localhost');
+   const redirect=(req.method==='GET'||req.method==='HEAD')&&legacyRedirect(req.headers.host,url.pathname,url.search);if(redirect){res.writeHead(301,{'Location':redirect,'Cache-Control':'public, max-age=300'});return res.end()}
    if((req.method==='GET'||req.method==='HEAD')&&(url.pathname==='/robots.txt'||url.pathname==='/sitemap.xml')){const robots=url.pathname==='/robots.txt';res.writeHead(200,{'Content-Type':robots?'text/plain; charset=utf-8':'application/xml; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(robots?robotsText():sitemapXml())}
 if(req.method==='GET'&&url.pathname==='/health')return reply(res,200,{ok:true,diagnostics:diagnostics.snapshot()});if(req.method==='GET'&&url.pathname==='/api/rooms')return reply(res,200,{rooms:[...rooms.values()].filter(r=>r.visibility==='public'&&r.phase==='lobby'&&!r.closed&&r.players.length<8).map(r=>({code:r.code,name:r.players[0]?.name+'’s lobby',count:r.players.length}))});
    const key=(req.headers.authorization||'').replace(/^Bearer /,'');const auth=credentials.get(key);

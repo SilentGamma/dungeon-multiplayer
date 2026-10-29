@@ -1,8 +1,13 @@
 # Larp Dungeon URL and search metadata
 
-The hosting address has NOT been changed by this source update. Render access is required to inspect/rename the existing service and verify the actual assigned hostname. Prefer the shortest available branded Render slug, such as larp or larp-dungeon. Do not create a second paid service or purchase a domain. larp.play requires ownership and DNS configuration; it is not registered or claimed here. Do not rename render.yaml speculatively because that can identify a different Blueprint service.
+The primary game URL is https://larpdungeon.onrender.com . Render assigned the old service a fixed slug; changing its display name did not change that slug. A new free service was created from the same GitHub main branch in the same Oregon region:
 
-SEO is ready for the confirmed hostname: publicOrigin selects PUBLIC_SITE_URL, then RENDER_EXTERNAL_URL, then the existing https://dungeon-multiplayer.onrender.com fallback. Only HTTPS origins without credentials are accepted. Canonical URL, Open Graph URL/image, JSON-LD and sitemap are server-rendered from that origin; request Host is never trusted. After verifying a custom domain is live, set PUBLIC_SITE_URL to its origin and deploy. Verify all metadata and sitemap resolve to the same live host.
+- Primary: `srv-dbhn89tg1s2s73agp4f0`, name/slug `larpdungeon`.
+- Legacy: `srv-dbgb2k6gekts738diu30`, name/slug `dungeon-multiplayer`.
+
+The legacy home/index, robots and sitemap URLs redirect with HTTP 301 to the primary address. API, socket, asset and health routes are not redirected. New visitors use the new server for all lobby sessions; the deployment remains free. The existing service is retained to keep old links forwarding. No custom domain was purchased.
+
+SEO is ready for the confirmed hostname: publicOrigin selects PUBLIC_SITE_URL, then RENDER_EXTERNAL_URL, then the https://larpdungeon.onrender.com fallback. Only HTTPS origins without credentials are accepted. Canonical URL, Open Graph URL/image, JSON-LD and sitemap are server-rendered from that origin; request Host is never trusted. After verifying a custom domain is live, set PUBLIC_SITE_URL to its origin and deploy. Verify all metadata and sitemap resolve to the same live host.
 
 Added descriptive title/meta description, Open Graph/Twitter preview with 1200×630 PNG, SVG favicon, VideoGame structured data, robots.txt and a root-only sitemap.xml. Transient lobbies are not listed in the sitemap. API/health JSON carries noindex; robots rules are discovery guidance, not access controls. No hidden keyword text, invented ratings or added descriptive menu copy. No guarantee of search ranking or immediate indexing.
 

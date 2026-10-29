@@ -1,17 +1,24 @@
+import http from 'node:http';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {publicOrigin} from './seo.mjs';
+import {publicOrigin,legacyRedirect} from './seo.mjs';
 import {createGameServer} from './http.mjs';
-assert.equal(publicOrigin({}),'https://dungeon-multiplayer.onrender.com');
+assert.equal(publicOrigin({}),'https://larpdungeon.onrender.com');
 assert.equal(publicOrigin({RENDER_EXTERNAL_URL:'https://larp-dungeon.onrender.com'}),'https://larp-dungeon.onrender.com');
 assert.equal(publicOrigin({PUBLIC_SITE_URL:'https://larp.play/path?test=1',RENDER_EXTERNAL_URL:'https://old.onrender.com'}),'https://larp.play');
-for(const bad of ['javascript:alert(1)','http://insecure.example','https://user:password@example.com','not a url'])assert.equal(publicOrigin({PUBLIC_SITE_URL:bad}),'https://dungeon-multiplayer.onrender.com');
+for(const bad of ['javascript:alert(1)','http://insecure.example','https://user:password@example.com','not a url'])assert.equal(publicOrigin({PUBLIC_SITE_URL:bad}),'https://larpdungeon.onrender.com');
+assert.equal(legacyRedirect('dungeon-multiplayer.onrender.com','/','?test=1',{}),'https://larpdungeon.onrender.com/?test=1');
+for(const pathname of ['/api/rooms','/api/events','/health','/app.mjs'])assert.equal(legacyRedirect('dungeon-multiplayer.onrender.com',pathname,'',{}),null);
+assert.equal(legacyRedirect('larpdungeon.onrender.com','/','',{}),null);
 const saved=process.env.PUBLIC_SITE_URL;process.env.PUBLIC_SITE_URL='https://larp.play';
 const server=createGameServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}`;
 try{
  const response=await fetch(base+'/');const html=await response.text();assert.equal(response.status,200);assert(!html.includes('__SITE_ORIGIN__'));assert(html.includes('<title>Larp Dungeon | Free Multiplayer Roguelite Game</title>'));assert(html.includes('name="description"'));assert(html.includes('rel="canonical" href="https://larp.play/"'));assert(html.includes('https://larp.play/larp-dungeon-social-v1.png'));assert(html.includes('id="dungeon"'));assert(!response.headers.get('x-robots-tag'));
  const structured=JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(structured['@type'],'VideoGame');assert.equal(structured.name,'Larp Dungeon');assert.equal(structured.numberOfPlayers.maxValue,8);assert.equal(structured.isAccessibleForFree,true);assert(!structured.aggregateRating);
  const hostile=await (await fetch(base+'/',{headers:{host:'attacker.invalid'}})).text();assert(hostile.includes('href="https://larp.play/"'));assert(!hostile.includes('https://attacker.invalid'));
+ const legacyRequest=pathname=>new Promise((resolve,reject)=>http.get(base+pathname,{headers:{Host:'dungeon-multiplayer.onrender.com'}},response=>{response.resume();resolve({status:response.statusCode,headers:response.headers})}).on('error',reject));
+ const old=await legacyRequest('/');assert.equal(old.status,301);assert.equal(old.headers.location,'https://larp.play/');
+ const api=await legacyRequest('/api/rooms');assert.equal(api.status,200);
  const robots=await fetch(base+'/robots.txt');assert(robots.headers.get('content-type').startsWith('text/plain'));assert((await robots.text()).includes('Sitemap: https://larp.play/sitemap.xml'));
  const sitemap=await fetch(base+'/sitemap.xml');assert(sitemap.headers.get('content-type').startsWith('application/xml'));assert((await sitemap.text()).includes('<loc>https://larp.play/</loc>'));
  for(const url of ['/favicon.svg','/larp-dungeon-social-v1.png']){const asset=await fetch(base+url);assert.equal(asset.status,200);assert(asset.headers.get('content-type').startsWith('image/'));assert.equal((await fetch(base+url,{method:'HEAD'})).status,200)}
