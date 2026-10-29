@@ -15,7 +15,7 @@ Assets are saved in `server/public/` in this repository. Portraits are 512 × 51
 | brute | gold #ffcf78 | brute-portrait-v3.webp | brute-token-v1.webp |
 | sniper | blue #9ebdff | sniper-portrait-v3.webp | sniper-token-v3.webp |
 | perfumer | purple #d8b1ff | perfumer-portrait-v1.webp | perfumer-token-v1.webp |
-| dancer | pink #fca1bd | dancer-portrait-v3.webp | dancer-token-v1.webp |
+| dancer | pink #fca1bd | dancer-portrait-v4.webp | dancer-token-v1.webp |
 
 ## Original portrait prompts (v1)
 
@@ -84,3 +84,7 @@ This revision supersedes the natural-color palette: every selected portrait and 
 ## Perfumer portrait restored
 
 At the user’s direction, Perfumer uses her first monochrome purple portrait (perfumer-portrait-v1.webp), before the face and fringe edits. This supersedes the eye-over-hair revision for Perfumer only. The rest of the monochrome cast revision remains selected.
+
+## Dancer straight bob
+
+Dancer now has a straight chin-length blunt bob with both eyes visible, retaining the monochrome pink palette and raised-hand pose. [Final built-in generation prompt and saved asset path](ARTWORK-dancer-bob-prompt.md).

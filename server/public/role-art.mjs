@@ -7,7 +7,7 @@ export const ROLE_ART=Object.freeze({
  gold:{name:'Brute',portrait:'/brute-portrait-v3.webp',token:'/brute-token-v1.webp'},
  blue:{name:'Sniper',portrait:'/sniper-portrait-v3.webp',token:'/sniper-token-v3.webp'},
  purple:{name:'Perfumer',portrait:'/perfumer-portrait-v1.webp',token:'/perfumer-token-v1.webp'},
- pink:{name:'Dancer',portrait:'/dancer-portrait-v3.webp',token:'/dancer-token-v1.webp'},
+ pink:{name:'Dancer',portrait:'/dancer-portrait-v4.webp',token:'/dancer-token-v1.webp'},
  lime:{name:'Joker',portrait:'/joker-portrait-v4.webp',token:'/joker-token-v2.webp'}
 });
 const tokens=new Map();
