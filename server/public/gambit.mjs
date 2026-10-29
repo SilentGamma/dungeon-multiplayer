@@ -1,0 +1,2 @@
+export const GAMBIT_DELAY=.2;
+export const GAMBIT_NAMES=Object.freeze(['KAMIKAZE','DISAPPEAR','FLOWER STORM','SHOCK','AIR RELEASE','FINAL DRAW']);

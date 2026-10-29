@@ -1,3 +1,4 @@
+import {GAMBIT_DELAY,GAMBIT_NAMES} from './gambit.mjs';
 import {POT_RADIUS,potsInArea,launchPot,canThrowPot} from './pots.mjs';
 import {keyPending,enterKeyRoom} from './keys.mjs';
 import {arenaRoom,inArena,roomBounds,sameArea,tileOf} from './arena.mjs';
@@ -78,8 +79,17 @@ export function damagePlayer(run,p,damage,random=Math.random){
  if(p.shielding&&p.shield>0){p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;if(!p.shield){p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
  p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p);return true;
 }
-function jokerGambit(run,p,random){
- const now=run.time||0,outcome=Math.floor(random()*6);p.gambit=outcome;p.gambitUntil=now+1;
+function jokerGambit(run,p){
+ const now=run.time||0;if(p.gambitPending)return;
+ const id=`${run.round||1}:${run.gambitSerial=(run.gambitSerial||0)+1}`;
+ p.gambitPending={id,revealAt:now+GAMBIT_DELAY};
+ run.gambitCue={id,startedAt:now,revealAt:now+GAMBIT_DELAY,outcome:null,expiresAt:now+1.4};
+}
+function resolveGambit(run,p,random){
+ const pending=p.gambitPending,now=run.time||0;if(!pending||now+1e-9<pending.revealAt)return;
+ p.gambitPending=null;if(p.hp<=0||p.arrived||p.deceased)return;
+ const outcome=Math.floor(random()*6);p.gambit=outcome;p.gambitUntil=now+1;
+ run.gambitCue={...run.gambitCue,id:pending.id,outcome:GAMBIT_NAMES[outcome],expiresAt:now+1.2};
  const near=(x,n)=>clearPath(run,p,x)&&Math.hypot(p.x-x.x,p.y-x.y)<=n*WIDTH;
  if(outcome===0){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,6))damagePlayer(run,q,20,random);for(const e of run.enemies||[])if(e.hp>0&&near(e,6)){e.hp=Math.max(0,e.hp-20);e.hitUntil=now+.2;}down(p)}
  else if(outcome===1)p.invisibleUntil=now+7;
@@ -127,7 +137,7 @@ function moveEnemy(run,e,dt,random){
  if(inArena(run,e))e.room=tileOf(e);const wall=resolveWalls(run,e,oldX,oldY,r);if(wall.xHit)e.vx=-e.vx;if(wall.yHit)e.vy=-e.vy;
 }
 export function stepCombat(run,dt,random=Math.random){
- const now=run.time||0;for(const p of run.players){tickPlayerPoison(run,p);finalDraw(run,p)}
+ const now=run.time||0;for(const p of run.players){tickPlayerPoison(run,p);resolveGambit(run,p,random);finalDraw(run,p)}
  const rooms=new Set(run.players.map(roomOf).flatMap(r=>[r,...(r%SIZE?[r-1]:[]),...(r%SIZE<SIZE-1?[r+1]:[]),...(r>=SIZE?[r-SIZE]:[]),...(r<SIZE*(SIZE-1)?[r+SIZE]:[])]));
  const processed=new Set();for(const room of rooms)for(const e of enemiesInRoom(run,room)){
   if(processed.has(e.id))continue;processed.add(e.id);
