@@ -4,7 +4,7 @@ import {updateThrows,beginGrapple,startWrestler,grapple} from '../dist/throw.mjs
 import {attack,stepCombat} from '../dist/combat.mjs';
 import {prepareRevives} from '../dist/revive.mjs';
 const run=createRun([{id:'w',name:'W',color:'teal'},{id:'a',name:'A',color:'coral'},{id:'down',name:'D',color:'blue'}]);
-run.time=10;run.obstacles=[];run.enemies=[];run.goal=0;
+run.time=10;run.obstacles=[];run.enemies=[];run.pots=[];run.goal=0;
 const [w,a,down]=run.players;for(const p of run.players){p.x=1.5;p.y=2.5;p.invulnerableUntil=0;p.shielding=false}down.hp=0;
 a.throwing={room:15,vx:.1,vy:0,from:w.id,contact:{}};
 assert(!applyInput(run,a.id,{seq:1,holding:true,attack:true}));assert(!attack(run,a));assert(!beginGrapple(run,a));assert(!startWrestler(run,a));prepareRevives(run);assert(!a.reviving,'thrown players cannot revive even after stun expires');

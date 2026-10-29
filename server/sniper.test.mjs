@@ -8,7 +8,7 @@ assert(!inAttack(p,{x:5*WIDTH,y:.51*WIDTH}));
 assert(!inAttack(p,{x:-.01,y:0}));
 advanceAim({},p,1,AIM_SPEED);assert.equal(p.angle,AIM_SPEED);
 p.angle=0;p.usingAttack=true;advanceAim({},p,1,AIM_SPEED);assert.equal(p.angle,AIM_SPEED*.2);
-const run=createRun([{id:'a',name:'A',color:'blue'}]);run.enemies=[];run.obstacles=[];
+const run=createRun([{id:'a',name:'A',color:'blue'}]);run.enemies=[];run.pots=[];run.obstacles=[];
 const sniper=run.players[0];sniper.x=run.startRoom%7+.5;sniper.y=Math.floor(run.startRoom/7)+.5;sniper.vx=.35;sniper.vy=0;
 assert(applyInput(run,'a',{seq:1,holding:true,attack:true}));
 const {x,y}=sniper;for(let i=0;i<30;i++)step(run,1/60);

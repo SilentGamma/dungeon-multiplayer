@@ -3,7 +3,7 @@ import {createPrediction} from './public/prediction.mjs';
 import {movePlayer} from '../dist/movement.mjs';
 import {createRun} from '../dist/dungeon.mjs';
 import {roleFor,WIDTH} from '../dist/roles.mjs';
-function fixture(){const run=createRun([{id:'p',name:'P',color:'coral'}]);run.time=10;run.round=1;run.goal=0;run.enemies=[];run.obstacles=[];run.keyRooms=[];run.keyItems=[];run.collectedKeys=0;run.mapRewardRoom=null;run.edges=Array.from({length:49},()=>[]);run.lockedRooms=Array(49).fill(false);run.enemyRooms=Array(49).fill(false);Object.assign(run.players[0],{x:1.5,y:2.5,vx:roleFor('coral').speed*WIDTH,vy:0,angle:0});return run}
+function fixture(){const run=createRun([{id:'p',name:'P',color:'coral'}]);run.time=10;run.round=1;run.goal=0;run.enemies=[];run.pots=[];run.obstacles=[];run.keyRooms=[];run.keyItems=[];run.collectedKeys=0;run.mapRewardRoom=null;run.edges=Array.from({length:49},()=>[]);run.lockedRooms=Array(49).fill(false);run.enemyRooms=Array(49).fill(false);Object.assign(run.players[0],{x:1.5,y:2.5,vx:roleFor('coral').speed*WIDTH,vy:0,angle:0});return run}
 let run=fixture(),pred=createPrediction('p');pred.latency(0);pred.set(run,0);const speed=run.players[0].vx;
 assert(Math.abs(pred.sample(500).x-(1.5+speed*.5))<1e-9,'local movement advances without a new snapshot');
 pred.reset();pred.set(run,0);pred.input({seq:1,holding:true,attack:false,angle:0},0);assert.equal(pred.sample(100).x,1.5,'hold stops movement immediately');pred.input({seq:2,holding:false,attack:false,angle:0},100);assert(Math.abs(pred.sample(200).x-(1.5+speed*.1))<1e-9,'release launches before server acknowledgment');assert.equal(run.players[0].x,1.5,'prediction never mutates server snapshots');

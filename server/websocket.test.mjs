@@ -7,7 +7,7 @@ async function post(path,body={},token){const res=await fetch(base+'/api/'+path,
 function next(ws,type){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{ws.off('message',read);reject(Error('Message timeout: '+type))},2000);function read(bytes){const m=JSON.parse(bytes);if(m.type===type){clearTimeout(timer);ws.off('message',read);resolve(m)}}ws.on('message',read)})}
 async function connect(token){const ws=new WebSocket(url);sockets.push(ws);await once(ws,'open');const ready=next(ws,'ready');ws.send(JSON.stringify({type:'auth',token}));await ready;return ws}
 try{
- const host=await post('create',{name:'Host'});await post('start',{},host.token);const ws=await connect(host.token);const p=room.run.players[0];p.x=1.5;p.y=2.5;p.vx=0;p.vy=0;room.run.enemies=[];room.run.obstacles=[];room.run.goal=0;
+ const host=await post('create',{name:'Host'});await post('start',{},host.token);const ws=await connect(host.token);const p=room.run.players[0];p.x=1.5;p.y=2.5;p.vx=0;p.vy=0;room.run.enemies=[];room.run.pots=[];room.run.obstacles=[];room.run.goal=0;
  async function input(m){const waiting=next(ws,'inputAck');ws.send(JSON.stringify({type:'input',round:1,...m}));return waiting}
  assert((await input({seq:1,holding:true,attack:false})).ok);assert(p.holding);assert((await input({seq:2,holding:false,angle:0,x:100,hp:1000})).ok);assert(!p.holding);assert(p.x<2&&p.hp===p.maxHp,'client coordinates and HP cannot override authority');
  assert(!(await input({seq:1,holding:true})).ok,'out-of-order inputs rejected');assert(!(await input({seq:3,holding:true,sentAt:Date.now()-2000})).ok,'stale inputs rejected');assert.equal(p.lastProcessedInputSeq,3);

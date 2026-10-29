@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRun,step,regenerateShield} from '../dist/dungeon.mjs';
 import {attack,stepCombat,ATTACK_DURATION,ENEMY_RADIUS} from '../dist/combat.mjs';
 import {attackGeometry,inAttack,WIDTH} from '../dist/roles.mjs';
-function fixture(color='coral'){const r=createRun([{id:'p',name:'P',color}]);r.time=10;r.obstacles=[];r.enemies=[];r.goal=0;r.mapRoom=0;const p=r.players[0];Object.assign(p,{x:1.5,y:2.5,vx:0,vy:0,invulnerableUntil:0,angle:0});return [r,p]}
+function fixture(color='coral'){const r=createRun([{id:'p',name:'P',color}]);r.time=10;r.obstacles=[];r.enemies=[];r.pots=[];r.goal=0;r.mapRoom=0;const p=r.players[0];Object.assign(p,{x:1.5,y:2.5,vx:0,vy:0,invulnerableUntil:0,angle:0});return [r,p]}
 let [r,p]=fixture('teal');p.shield=0;for(let i=0;i<120;i++)step(r,1/60);assert.equal(p.shield,0,'stationary Wrestler cannot regenerate');p.vx=.42;for(let i=0;i<60;i++)step(r,1/60);assert.equal(p.shield,1,'one full second of movement restores one point');
 p.shieldTick=.9;regenerateShield(r,p,.1,false);assert.equal(p.shieldTick,0);regenerateShield(r,p,.2,true);assert.equal(p.shield,1,'standing still resets incomplete movement tick');
 for(const state of ['holding','shielding','throwing','grabbedBy','reviving','arrived']){const q={...p,[state]:true,shield:0,shieldTick:.9};regenerateShield(r,q,.2,true);assert.equal(q.shield,0,state+' cannot regenerate');assert.equal(q.shieldTick,0)}

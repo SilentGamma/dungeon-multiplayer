@@ -1,4 +1,5 @@
-import {keyPending,mapReady} from './keys.mjs';
+import {POT_RADIUS} from './pots.mjs';
+import {keyPending,keyVisible,mapReady} from './keys.mjs';
 import {arenaRoom,inArena,roomBounds} from './arena.mjs';
 import {rotationSide} from './aim-input.mjs';
 import {getToken,PLAYER_VISUAL_RADIUS} from './role-art.mjs';
@@ -29,9 +30,10 @@ for(const o of run.obstacles||[]){
  m.restore();}
 }ctx.drawImage(mapCanvas,0,0,SIZE,SIZE);
 if(run.lockedRooms?.[currentRoom]){const x=currentRoom%SIZE,y=Math.floor(currentRoom/SIZE),walls=[[x,y,x+1,y,currentRoom-SIZE],[x+1,y,x+1,y+1,currentRoom+1],[x,y+1,x+1,y+1,currentRoom+SIZE],[x,y,x,y+1,currentRoom-1]];ctx.save();ctx.strokeStyle='#ff856e';ctx.lineWidth=.016;for(const [a,b,c,d,n] of walls)if(!(arenaRoom(run,currentRoom)&&arenaRoom(run,n)))for(const [lo,hi] of entrances(run,currentRoom,n)){ctx.beginPath();ctx.moveTo(a+(c-a)*lo,b+(d-b)*lo);ctx.lineTo(a+(c-a)*hi,b+(d-b)*hi);ctx.stroke()}ctx.restore();label(keyPending(run,currentRoom)?'KEY ROOM · COLLECT THE KEY':'ROOM LOCKED · DEFEAT ENEMIES',x+.5,y+.09,.029,'#ffb4a5','center',true)}
-for(const key of run.keyItems||[]){if(!keyPending(run,key.room)||!visibleRooms.has(key.room))continue;ctx.save();ctx.translate(key.x,key.y);ctx.fillStyle='#ffd56e';ctx.beginPath();ctx.arc(-.018,0,.019,0,Math.PI*2);ctx.fill();ctx.fillRect(-.005,-.006,.05,.012);ctx.fillRect(.025,0,.009,.02);ctx.fillRect(.04,0,.009,.02);ctx.restore();label('KEY',key.x,key.y-.047,.025,'#ffd56e','center')}
+for(const key of run.keyItems||[]){if(!keyVisible(run,key.room)||!visibleRooms.has(key.room))continue;ctx.save();ctx.translate(key.x,key.y);ctx.fillStyle='#ffd56e';ctx.beginPath();ctx.arc(-.018,0,.019,0,Math.PI*2);ctx.fill();ctx.fillRect(-.005,-.006,.05,.012);ctx.fillRect(.025,0,.009,.02);ctx.fillRect(.04,0,.009,.02);ctx.restore();label('KEY',key.x,key.y-.047,.025,'#ffd56e','center')}
 if(!run.mapCollected&&mapReady(run)){const mx=run.mapRoom%SIZE+.5,my=Math.floor(run.mapRoom/SIZE)+.5;ctx.save();ctx.translate(mx,my);ctx.fillStyle='#f1d58a';ctx.strokeStyle='#5b4924';ctx.lineWidth=.005;ctx.beginPath();ctx.moveTo(-.065,-.055);ctx.lineTo(-.022,-.07);ctx.lineTo(.023,-.05);ctx.lineTo(.065,-.065);ctx.lineTo(.065,.055);ctx.lineTo(.023,.07);ctx.lineTo(-.022,.05);ctx.lineTo(-.065,.065);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-.022,-.065);ctx.lineTo(-.022,.045);ctx.moveTo(.023,-.045);ctx.lineTo(.023,.065);ctx.stroke();ctx.restore();label('MAP',mx,my-.095,.03,'#f1d58a','center')}
 const guide=navigationTarget(run,player);if(guide){const a=Math.atan2(guide.y-player.y,guide.x-player.x);ctx.save();ctx.translate(player.x,player.y);ctx.rotate(a);ctx.globalAlpha=Math.sin((run.time||0)*Math.PI*3)>0?1:.2;ctx.fillStyle='#ffe34d';ctx.beginPath();ctx.moveTo(.24,0);ctx.lineTo(.17,-.025);ctx.lineTo(.17,.025);ctx.closePath();ctx.fill();ctx.restore()}
+for(const pot of run.pots||[]){if(pot.hp<=0||!visibleRooms.has(pot.room))continue;const pos=positionAt(snapshots.get('o:'+pot.id),pot,now);ctx.save();ctx.translate(pos.x,pos.y);ctx.fillStyle='#bb8057';ctx.beginPath();ctx.ellipse(0,.003,POT_RADIUS,POT_RADIUS*.9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e0ac79';ctx.fillRect(-POT_RADIUS*.75,-POT_RADIUS,POT_RADIUS*1.5,POT_RADIUS*.35);ctx.fillStyle='#684330';ctx.fillRect(-POT_RADIUS*.55,-POT_RADIUS*.9,POT_RADIUS*1.1,POT_RADIUS*.12);ctx.restore()}
 for(const e of run.enemies||[]){
  if(e.hidden||!Number.isFinite(e.x)||!Number.isFinite(e.y)||e.hp<=0||!visibleRooms.has(e.room))continue;
  const spec=enemyFor(e),r=enemyRadius(e),warn=e.attackWindupUntil>run.time||e.slamWindupUntil>run.time||e.mode==='waking',attacking=e.attackActiveUntil>run.time||e.slamUntil>run.time||e.mode==='lunging';

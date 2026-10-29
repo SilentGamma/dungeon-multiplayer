@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRun,step,SIZE,generateDungeon,RADIUS} from '../dist/dungeon.mjs';
 import {stepCombat,stepHazards,SHIELD_RADIUS,attack} from '../dist/combat.mjs';
 import {resolveWalls,touchesSquare,wallBlocksLine} from '../dist/obstacles.mjs';
-function fixture(){const r=createRun([{id:'p',name:'P',color:'coral'}]);r.obstacles=[];r.enemies=[];r.time=1;r.goal=0;r.mapRoom=0;const p=r.players[0];p.x=1.5;p.y=2.5;p.vx=.28;p.vy=0;p.invulnerableUntil=0;return [r,p]}
+function fixture(){const r=createRun([{id:'p',name:'P',color:'coral'}]);r.obstacles=[];r.enemies=[];r.pots=[];r.time=1;r.goal=0;r.mapRoom=0;const p=r.players[0];p.x=1.5;p.y=2.5;p.vx=.28;p.vy=0;p.invulnerableUntil=0;return [r,p]}
 assert.equal(RADIUS,.0175*1.125);assert(SHIELD_RADIUS<.18);
 let [r,p]=fixture();p.holding=true;p.shielding=true;const before=p.shield;r.enemies=[{id:'e',type:'walker',room:15,x:p.x+SHIELD_RADIUS+.01,y:p.y,vx:0,vy:0,hp:7,maxHp:7,active:true,mode:'walking',attackActiveUntil:3}];stepCombat(r,0);assert.equal(p.shield,before-3,'shield edge intercepts enemy attack');assert.equal(p.hp,p.maxHp);p.invulnerableUntil=0;r.enemies[0].x=p.x+.16;const smallerShield=p.shield;stepCombat(r,0);assert.equal(p.shield,smallerShield,'outside the smaller shield no longer intercepts contact');
 [r,p]=fixture();const spike={id:'s',room:15,type:'spikes',x:1.45,y:2.45,size:.1};r.obstacles=[spike];const health=p.hp;stepHazards(r);assert.equal(p.hp,health-1);stepHazards(r);assert.equal(p.hp,health-1,'standing in spikes does not damage every frame');p.x=1.8;stepHazards(r);p.x=1.5;stepHazards(r);assert.equal(p.hp,health-2,'entering again causes one new damage tick');
