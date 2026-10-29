@@ -1,6 +1,7 @@
 import {SPEED_MULTIPLIER} from './world.mjs';
 // Normal keeps the existing Walker/Sleeper size and movement baseline.
 export const ENEMIES=Object.freeze({
+ warden:{name:'The Warden',hp:60,weight:'Boss',radius:.1,speed:.06*SPEED_MULTIPLIER,damage:7,rounds:[]},
  walker:{name:'Walker',hp:15,weight:'Normal',radius:.026,speed:.19*SPEED_MULTIPLIER,damage:3,rounds:[1,2,3,4,5]},
  sleeper:{name:'Sleeper',hp:12,weight:'Normal',radius:.026,speed:.13*SPEED_MULTIPLIER,damage:4,rounds:[2,4,5]},
  flapper:{name:'Flapper',hp:5,weight:'Light',radius:.026*.8,speed:.27*SPEED_MULTIPLIER,damage:2,rounds:[2,3,4,5]},

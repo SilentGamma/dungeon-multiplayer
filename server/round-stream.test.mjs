@@ -9,5 +9,5 @@ try {
  room.run.players[0].arrived=true;
  let second;do{second=await nextEvent()}while(!(second.phase==='playing'&&second.run?.round===2));
  assert(second.run.edges&&second.run.doors,'new round sends the full dungeon');assert.equal(second.run.players[0].hp,second.run.players[0].maxHp);
- room.run.round=5;room.run.players[0].arrived=true;let completed;do{completed=await nextEvent()}while(completed.phase!=='completed');assert.equal(completed.endReason,'won');assert.equal(room.closed,false);controller.abort();console.log('PASS: stream delivers complete new dungeons and final victory without ejecting players');
+ room.run.round=5;room.run.players[0].arrived=true;let boss;do{boss=await nextEvent()}while(!(boss.phase==='playing'&&boss.run?.kind==='boss'));assert(boss.run.arena.width===4);room.run.enemies.find(e=>e.type==='warden').hp=0;let completed;do{completed=await nextEvent()}while(completed.phase!=='completed');assert.equal(completed.endReason,'won');assert.equal(room.closed,false);controller.abort();console.log('PASS: stream delivers complete new dungeons and final victory without ejecting players');
 } finally {controller.abort();server.closeAllConnections();await new Promise(resolve=>server.close(resolve))}

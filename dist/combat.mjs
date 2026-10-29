@@ -1,3 +1,4 @@
+import {arenaRoom,inArena,roomBounds,sameArea,tileOf} from './arena.mjs';
 import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
 import {enemyFor,enemyRadius,eligibleEnemies,scaledEnemyHealth,turnFlapper,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
 import {obstaclesInRoom,touchesSquare,resolveWalls,wallBlocksLine} from './obstacles.mjs';
@@ -10,6 +11,7 @@ export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null)
 // Derived room index is kept outside the networked game state.
 const roomIndexes=new WeakMap();
 export function enemiesInRoom(run,room){
+ if(arenaRoom(run,room))return run.enemies||[];
  const enemies=run.enemies||[];let cache=roomIndexes.get(run);
  if(!cache||cache.source!==enemies||cache.length!==enemies.length){const rooms=Array.from({length:SIZE*SIZE},()=>[]);for(const enemy of enemies)if(rooms[enemy.room])rooms[enemy.room].push(enemy);cache={source:enemies,length:enemies.length,rooms};roomIndexes.set(run,cache)}
  return cache.rooms[room]||[];
@@ -24,7 +26,7 @@ export function removeDefeatedEnemies(run){
 export function refreshEnemyActivity(run,random=Math.random){
  const nearby=new Set();for(const p of run.players){const room=roomOf(p),x=room%SIZE,y=Math.floor(room/SIZE);nearby.add(room);if(x>0)nearby.add(room-1);if(x<SIZE-1)nearby.add(room+1);if(y>0)nearby.add(room-SIZE);if(y<SIZE-1)nearby.add(room+SIZE)}
  run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];
-  for(const e of run.enemies){const active=nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil','attackWindupUntil','attackActiveUntil','nextContactAttack','nextDirectionAt','nextSlam','slamWindupUntil','slamUntil'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
+  for(const e of run.enemies){const active=run.kind==='boss'?!!run.bossActive:nearby.has(e.room);if(e.active===false&&active){const pause=Math.max(0,(run.time||0)-(e.inactiveSince??(run.time||0)));for(const key of ['wakeUntil','lungeUntil','nextLunge','poisonUntil','poisonNext','stunUntil','hitUntil','attackWindupUntil','attackActiveUntil','nextContactAttack','nextDirectionAt','nextSlam','slamWindupUntil','slamUntil'])if(e[key]>0)e[key]+=pause;delete e.inactiveSince}else if(e.active!==false&&!active)e.inactiveSince=run.time||0;e.active=active}
  return nearby;
 }
 // Spawn an encounter only on first entry; the approach side selects the opposite spawn zone.
@@ -37,7 +39,7 @@ export function enterRoom(run,fromRoom,toRoom,random=Math.random){
 export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<SIZE*SIZE;room++)if(run.lockedRooms[room]&&!enemiesInRoom(run,room).some(e=>e.hp>0))run.lockedRooms[room]=false}
 function clearPath(run,a,b){
  if(wallBlocksLine(run,a,b))return false;const ar=roomOf(a),br=roomOf(b);if(ar===br)return true;
- if(!run.edges[ar]?.includes(br))return false;
+ if(inArena(run,a)&&inArena(run,b))return true;if(!run.edges[ar]?.includes(br))return false;
  const ax=ar%SIZE,ay=Math.floor(ar/SIZE),bx=br%SIZE,by=Math.floor(br/SIZE),horizontal=ay===by;
  const border=horizontal?(bx>ax?ax+1:ax):(by>ay?ay+1:ay),denom=horizontal?b.x-a.x:b.y-a.y;if(!denom)return false;
  const t=(border-(horizontal?a.x:a.y))/denom;if(t<0||t>1)return false;
@@ -91,22 +93,24 @@ function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
 function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}
 // Hold non-attacking enemies at the shield boundary through their windup.
 // Bouncing them away before an attack activates makes shield contact miss.
-function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||roomOf(p)!==e.room||!clearPath(run,e,p))continue;const r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(e.room%SIZE+r,Math.min(e.room%SIZE+1-r,p.x+nx*reach));e.y=Math.max(Math.floor(e.room/SIZE)+r,Math.min(Math.floor(e.room/SIZE)+1-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;const attacking=e.type==='sleeper'?e.mode==='lunging':run.time<(e.attackActiveUntil||0);if(attacking&&dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
+function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||!sameArea(run,p,e)||!clearPath(run,e,p))continue;const bounds=roomBounds(run,e.room),r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(bounds.x+r,Math.min(bounds.x+bounds.width-r,p.x+nx*reach));e.y=Math.max(bounds.y+r,Math.min(bounds.y+bounds.height-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;const attacking=e.type==='sleeper'?e.mode==='lunging':run.time<(e.attackActiveUntil||0);if(attacking&&dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
 function moveEnemy(run,e,dt,random){
- const r=enemyRadius(e),spec=enemyFor(e),loX=e.room%SIZE+r,hiX=e.room%SIZE+1-r,loY=Math.floor(e.room/SIZE)+r,hiY=Math.floor(e.room/SIZE)+1-r,oldX=e.x,oldY=e.y;
+ const bounds=roomBounds(run,e.room),r=enemyRadius(e),spec=enemyFor(e),loX=bounds.x+r,hiX=bounds.x+bounds.width-r,loY=bounds.y+r,hiY=bounds.y+bounds.height-r,oldX=e.x,oldY=e.y;
  e.x+=e.vx*dt;e.y+=e.vy*dt;
  if(e.x<loX||e.x>hiX){e.x=Math.max(loX,Math.min(hiX,e.x));e.vx=-e.vx;if(e.type!=='sleeper'&&e.type!=='flapper'&&e.mode!=='lunging'){const a=Math.atan2(e.vy,e.vx)+(random()-.5)*.2;e.vy=Math.sin(a)*spec.speed;e.vx=Math.sign(e.vx)*Math.sqrt(Math.max(0,spec.speed**2-e.vy**2))}}
  if(e.y<loY||e.y>hiY){e.y=Math.max(loY,Math.min(hiY,e.y));e.vy=-e.vy}
- const wall=resolveWalls(run,e,oldX,oldY,r);if(wall.xHit)e.vx=-e.vx;if(wall.yHit)e.vy=-e.vy;
+ if(inArena(run,e))e.room=tileOf(e);const wall=resolveWalls(run,e,oldX,oldY,r);if(wall.xHit)e.vx=-e.vx;if(wall.yHit)e.vy=-e.vy;
 }
 export function stepCombat(run,dt,random=Math.random){
  const now=run.time||0;for(const p of run.players){tickPlayerPoison(run,p);finalDraw(run,p)}
  const rooms=new Set(run.players.map(roomOf).flatMap(r=>[r,...(r%SIZE?[r-1]:[]),...(r%SIZE<SIZE-1?[r+1]:[]),...(r>=SIZE?[r-SIZE]:[]),...(r<SIZE*(SIZE-1)?[r+SIZE]:[])]));
- for(const room of rooms)for(const e of enemiesInRoom(run,room)){
+ const processed=new Set();for(const room of rooms)for(const e of enemiesInRoom(run,room)){
+  if(processed.has(e.id))continue;processed.add(e.id);
   if(e.active===false||e.hp<=0)continue;
   tickPoison(e,now,damage=>{e.hp=Math.max(0,e.hp-damage);e.hitUntil=now+.2})
   if(e.hp<=0||e.throwing||e.grabbedBy||now<(e.stunUntil||0))continue;
-  const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&(roomOf(p)===e.room||(p.shielding&&p.shield>0&&run.edges[e.room]?.includes(roomOf(p))))),visible=targets.filter(p=>now>=(p.invisibleUntil||0));
+  const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&(sameArea(run,p,e)||(p.shielding&&p.shield>0&&run.edges[e.room]?.includes(roomOf(p))))),visible=targets.filter(p=>now>=(p.invisibleUntil||0));
+  if(e.type==='warden'){moveEnemy(run,e,dt,random);repelFromShields(run,e);continue}
   if(e.type==='sleeper'){
    const nearest=visible.reduce((best,p)=>!best||Math.hypot(p.x-e.x,p.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?p:best,null);
    if(e.mode==='lunging'&&now>=e.lungeUntil){e.mode='resting';e.nextLunge=now+SLEEP_REST}
