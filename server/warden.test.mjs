@@ -19,7 +19,7 @@ function bossRun(size=1){return createRun(Array.from({length:size},(_,i)=>({id:'
 const cancelled=createRun([{id:'cancel',name:'C',color:'teal'}]);applyInput(cancelled,'cancel',{seq:1,holding:true,attack:true});applyInput(cancelled,'cancel',{seq:2,holding:false,cancel:true});assert(cancelled.players[0].awaitingLaunch);assert.equal(cancelled.players[0].vx,0);
 let r=bossRun(4),boss=r.enemies[0],p=r.players[0];assert.equal(r.kind,'boss');assert.equal(r.arena.width,4);assert.equal(r.arena.height,4);assert.equal(boss.hp,scaledEnemyHealth('warden',4));assert(boss.hp>50);assert.equal(boss.x,3);assert.equal(boss.y,3);assert(!r.bossActive);
 Object.assign(p,{x:1.5,y:4.8,invulnerableUntil:0});stepWarden(r,0);assert(r.bossActive);assert(!passable(r,29,36,.5),'cannot escape to start');assert(passable(r,29,30,.01),'internal grid lines stay open even near tile corners');
-r.time=14.99;stepWarden(r,0);assert.equal(r.enemies.filter(e=>e.type==='flapper').length,0);r.time=15;stepWarden(r,0);assert.equal(r.enemies.filter(e=>e.type==='flapper').length,2);
+r.time=14.99;stepWarden(r,0);assert.equal(r.enemies.filter(e=>e.type==='flapper').length,0);r.time=15;stepWarden(r,0);assert.equal(r.enemies.filter(e=>e.type==='flapper').length,4);
 for(const t of [30,45,60,75]){r.time=t;stepWarden(r,0)}assert.equal(r.enemies.filter(e=>e.type==='flapper').length,6);
 r.enemies.find(e=>e.type==='flapper').hp=0;r.time=90;stepWarden(r,0);assert.equal(r.enemies.filter(e=>e.type==='flapper'&&e.hp>0).length,6,'dead minions release a spawn slot');
 // Four cardinal shots, then four diagonal shots; no queued burst after a delay.

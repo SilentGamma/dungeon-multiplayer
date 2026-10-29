@@ -8,4 +8,4 @@ Flapper movement decisions now occur every one second, including initial spawns,
 
 Creeper damage increases from 5 to 7. Its radius increases from 0.039 to 0.0468 room units (+20% to radius and diameter); rendering and collision use that shared size. HP, movement speed, slam area, windup and stun duration are unchanged.
 
-The Warden still spawns two physical Flappers every 15 seconds, with a maximum of six living minions, following its separate boss encounter rule.
+The same doubling applies to the Warden: its previous two-Flapper wave now produces up to four physical Flappers every 15 seconds, still capped at six living minions. For example, with four alive, the next wave adds only two.
