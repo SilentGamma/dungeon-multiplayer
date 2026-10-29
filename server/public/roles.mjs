@@ -6,8 +6,8 @@ export const ROLES=Object.freeze({
  pink:{name:'Dancer',hp:12,shield:5,speedClass:'Fast',speed:10*SPEED_MULTIPLIER,damage:7,cooldown:.25,shape:'rectangle'},
  gold:{name:'Brute',hp:16,shield:20,speedClass:'Slow',speed:6*SPEED_MULTIPLIER,damage:10,cooldown:.75,shape:'disjoint-circle'},
  green:{name:'Chef',hp:12,shield:15,speedClass:'Slow',speed:6*SPEED_MULTIPLIER,damage:3,cooldown:.3,shape:'curved-cone'},
- blue:{name:'Sniper',description:'Hold attack to stop and rotate your scope at 20% speed. Release to fire a narrow rectangular shot and resume moving.',hp:10,shield:4,speedClass:'Normal',speed:8*SPEED_MULTIPLIER,damage:10,cooldown:1,shape:'sniper-rectangle',single:true},
- teal:{name:'Wrestler',description:'Attack to lunge forward with your shield and grab on contact. A caught target circles you; release to throw in the direction of its spin. A missed lunge stops you and lowers your shield. Requires shield.',hp:14,shield:12,speedClass:'Fast',speed:10*SPEED_MULTIPLIER,damage:2,cooldown:.2,shape:'small-circle',single:true},
+ blue:{name:'Sniper',description:'Tap Action to fire a narrow rectangular shot. Hold to shield and rotate your scope at 20% speed; release without firing.',hp:10,shield:4,speedClass:'Normal',speed:8*SPEED_MULTIPLIER,damage:10,cooldown:1,shape:'sniper-rectangle',single:true},
+ teal:{name:'Wrestler',description:'Press Action to lunge forward and grab on contact. Hold for 0.2 seconds to raise your shield. A caught target circles you; release to throw in the direction of its spin. A missed lunge stops you; keep holding to shield. Requires shield.',hp:14,shield:12,speedClass:'Fast',speed:10*SPEED_MULTIPLIER,damage:2,cooldown:.2,shape:'small-circle',single:true},
  lime:{name:'Joker',hp:8,shield:1,speedClass:'Very Fast',speed:12*SPEED_MULTIPLIER,damage:9,cooldown:.15,shape:'small-cone'}
 });
 export const roleFor=color=>ROLES[color]||ROLES.green;

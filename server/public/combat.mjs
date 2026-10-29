@@ -94,7 +94,7 @@ function resolveGambit(run,p,random){
  if(outcome===0){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,6))damagePlayer(run,q,20,random);for(const e of run.enemies||[])if(e.hp>0&&near(e,6)){e.hp=Math.max(0,e.hp-20);e.hitUntil=now+.2;}down(p)}
  else if(outcome===1)p.invisibleUntil=now+7;
  else if(outcome===2){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&near(q,2))healAlly(p,q,10)}
- else if(outcome===3){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,2)){q.stunUntil=now+1.5;q.reviving=null;q.reviveInterruptedUntil=now+1.5}for(const e of run.enemies||[])if(e.hp>0&&near(e,2))e.stunUntil=now+1.5}
+ else if(outcome===3){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,2)){q.stunUntil=now+4;q.reviving=null;q.reviveInterruptedUntil=now+4}for(const e of run.enemies||[])if(e.hp>0&&near(e,2))e.stunUntil=now+4}
  else if(outcome===4)p.airUntil=now+5;
  else p.finalDrawUntil=now+1;
 }

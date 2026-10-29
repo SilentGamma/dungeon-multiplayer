@@ -1,3 +1,4 @@
+import {advanceActionShield} from './action.mjs';
 import {POT_RADIUS,canThrowPot} from './pots.mjs';
 import {roomBounds,sameArea,inArena,tileOf} from './arena.mjs';
 import {enemyRadius,FLAPPER_TURN_INTERVAL} from './enemies.mjs';
@@ -18,14 +19,15 @@ export function beginGrapple(run,p){
 export function startWrestler(run,p){
  const now=run.time||0;if(p.throwing||p.grabbedBy||now<(p.stunUntil||0)||now<(p.nextAttack||0)||p.wrestlerState||!(p.shield>0))return false;
  p.wrestlerState='lunging';p.wrestlerUntil=now+.32;p.wrestlerReleased=false;p.wrestlerCancel=false;p.wrestlerAngle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);p.angle=p.wrestlerAngle;
- p.holding=true;p.usingAttack=true;p.shielding=true;p.shieldRaisedAt=now;
+ p.holding=true;p.usingAttack=true;p.shielding=false;p.actionShielded=false;p.attackStarted=now;
  return true;
 }
 export function updateWrestler(run,p){
- const now=run.time||0;if(!p.wrestlerState)return false;
+ const now=run.time||0;if(!p.wrestlerState)return false;advanceActionShield(run,p);
+ if(p.wrestlerState==='guard'){if(p.wrestlerReleased){p.wrestlerState=null;p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0}return false}
  if(p.wrestlerState==='lunging'){
   if(beginGrapple(run,p)){p.wrestlerState='orbit';p.wrestlerOrbitStarted=now;p.vx=0;p.vy=0;return true}
-  if(now>=p.wrestlerUntil){p.wrestlerState=null;p.usingAttack=false;p.holding=false;p.shielding=false;p.vx=0;p.vy=0;p.nextAttack=now+.2;return false}
+  if(now>=p.wrestlerUntil){p.wrestlerState=p.wrestlerReleased?null:'guard';p.usingAttack=!p.wrestlerReleased;p.holding=!p.wrestlerReleased;if(p.wrestlerReleased)p.shielding=false;p.vx=0;p.vy=0;p.nextAttack=now+.2;return false}
   p.vx=Math.cos(p.wrestlerAngle);p.vy=Math.sin(p.wrestlerAngle);return true;
  }
  if(p.wrestlerState==='orbit'){

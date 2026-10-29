@@ -13,5 +13,5 @@ const sniper=run.players[0];sniper.x=run.startRoom%7+.5;sniper.y=Math.floor(run.
 assert(applyInput(run,'a',{seq:1,holding:true,attack:true}));
 const {x,y}=sniper;for(let i=0;i<30;i++)step(run,1/60);
 assert.equal(sniper.x,x);assert.equal(sniper.y,y);assert(Math.abs(sniper.angle-.288)<1e-8);assert.equal(sniper.attackAngle,sniper.angle);
-assert(applyInput(run,'a',{seq:2,holding:false,attack:false}));assert(!sniper.holding);assert(!sniper.usingAttack);assert(Math.abs(Math.atan2(sniper.vy,sniper.vx)-.288)<1e-8);assert(sniper.attackUntil>run.time);
+assert(applyInput(run,'a',{seq:2,holding:false,attack:false}));assert(!sniper.holding);assert(!sniper.usingAttack);assert(Math.abs(Math.atan2(sniper.vy,sniper.vx)-.288)<1e-8);assert(!sniper.attackUntil,'long shield hold does not fire');assert(applyInput(run,'a',{seq:3,holding:true,attack:true}));assert(applyInput(run,'a',{seq:4,holding:false,attack:false}));assert(sniper.attackUntil>run.time,'tap fires the same rectangular attack');
 console.log('PASS: rectangular Sniper range, 20%-speed held scope, stationary aiming and release direction');

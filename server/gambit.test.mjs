@@ -14,7 +14,7 @@ for(let outcome=0;outcome<6;outcome++){
  if(outcome===0){assert.equal(j.hp,0);assert.equal(a.hp,0)}
  if(outcome===1)assert.equal(j.invisibleUntil,17.2);
  if(outcome===2)assert.equal(a.hp,11);
- if(outcome===3)assert.equal(a.stunUntil,11.7);
+ if(outcome===3)assert.equal(a.stunUntil,14.2);
  if(outcome===4)assert.equal(j.airUntil,15.2);
  if(outcome===5)assert.equal(a.hp,0);
  run.time+=.01;stepCombat(run,0,random);assert.equal(rolls,1,'effect resolves only once');

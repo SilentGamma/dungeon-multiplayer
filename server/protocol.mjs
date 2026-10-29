@@ -4,7 +4,7 @@ import {SIZE} from '../dist/world.mjs';
 const RANGE=1.35, POSITION_ERROR=.008, KEYFRAME_SECONDS=.8;
 const stableFields=new Set(['name','color','type','kind','maxHp','maxShield']);
 const playerFields=['id','name','color','deceased','hp','maxHp','shield','maxShield','arrived','holding','shielding','angle','reviving','reviverId','reviveProgress','stunUntil','attackUntil','attackFacing','attackGraceUntil','blockUntil','hurtUntil','shieldBreakUntil','inputSeq','nextAttack','nextMoveInputAt','wrestlerState','invisibleUntil','throwing','grabbedBy','poisonUntil'];
-const predictionFields=['awaitingLaunch', 'aimDirection', 'lastProcessedInputSeq', 'bounceCount', 'usingAttack', 'airUntil', 'lungeUntil', 'lungeAngle', 'wrestlerAngle', 'wrestlerUntil'];
+const predictionFields=['attackStarted','actionShielded','wrestlerReleased','awaitingLaunch', 'aimDirection', 'lastProcessedInputSeq', 'bounceCount', 'usingAttack', 'airUntil', 'lungeUntil', 'lungeAngle', 'wrestlerAngle', 'wrestlerUntil'];
 const potFields=['id','room','kind','hp','grabbedBy','throwing'];
 const enemyFields=['id','room','type','hp','maxHp','mode','hitUntil','active','attackWindupUntil','attackActiveUntil','slamWindupUntil','slamUntil','nextBlast','blastStep'];
 function near(run,viewer,entity){if(viewer.id===entity.id)return true;const a=Math.floor(viewer.y)*SIZE+Math.floor(viewer.x),b=Math.floor(entity.y)*SIZE+Math.floor(entity.x);return (a===b||run.edges[a]?.includes(b)||(inArena(run,viewer)&&inArena(run,entity)))&&Math.hypot(entity.x-viewer.x,entity.y-viewer.y)<=RANGE}

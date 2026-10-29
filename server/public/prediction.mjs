@@ -1,3 +1,4 @@
+import {advanceActionShield} from './action.mjs';
 import {keyPending} from './keys.mjs';
 import {movePlayer} from './movement.mjs';
 import {roleFor,WIDTH,advanceAim} from './roles.mjs';
@@ -10,18 +11,20 @@ export function createPrediction(id){
  let run=null,received=0,round=null,pending=[],oneWay=.1,offset={x:0,y:0,time:0};
  function raw(now){if(!run)return null;const auth=run.players.find(p=>p.id===id);if(!auth)return null;const p={...auth};if(locked(run,p))return p;
   const elapsed=Math.min(.5,oneWay+Math.max(0,now-received)/1000),end=run.time+elapsed,sim={...run,lockedRooms:run.lockedRooms?.slice(),time:run.time};
-  function stepTo(time){while(sim.time<time-1e-9){const dt=Math.min(1/60,time-sim.time);sim.time+=dt;
+  function stepTo(time){while(sim.time<time-1e-9){const dt=Math.min(1/60,time-sim.time);sim.time+=dt;advanceActionShield(sim,p);
    if(locked(sim,p)||p.reviving||p.predictedGoal)continue;
-   if(p.wrestlerState==='lunging'&&sim.time>=(p.wrestlerUntil||0)){p.wrestlerState=null;p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0;continue}
+   if(p.wrestlerState==='guard'&&p.wrestlerReleased){p.wrestlerState=null;p.holding=false;p.usingAttack=false;p.shielding=false;continue}
+   if(p.wrestlerState==='lunging'&&sim.time>=(p.wrestlerUntil||0)){p.wrestlerState=p.wrestlerReleased?null:'guard';p.holding=!p.wrestlerReleased;p.usingAttack=!p.wrestlerReleased;if(p.wrestlerReleased)p.shielding=false;p.vx=0;p.vy=0;continue}
    if(p.holding&&p.wrestlerState!=='lunging'){if(!p.usingAttack||p.color==='blue'){advanceAim(sim,p,dt,AIM_SPEED);if(p.usingAttack)p.attackAngle=p.angle}continue}
    movePlayer(sim,p,dt,{onEnter:(_,to)=>{if(((sim.enemyRooms?.[to]&&!sim.spawnedEnemyRooms?.[to])||keyPending(sim,to))&&sim.lockedRooms)sim.lockedRooms[to]=true},onSubstep:()=>{if(sim.kind!=='boss'&&Math.hypot(p.x-(sim.goal%SIZE+.5),p.y-(Math.floor(sim.goal/SIZE)+.5))<.14){p.predictedGoal=true;p.vx=0;p.vy=0;return true}return false}});
   }}
   function apply(m){if(locked(sim,p))return;if(p.awaitingLaunch&&!(p.vx||p.vy))m={...m,attack:false};if(m.holding&&m.attack&&sim.time<(p.nextAttack||0)&&!p.usingAttack)return;
    if(p.reviving){if(m.holding&&!m.attack)p.reviving=null;else return}
-   if(p.color==='teal'&&m.holding&&m.attack&&!p.wrestlerState){if(!(p.shield>0))return;p.wrestlerState='lunging';p.wrestlerUntil=sim.time+.32;p.wrestlerAngle=p.angle;p.vx=Math.cos(p.angle);p.vy=Math.sin(p.angle)}
+   if(p.color==='teal'&&p.wrestlerState){if(!m.holding||!m.attack){p.wrestlerReleased=true;p.shielding=false}return}
+   if(p.color==='teal'&&m.holding&&m.attack&&!p.wrestlerState){if(!(p.shield>0))return;p.wrestlerReleased=false;p.wrestlerState='lunging';p.wrestlerUntil=sim.time+.32;p.wrestlerAngle=p.angle;p.vx=Math.cos(p.angle);p.vy=Math.sin(p.angle)}
    if(m.holding)p.aimDirection=m.aimDirection===-1?-1:m.aimDirection===1?1:(p.holding?p.aimDirection:1);
-   const wasAttack=!!p.usingAttack;if(m.holding&&!p.holding)p.angle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);if(m.holding&&m.attack&&!wasAttack){p.attackAngle=p.angle;p.usingAttack=true}
-   if(!m.holding&&p.awaitingLaunch&&m.cancel){p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0;return}if(!m.holding)p.awaitingLaunch=false;p.holding=m.holding;p.shielding=!!(m.holding&&m.attack&&p.shield>0);
+   const wasAttack=!!p.usingAttack;if(m.holding&&!p.holding)p.angle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);if(m.holding&&m.attack&&!wasAttack){p.attackAngle=p.angle;p.usingAttack=true;p.actionShielded=false;p.attackStarted=sim.time}
+   if(!m.holding&&p.awaitingLaunch&&m.cancel){p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0;return}if(!m.holding)p.awaitingLaunch=false;p.holding=m.holding;if(!m.holding||!m.attack)p.shielding=false;else advanceActionShield(sim,p);
    if(!m.holding){if(Number.isFinite(m.angle))p.angle=m.angle;p.usingAttack=false;p.shielding=false;const speed=roleFor(p.color).speed*WIDTH;p.vx=Math.cos(p.angle)*speed;p.vy=Math.sin(p.angle)*speed}
    else if(!m.attack)p.usingAttack=false;
   }
