@@ -9,7 +9,7 @@ assert(applyInput(run,p.id,{seq:1,holding:true,attack:true}));assert.equal(p.wre
 tick(run,4);assert(p.x>x,'lunge moves forward');assert(!p.shielding);tick(run,9);assert(p.shielding,'holding raises shield after the cutoff');const health=p.hp;damagePlayer(run,p,2);assert.equal(p.hp,health,'shield protects during the lunge');assert.equal(p.shield,p.maxShield-2);
 tick(run,30);assert.equal(p.wrestlerState,'guard');assert(p.shielding);assert(p.holding);assert(applyInput(run,p.id,{seq:2,holding:false,attack:false}));tick(run,1);assert.equal(p.wrestlerState,null);assert(!p.shielding);assert(!p.holding);const stopped=p.x;tick(run,8);assert.equal(p.x,stopped,'miss leaves wrestler stationary');
 [run,p]=fixture();const enemy={id:'e',type:'walker',room:15,mode:'walking',x:1.54,y:2.5,vx:0,vy:0,hp:7,maxHp:7,active:true};run.enemies=[enemy];
-assert(applyInput(run,p.id,{seq:1,holding:true,attack:true}));tick(run,15);assert.equal(p.wrestlerState,'orbit');assert.equal(enemy.grabbedBy,p.id);assert(p.shielding);
+assert(applyInput(run,p.id,{seq:1,holding:true,attack:true}));tick(run,15);assert.equal(p.wrestlerState,'orbit');assert.equal(enemy.grabbedBy,p.id);assert(!p.shielding,'holding an enemy never shields');
 const first={x:enemy.x,y:enemy.y};tick(run,4);assert(Math.hypot(enemy.x-first.x,enemy.y-first.y)>.01,'grabbed target revolves around wrestler');
 assert(applyInput(run,p.id,{seq:2,holding:false,attack:false}));tick(run,12);assert.equal(enemy.grabbedBy,null);assert(enemy.throwing,'release throws the captured target');assert.equal(p.shielding,false);
 [run,p]=fixture();p.shield=0;applyInput(run,p.id,{seq:1,holding:true,attack:true});assert(!p.wrestlerState,'lunge requires shield');

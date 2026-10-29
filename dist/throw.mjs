@@ -1,3 +1,4 @@
+import {emitAttackSound} from './audio-events.mjs';
 import {advanceActionShield} from './action.mjs';
 import {POT_RADIUS,canThrowPot} from './pots.mjs';
 import {roomBounds,sameArea,inArena,tileOf} from './arena.mjs';
@@ -13,20 +14,20 @@ const roomOf=p=>Math.floor(p.y)*SIZE+Math.floor(p.x);
 export function beginGrapple(run,p){
  const now=run.time||0;if(p.throwing||p.grabbedBy||now<(p.stunUntil||0)||now<(p.nextAttack||0)||p.grappleTarget)return false;
  const targets=[...enemiesInRoom(run,roomOf(p)).filter(e=>e.hp>0),...run.players.filter(q=>q.id!==p.id&&!q.arrived&&!q.deceased),...(run.pots||[]).filter(q=>q.hp>0&&canThrowPot(p))].filter(q=>!q.grabbedBy&&!q.throwing&&!wallBlocksLine(run,p,q)&&sameArea(run,q,p)&&Math.hypot(q.x-p.x,q.y-p.y)<=Math.max(WIDTH*1.5,(p.wrestlerState==='lunging'?SHIELD_RADIUS:PLAYER_RADIUS)+radiusOf(q))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
- const target=targets[0];if(!target)return false;p.grappleTarget=target.id;target.grabbedBy=p.id;target.holding=false;target.usingAttack=false;target.attackUntil=0;target.wrestlerState=null;target.shielding=false;target.reviving=null;target.reviveProgress=0;return true;
+ const target=targets[0];if(!target)return false;p.shielding=false;p.grappleTarget=target.id;target.grabbedBy=p.id;target.holding=false;target.usingAttack=false;target.attackUntil=0;target.wrestlerState=null;target.shielding=false;target.reviving=null;target.reviveProgress=0;return true;
 }
 // Wrestler charges in the travel direction and catches on contact.
 export function startWrestler(run,p){
  const now=run.time||0;if(p.throwing||p.grabbedBy||now<(p.stunUntil||0)||now<(p.nextAttack||0)||p.wrestlerState||!(p.shield>0))return false;
  p.wrestlerState='lunging';p.wrestlerUntil=now+.32;p.wrestlerReleased=false;p.wrestlerCancel=false;p.wrestlerAngle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);p.angle=p.wrestlerAngle;
- p.holding=true;p.usingAttack=true;p.shielding=false;p.actionShielded=false;p.attackStarted=now;
+ p.holding=true;p.usingAttack=true;p.shielding=false;p.actionShielded=false;p.attackStarted=now;emitAttackSound(run,p,'teal');
  return true;
 }
 export function updateWrestler(run,p){
  const now=run.time||0;if(!p.wrestlerState)return false;advanceActionShield(run,p);
  if(p.wrestlerState==='guard'){if(p.wrestlerReleased){p.wrestlerState=null;p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0}return false}
  if(p.wrestlerState==='lunging'){
-  if(beginGrapple(run,p)){p.wrestlerState='orbit';p.wrestlerOrbitStarted=now;p.vx=0;p.vy=0;return true}
+  if(beginGrapple(run,p)){p.shielding=false;p.wrestlerState='orbit';p.wrestlerOrbitStarted=now;p.vx=0;p.vy=0;return true}
   if(now>=p.wrestlerUntil){p.wrestlerState=p.wrestlerReleased?null:'guard';p.usingAttack=!p.wrestlerReleased;p.holding=!p.wrestlerReleased;if(p.wrestlerReleased)p.shielding=false;p.vx=0;p.vy=0;p.nextAttack=now+.2;return false}
   p.vx=Math.cos(p.wrestlerAngle);p.vy=Math.sin(p.wrestlerAngle);return true;
  }
@@ -41,7 +42,7 @@ export function updateWrestler(run,p){
 export function grapple(run,p){
  const now=run.time||0;if(!p.grappleTarget&&!beginGrapple(run,p)){p.nextAttack=now+.2;return false;}
  const target=[...run.players,...run.enemies,...(run.pots||[])].find(q=>q.id===p.grappleTarget);p.grappleTarget=null;if(!target)return false;
- p.nextAttack=now+.2;target.grabbedBy=null;target.holding=false;target.usingAttack=false;target.attackUntil=0;target.shielding=false;target.reviving=null;const a=p.wrestlerState==='orbit'?p.wrestlerAngle+(now-p.wrestlerOrbitStarted)*8*SPEED_MULTIPLIER+Math.PI/2:(p.angle||0);target.angle=a;target.throwing={room:roomOf(target),vx:Math.cos(a)*THROW_SPEED,vy:Math.sin(a)*THROW_SPEED,contact:{},from:p.id};if(target.hp>0&&target.kind!=='pot')target.stunUntil=now+1.5;return true;
+ emitAttackSound(run,p,'throw');p.nextAttack=now+.2;target.grabbedBy=null;target.holding=false;target.usingAttack=false;target.attackUntil=0;target.shielding=false;target.reviving=null;const a=p.wrestlerState==='orbit'?p.wrestlerAngle+(now-p.wrestlerOrbitStarted)*8*SPEED_MULTIPLIER+Math.PI/2:(p.angle||0);target.angle=a;target.throwing={room:roomOf(target),vx:Math.cos(a)*THROW_SPEED,vy:Math.sin(a)*THROW_SPEED,contact:{},from:p.id};if(target.hp>0&&target.kind!=='pot')target.stunUntil=now+1.5;return true;
 }
 export function updateGrapples(run){
  const all=[...run.players,...run.enemies,...(run.pots||[])];for(const target of all){if(!target.grabbedBy)continue;const holder=run.players.find(p=>p.id===target.grabbedBy);if(!holder||holder.hp<=0||holder.arrived||!holder.holding){target.grabbedBy=null;if(holder)holder.grappleTarget=null;continue}const oldTargetX=target.x,oldTargetY=target.y,bounds=roomBounds(run,roomOf(holder)),cx=bounds.x,cy=bounds.y;const orbit=holder.wrestlerState==='orbit'?(run.time-holder.wrestlerOrbitStarted)*8*SPEED_MULTIPLIER+holder.wrestlerAngle:holder.angle;const radius=radiusOf(target),distance=Math.max(WIDTH*1.5,PLAYER_RADIUS+radius+.005);target.angle=orbit+Math.PI/2;target.x=Math.max(cx+radius,Math.min(cx+bounds.width-radius,holder.x+Math.cos(orbit)*distance));target.y=Math.max(cy+radius,Math.min(cy+bounds.height-radius,holder.y+Math.sin(orbit)*distance));resolveWalls(run,target,oldTargetX,oldTargetY,radiusOf(target));target.reviveProgress=0}

@@ -22,3 +22,5 @@ body.in-game{overflow:hidden}body.in-game>header,body.in-game>footer,body.in-gam
 .choice-card h2{margin-bottom:28px}.choice-icon{margin:15px 0 28px}.choice-card label{margin-top:0}.choice-card select{margin-bottom:22px}.screen-heading{margin-bottom:32px}.profile-panel .primary{margin-top:14px}.code-panel h2{margin:0}.role-meta{margin-top:12px}#home h1{margin-bottom:32px}#role-name{margin-bottom:20px}#network:empty{display:none}
 
 #gambit-announcement{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;pointer-events:none;text-align:center;white-space:nowrap;font-size:clamp(28px,7vw,64px);font-weight:900;letter-spacing:.06em;color:#b4ec54;text-shadow:0 3px 0 #142014,0 0 14px #000;background:#10180cbb;padding:12px 22px;border-radius:12px}
+
+#sound-toggle{width:100%;margin:12px 0 0}
