@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRun,applyInput} from '../dist/dungeon.mjs';
-import {updateThrows,beginGrapple,startWrestler} from '../dist/throw.mjs';
+import {updateThrows,beginGrapple,startWrestler,grapple} from '../dist/throw.mjs';
 import {attack,stepCombat} from '../dist/combat.mjs';
 import {prepareRevives} from '../dist/revive.mjs';
 const run=createRun([{id:'w',name:'W',color:'teal'},{id:'a',name:'A',color:'coral'},{id:'down',name:'D',color:'blue'}]);
@@ -16,4 +16,12 @@ enemy.throwing.vx=-.1;enemy.x=w.x;updateThrows(run,.001);assert.equal(w.hp,hp);
 a.x=enemy.x;a.y=enemy.y;const allyHp=a.hp;updateThrows(run,.001);assert.equal(a.hp,allyHp-5,'other entities retain throw collision damage');
 // Recovery clears old attack activity before normal AI resumes.
 a.x=1.9;enemy.x=w.x;enemy.y=w.y;enemy.throwing.vx=.00001;enemy.throwing.vy=0;updateThrows(run,.1);assert.equal(enemy.throwing,null);assert.equal(enemy.attackActiveUntil,0);assert(enemy.nextContactAttack>run.time);stepCombat(run,0);assert.equal(w.hp,hp);
+
+// A Normal enemy travels half a room before its throw momentum ends in open space.
+const distanceRun=createRun([{id:'w',name:'W',color:'teal'}]);distanceRun.time=10;distanceRun.obstacles=[];distanceRun.enemies=[];
+const wrestler=distanceRun.players[0];Object.assign(wrestler,{x:1.1,y:2.5,angle:0});
+const normal={id:'normal',type:'walker',room:15,x:1.2,y:2.5,hp:100,active:true};distanceRun.enemies=[normal];wrestler.grappleTarget=normal.id;
+assert(grapple(distanceRun,wrestler));assert.equal(normal.throwing.vx,.5);const launchX=normal.x;
+for(let i=0;i<300&&normal.throwing;i++){distanceRun.time+=1/60;updateThrows(distanceRun,1/60)}
+assert(!normal.throwing);assert(Math.abs(normal.x-launchX-.5)<.006,'Normal target carries roughly half a tile');
 console.log('PASS: thrown and grabbed action locks, thrower immunity, retained impact damage and safe enemy recovery');

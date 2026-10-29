@@ -4,6 +4,7 @@ for(let i=0;i<300;i++){
  const run=createRun([{id:'a',name:'A',color:'coral'},{id:'b',name:'B',color:'blue'}],Math.random,i%5+1);
  const path=routeToGoal(run,run.startRoom);
  assert(path.length>=MIN_PATH_ROOMS[i%5]&&path.length<=MIN_PATH_ROOMS[i%5]+2,'route follows the round minimum with at most two extra rooms');assert.equal(path.at(-1),run.goal);
+ assert(run.enemyRooms[path.at(-2)],'last room before goal is always an encounter');assert(!run.enemyRooms[run.goal],'goal stays safe');
  assert(Math.floor(run.goal/SIZE)<SIZE-1,'goal is not on the starting row');
  for(const p of run.players)assert.equal(Math.floor(p.y)*SIZE+Math.floor(p.x),run.startRoom,'players start together');
  const used=run.edges.map((edges,id)=>edges.length?id:-1).filter(id=>id>=0);

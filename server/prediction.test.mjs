@@ -30,3 +30,6 @@ for(let frame=1;frame<=120;frame++){
 }
 assert(maxError<.12,'prediction remains bounded while delayed actions reconcile');assert(Math.abs(delayed.sample(2000).x-run.players[0].x)<.03,'position converges after acknowledgments');assert.equal(run.players[0].hp,run.players[0].maxHp);
 console.log('PASS: 400-ms simulated round trip with 10-Hz state updates, immediate controls and bounded reconciliation');
+
+run=fixture();pred.reset();pred.latency(0);pred.set(run,0);pred.input({seq:1,holding:true,attack:false,aimDirection:-1},0);assert(pred.sample(100).angle<0,'prediction immediately follows counterclockwise steering');
+const acknowledged=structuredClone(run);acknowledged.time=10.1;Object.assign(acknowledged.players[0],{holding:true,aimDirection:-1,angle:-.288,inputSeq:1,lastProcessedInputSeq:1});pred.set(acknowledged,100);assert(pred.sample(200).angle<-.288,'acknowledged steering persists after pending input is removed');

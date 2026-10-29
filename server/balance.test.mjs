@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {SPEED_MULTIPLIER} from '../dist/world.mjs';
 import {roleFor,WIDTH} from '../dist/roles.mjs';
 import {ENEMIES} from '../dist/enemies.mjs';
-import {createRun,applyInput,AIM_SPEED} from '../dist/dungeon.mjs';
+import {createRun,applyInput,step,AIM_SPEED} from '../dist/dungeon.mjs';
 import {grapple} from '../dist/throw.mjs';
 import {attack,stepCombat,SHIELD_RADIUS,damagePlayer} from '../dist/combat.mjs';
 import {applyPoison,tickPoison,healAlly} from '../dist/poison.mjs';
@@ -32,6 +32,8 @@ assert(Math.hypot(r.enemies[0].x-p.x,r.enemies[0].y-p.y)>=SHIELD_RADIUS+ENEMIES.
 
 // Chef and Perfumer healing both remove poison, including at full HP.
 for(const color of ['green','purple']){[r,p]=fixture(color);const q={...p,id:'ally',x:p.x+.04,hp:p.maxHp,maxHp:p.maxHp};r.players.push(q);applyPoison(q,10);r.enemies=[{...e,x:p.x+.06,y:p.y,hp:100,maxHp:100,attackActiveUntil:0}];assert(attack(r,p));assert.equal(q.poisonTicks,0,color+' allied heal clears poison at full HP')}
-[r,p]=fixture('teal');const target={...e,x:p.x+.04,y:p.y};r.enemies=[target];p.grappleTarget=target.id;assert(grapple(r,p));assert(Math.abs(Math.hypot(target.throwing.vx,target.throwing.vy)-12*WIDTH*.8)<1e-10);
+[r,p]=fixture('teal');const target={...e,x:p.x+.04,y:p.y};r.enemies=[target];p.grappleTarget=target.id;assert(grapple(r,p));assert(Math.abs(Math.hypot(target.throwing.vx,target.throwing.vy)-0.5)<1e-10);
 [r,p]=fixture('lime');p.shield=1;p.shielding=true;const friend={...p,id:'friend',x:p.x+.02,shielding:false,hp:8,maxHp:12};r.players.push(friend);applyPoison(friend,10);damagePlayer(r,p,2,()=>.4);assert.equal(friend.poisonTicks,0,'Joker healing effect clears allied poison');
+
+[r,p]=fixture();assert(applyInput(r,p.id,{seq:1,holding:true,attack:false,aimDirection:-1}));step(r,.1);assert(p.angle<0,'server rotates toward selected side');const before=p.angle;assert(applyInput(r,p.id,{seq:2,holding:true,attack:false,aimDirection:1}));step(r,.1);assert(p.angle>before,'steering can reverse during a hold');
 console.log('PASS: universal speed scaling, independent camera settings, poison timing and cure, aim lockouts, shield interception and healing integrations');

@@ -18,7 +18,8 @@ export function createPrediction(id){
   function apply(m){if(locked(sim,p))return;if(m.holding&&m.attack&&sim.time<(p.nextAttack||0)&&!p.usingAttack)return;
    if(p.reviving){if(m.holding&&!m.attack)p.reviving=null;else return}
    if(p.color==='teal'&&m.holding&&m.attack&&!p.wrestlerState){if(!(p.shield>0))return;p.wrestlerState='lunging';p.wrestlerUntil=sim.time+.32;p.wrestlerAngle=p.angle;p.vx=Math.cos(p.angle);p.vy=Math.sin(p.angle)}
-   const wasAttack=!!p.usingAttack;if(m.holding&&!p.holding)p.angle=Math.atan2(p.vy,p.vx);if(m.holding&&m.attack&&!wasAttack){p.attackAngle=p.angle;p.usingAttack=true}
+   if(m.holding)p.aimDirection=m.aimDirection===-1?-1:m.aimDirection===1?1:(p.holding?p.aimDirection:1);
+   const wasAttack=!!p.usingAttack;if(m.holding&&!p.holding)p.angle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);if(m.holding&&m.attack&&!wasAttack){p.attackAngle=p.angle;p.usingAttack=true}
    p.holding=m.holding;p.shielding=!!(m.holding&&m.attack&&p.shield>0);
    if(!m.holding){if(Number.isFinite(m.angle))p.angle=m.angle;p.usingAttack=false;p.shielding=false;const speed=roleFor(p.color).speed*WIDTH;p.vx=Math.cos(p.angle)*speed;p.vy=Math.sin(p.angle)*speed}
    else if(!m.attack)p.usingAttack=false;

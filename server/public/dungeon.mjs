@@ -37,6 +37,8 @@ export function generateDungeon(random=Math.random,round=1){
   // Along each branch, leave one or two safe rooms between encounters.
   const enemyRooms=Array(SIZE*SIZE).fill(false),queue=[[startRoom,-1,0,2+Math.floor(random()*2)]];
   while(queue.length){const [room,parent,distance,nextEncounter]=queue.shift();let d=distance,limit=nextEncounter;if(room!==startRoom&&room!==goal&&d>=limit){enemyRooms[room]=true;d=0;limit=2+Math.floor(random()*2)}for(const n of edges[room])if(n!==parent)queue.push([n,room,d+1,limit]);}
+  // The last approach is always an encounter; keep its immediate neighbors safe.
+  const finalEncounter=path.at(-2);for(const n of edges[finalEncounter])enemyRooms[n]=false;enemyRooms[finalEncounter]=true;
   const obstacles=generateObstacles(edges,enemyRooms,startRoom,goal,random);
   return {edges,doors,startRoom,goal,mapRoom,enemyRooms,obstacles,mapCollected:false,minPathTiles:path.length};
  }
@@ -53,9 +55,10 @@ export function applyInput(run,id,m){
   if(p.wrestlerState){if(!m.holding||m.attack!==true){p.wrestlerReleased=true;if(m.cancel===true)p.wrestlerCancel=true}return true}
   if(m.holding&&m.attack===true){startWrestler(run,p);return true}
  }
+ if(m.holding)p.aimDirection=m.aimDirection===-1?-1:m.aimDirection===1?1:(p.holding?p.aimDirection:1);
  const wasAttacking=!!p.usingAttack;
- if(m.holding&&!p.holding){p.holding=true;p.holdStarted=run.time;p.angle=Math.atan2(p.vy,p.vx)}
- if(m.holding&&m.attack===true&&!wasAttacking){p.usingAttack=true;p.attackStarted=run.time;p.attackAngle=Math.atan2(p.vy,p.vx);p.angle=p.attackAngle}
+ if(m.holding&&!p.holding){p.holding=true;p.holdStarted=run.time;p.angle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0)}
+ if(m.holding&&m.attack===true&&!wasAttacking){p.usingAttack=true;p.attackStarted=run.time;p.attackAngle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);p.angle=p.attackAngle}
  const attackingNow=m.holding&&m.attack===true;
  if(attackingNow){const wasShielding=p.shielding;p.shielding=p.color!=='teal'&&(p.shield||0)>0;if(!wasShielding&&p.shielding)p.shieldRaisedAt=run.time}
  else if(wasAttacking){p.shielding=false;p.angle=p.attackAngle;p.usingAttack=false;if(m.cancel!==true){if(p.color==='teal'&&run.time-(p.attackStarted??run.time)>=.4)grapple(run,p);else attack(run,p)}}
