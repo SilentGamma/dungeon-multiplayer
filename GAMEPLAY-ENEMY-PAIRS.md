@@ -6,6 +6,6 @@ Normal rooms keep their existing 2–5 encounter-slot budget and probabilities (
 
 Flapper movement decisions now occur every one second, including initial spawns, the Warden’s minions and recovery from throws. The existing forward-biased 90-degree turn pattern is unchanged. A delayed update executes only the newest turn decision, without replaying missed ticks.
 
-Creeper damage increases from 5 to 7. Its radius increases from 0.039 to 0.0468 room units (+20% to radius and diameter); rendering and collision use that shared size. HP, movement speed, slam area, windup and stun duration are unchanged.
+Creeper damage stays at 5. Its slam radius increases from 0.07 to 0.084 room units (+20%). Its radius increases from 0.039 to 0.0468 room units (+20% to radius and diameter); rendering and collision use that shared size. HP, movement speed, windup and stun duration are unchanged. The attack indicator and collision test share the enlarged slam radius.
 
 The same doubling applies to the Warden: its previous two-Flapper wave now produces up to four physical Flappers every 15 seconds, still capped at six living minions. For example, with four alive, the next wave adds only two.

@@ -13,7 +13,7 @@ for(const slots of [2,5]){
  for(const e of r.enemies.slice(0,-1))e.hp=0;removeDefeatedEnemies(r);updateRoomLocks(r);assert(r.lockedRooms[15],'one remaining pair member keeps the room locked');r.enemies[0].hp=0;removeDefeatedEnemies(r);updateRoomLocks(r);assert(!r.lockedRooms[15]);
 }
 assert.equal(FLAPPER_TURN_INTERVAL,1);const f={vx:1,vy:0,nextDirectionAt:1,directionStep:2};turnFlapper(f,.99);assert.equal(f.vx,1);turnFlapper(f,1);assert(Math.abs(f.vx)<1e-12);assert.equal(f.vy,1);assert.equal(f.nextDirectionAt,2);
-assert.equal(ENEMIES.creeper.damage,7);assert(Math.abs(ENEMIES.creeper.radius-.026*1.5*1.2)<1e-12);
+assert.equal(ENEMIES.creeper.damage,5);assert(Math.abs(ENEMIES.creeper.radius-.026*1.5*1.2)<1e-12);
 // Prove the final approach actually spawns and blocks the goal, not only its map flag.
 let seed=20261029;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
 for(let round=1;round<=5;round++)for(let sample=0;sample<1000;sample++){
@@ -23,4 +23,4 @@ for(let round=1;round<=5;round++)for(let sample=0;sample<1000;sample++){
  assert(enterRoom(run,from,final,random));assert(run.enemies.length>0);const key=`${Math.min(final,d.goal)}:${Math.max(final,d.goal)}`,gap=d.doors[key][0];assert(!passable(run,final,d.goal,(gap[0]+gap[1])/2));
 }
 const boss=createRun([{id:'p',name:'P',color:'coral'}],Math.random,6);Object.assign(boss.players[0],{x:1.5,y:4.8});stepWarden(boss,0);boss.time=15;stepWarden(boss,0);assert.equal(boss.enemies.filter(e=>e.type==='flapper').length,4,'Warden doubles its previous two-minion wave within its six-minion cap');assert(boss.enemies.filter(e=>e.type==='flapper').every(e=>e.nextDirectionAt===16));
-console.log('PASS: Flapper pairs share 2–5 slots, individual HP and unique IDs, one-second turns, larger 7-damage Creepers, and 5,000 mandatory final encounters');
+console.log('PASS: Flapper pairs share 2–5 slots, individual HP and unique IDs, one-second turns, larger 5-damage Creepers, and 5,000 mandatory final encounters');
