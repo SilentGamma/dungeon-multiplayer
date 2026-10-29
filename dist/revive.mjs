@@ -1,3 +1,4 @@
+import {emitAttackSound} from './audio-events.mjs';
 export const REVIVE_SECONDS=8,REVIVE_RADIUS=.055;
 const sameRoom=(a,b)=>Math.floor(a.x)===Math.floor(b.x)&&Math.floor(a.y)===Math.floor(b.y);
 export function prepareRevives(run){
@@ -19,7 +20,7 @@ export function advanceRevives(run,dt){
     if(!active.length||target.throwing){target.reviveProgress=0;target.reviverId=null;continue}
     target.reviverId=active[0].id;target.reviveProgress=(target.reviveProgress||0)+dt*(1+.2*(active.length-1));
     if(target.reviveProgress+1e-9>=REVIVE_SECONDS){
-      target.hp=Math.ceil((target.maxHp||10)*.3);target.shield=target.maxShield??target.shield;target.reviveProgress=0;target.reviverId=null;target.reviverIds=[];target.holding=false;target.shielding=false;target.arrived=false;target.invulnerableUntil=0;
+      emitAttackSound(run,target,'revive');target.hp=Math.ceil((target.maxHp||10)*.3);target.shield=target.maxShield??target.shield;target.reviveProgress=0;target.reviverId=null;target.reviverIds=[];target.holding=false;target.shielding=false;target.arrived=false;target.invulnerableUntil=0;
       for(const p of active){p.reviving=null;p.holding=false;p.shielding=false}
     }
   }

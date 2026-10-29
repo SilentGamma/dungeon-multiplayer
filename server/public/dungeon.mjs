@@ -1,3 +1,4 @@
+import {emitAttackSound} from './audio-events.mjs';
 import {ACTION_HOLD_SECONDS,advanceActionShield} from './action.mjs';
 import {generatePots,removeBrokenPots} from './pots.mjs';
 import {collectKey,mapReady} from './keys.mjs';
@@ -67,7 +68,7 @@ export function generateDungeon(random=Math.random,round=1){
 }
 export function routeToGoal(run,start){const previous=Array(run.edges.length).fill(-1),q=[start];previous[start]=start;for(let k=0;k<q.length;k++){const i=q[k];if(i===run.goal)break;for(const n of run.edges[i])if(previous[n]===-1){previous[n]=i;q.push(n)}}if(previous[run.goal]===-1)return [];const path=[run.goal];while(path[0]!==start)path.unshift(previous[path[0]]);return path}
 export function navigationTarget(run,p){if(!run.mapCollected||p.hp<=0||p.arrived||run.goal<0)return null;return {x:run.goal%SIZE+.5,y:Math.floor(run.goal/SIZE)+.5,nextRoom:run.goal}}
-export function collectMap(run,p){collectKey(run,p);if(!mapReady(run))return false;if(!run.mapCollected&&Math.hypot(p.x-(run.mapRoom%SIZE+.5),p.y-(Math.floor(run.mapRoom/SIZE)+.5))<.11){run.mapCollected=true;run.mapFoundBy=p.name;return true}return false}
+export function collectMap(run,p){collectKey(run,p);if(!mapReady(run))return false;if(!run.mapCollected&&Math.hypot(p.x-(run.mapRoom%SIZE+.5),p.y-(Math.floor(run.mapRoom/SIZE)+.5))<.11){run.mapCollected=true;run.mapFoundBy=p.name;emitAttackSound(run,p,'pickup');return true}return false}
 export function createRun(players,random=Math.random,round=1){const dungeon=round===6?bossLayout():generateDungeon(random,round);const startRoom=dungeon.startRoom;const run={...dungeon,startRoom,round,teamSize:players.filter(p=>!p.deceased).length,tick:0,time:0,failed:false,players:players.map((p,i)=>{const angle=-Math.PI/2+i*Math.PI/4;return {...p,x:startRoom%SIZE+.5+Math.cos(angle)*.14,y:Math.floor(startRoom/SIZE)+.5+Math.sin(angle)*.14,vx:0,vy:0,awaitingLaunch:true,angle,holding:false,shielding:false,hp:roleFor(p.color).hp,maxHp:roleFor(p.color).hp,shield:roleFor(p.color).shield,maxShield:roleFor(p.color).shield,invulnerableUntil:.8,arrived:false,inputSeq:0}})};run.enemies=round===6?[createWarden(run.teamSize)]:[];if(round===6){run.projectiles=[];run.bossActive=false;run.bossDefeated=false;run.bossHp=run.enemies[0].hp;run.bossMaxHp=run.enemies[0].maxHp}run.pots=generatePots(run,random);run.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);run.lockedRooms=Array(SIZE*SIZE).fill(false);refreshEnemyActivity(run,random);return run}
 export function applyInput(run,id,m){
  const p=run.players.find(p=>p.id===id);if(!p||p.hp<=0||p.arrived||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||run.failed||!Number.isSafeInteger(m.seq)||m.seq<=p.inputSeq||typeof m.holding!=='boolean')return false;

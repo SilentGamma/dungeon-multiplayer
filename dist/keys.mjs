@@ -1,3 +1,4 @@
+import {emitAttackSound} from './audio-events.mjs';
 import {SIZE} from './world.mjs';
 export function keyPending(run,room){const index=run.keyRooms?.indexOf(room)??-1;return index>=0&&!((run.collectedKeys||0)&(1<<index))}
 export function enterKeyRoom(run,room){const index=run.keyRooms?.indexOf(room)??-1;if(index<0)return false;run.enteredKeyRooms=(run.enteredKeyRooms||0)|(1<<index);return true}
@@ -8,7 +9,7 @@ export function collectKey(run,p){
  const room=Math.floor(p.y)*SIZE+Math.floor(p.x),index=run.keyRooms?.indexOf(room)??-1;
  if(index<0||!keyPending(run,room))return false;enterKeyRoom(run,room);const key=run.keyItems[index];
  if(Math.hypot(p.x-key.x,p.y-key.y)>.075)return false;
- run.collectedKeys=(run.collectedKeys||0)|(1<<index);
+ run.collectedKeys=(run.collectedKeys||0)|(1<<index);emitAttackSound(run,p,'pickup');
  if(run.lockedRooms&&!run.enemies?.some(e=>e.room===room&&e.hp>0))run.lockedRooms[room]=false;
  return true;
 }

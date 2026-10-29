@@ -1,6 +1,6 @@
 import {emitAttackSound} from './audio-events.mjs';
 import {GAMBIT_DELAY,GAMBIT_NAMES} from './gambit.mjs';
-import {POT_RADIUS,potsInArea,launchPot,canThrowPot} from './pots.mjs';
+import {POT_RADIUS,potsInArea} from './pots.mjs';
 import {keyPending,enterKeyRoom} from './keys.mjs';
 import {arenaRoom,inArena,roomBounds,sameArea,tileOf} from './arena.mjs';
 import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
@@ -43,7 +43,7 @@ export function enemiesInRoom(run,room){
 }
 export function removeDefeatedEnemies(run){
  if(!(run.enemies||[]).some(e=>e.hp<=0))return;
- const defeated=new Set(run.enemies.filter(e=>e.hp<=0).map(e=>e.id));
+ const defeated=new Set(run.enemies.filter(e=>e.hp<=0).map(e=>{emitAttackSound(run,e,'down');return e.id}));
  run.enemies=run.enemies.filter(e=>e.hp>0);
  for(const p of run.players)if(defeated.has(p.grappleTarget))p.grappleTarget=null;
 }
@@ -77,8 +77,8 @@ function guarded(run,p){return run.players.some(b=>b!==p&&b.hp>0&&!b.arrived&&b.
 function down(p){p.hp=0;p.holding=false;p.shielding=false;p.arrived=false;p.reviving=null;p.attackUntil=0;clearPoison(p);p.stunUntil=0}
 export function damagePlayer(run,p,damage,random=Math.random){
  const now=run.time||0;if(p.hp<=0||p.arrived||guarded(run,p))return false;
- if(p.shielding&&p.shield>0){p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;if(!p.shield){p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
- p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p);return true;
+ if(p.shielding&&p.shield>0){emitAttackSound(run,p,'shield-hit');p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;if(!p.shield){emitAttackSound(run,p,'shield-break');p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
+ emitAttackSound(run,p,'hurt');p.hp=Math.max(0,p.hp-damage);if(!p.hp)emitAttackSound(run,p,'down');p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p);return true;
 }
 function jokerGambit(run,p){
  const now=run.time||0;if(p.gambitPending)return;
@@ -106,9 +106,9 @@ function resolveSwing(run,p){
  const swing=swings.get(p),now=run.time||0;if(!swing)return;
  if(now>=p.attackUntil||p.hp<=0||p.arrived||p.reviving||p.throwing||p.grabbedBy||now<(p.stunUntil||0)){swings.delete(p);p.attackUntil=0;return}
  const role=roleFor(p.color),aim={...p,angle:swing.angle};
- let targets=[...(run.enemies||[]).filter(e=>e.hp>0),...(canThrowPot(p)?potsInArea(run,p).filter(o=>!o.grabbedBy):[])].filter(e=>!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,e.kind==='pot'?POT_RADIUS:enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
- if(role.single)targets=swing.hits.size?[]:targets.slice(0,1);
- for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){launchPot(run,e,p,swing.angle);continue}e.hp=Math.max(0,e.hp-swing.damage);e.hitUntil=now+.2;swing.enemyHit=true;if(p.color==='blue')emitAttackSound(run,e,'sniper-hit');if(p.color==='green')applyPoison(e,now,{refresh:true})}
+ let targets=[...(run.enemies||[]).filter(e=>e.hp>0),...potsInArea(run,p).filter(o=>!o.grabbedBy)].filter(e=>!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,e.kind==='pot'?POT_RADIUS:enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+ if(role.single){const firstEnemy=targets.find(e=>e.kind!=='pot');targets=targets.filter(e=>e.kind==='pot'||(!swing.enemyHit&&e===firstEnemy))}
+ for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){e.hp=0;continue}e.hp=Math.max(0,e.hp-swing.damage);e.hitUntil=now+.2;if(p.color!=='blue')emitAttackSound(run,e,'hurt');swing.enemyHit=true;if(p.color==='blue')emitAttackSound(run,e,'sniper-hit');if(p.color==='green')applyPoison(e,now,{refresh:true})}
  for(const q of run.players){if(q===p||q.hp<=0||q.arrived||swing.healed.has(q.id)||!clearPath(run,p,q)||Math.hypot(q.x-p.x,q.y-p.y)>2*WIDTH)continue;const heal=p.color==='purple'&&swing.enemyHit?3:p.color==='green'&&inAttack(aim,q)?5:0;if(heal){healAlly(p,q,heal);swing.healed.add(q.id)}}
 }
 export function attack(run,p){
@@ -126,7 +126,7 @@ function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
  if(poison&&p.hp>0)applyPoison(p,now)
  return true;
 }
-function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;p.hp=Math.max(0,p.hp-damage);p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}
+function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;emitAttackSound(run,p,'hurt');p.hp=Math.max(0,p.hp-damage);if(!p.hp)emitAttackSound(run,p,'down');p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}
 // Hold non-attacking enemies at the shield boundary through their windup.
 // Bouncing them away before an attack activates makes shield contact miss.
 function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||!sameArea(run,p,e)||!clearPath(run,e,p))continue;const bounds=roomBounds(run,e.room),r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(bounds.x+r,Math.min(bounds.x+bounds.width-r,p.x+nx*reach));e.y=Math.max(bounds.y+r,Math.min(bounds.y+bounds.height-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;const attacking=e.type==='sleeper'?e.mode==='lunging':run.time<(e.attackActiveUntil||0);if(attacking&&dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
