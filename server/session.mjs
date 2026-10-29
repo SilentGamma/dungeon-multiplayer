@@ -4,10 +4,10 @@ import {ROLES} from '../dist/roles.mjs';
 
 export class Session {
  constructor({code,visibility='private',random=Math.random}){this.visibility=visibility;this.code=code;this.random=random;this.phase='lobby';this.players=[];this.run=null;this.accumulator=0;this.closed=false;this.endReason=null;this.latestInput=new Map();}
- join({id,name}){
+ join({id,name,preferredRole}){
   if(this.closed||this.phase!=='lobby')throw Error('Lobby is no longer accepting players.');
   if(typeof id!=='string'||!id||id.length>128||typeof name!=='string'||!name.trim()||name.length>20||this.players.some(p=>p.id===id))throw Error('Invalid player.');
-  const color=Object.keys(ROLES).find(c=>!this.players.some(p=>p.color===c));if(!color)throw Error('Lobby is full.');
+  const available=Object.keys(ROLES).filter(c=>!this.players.some(p=>p.color===c));const color=available.includes(preferredRole)?preferredRole:available[0];if(!color)throw Error('Lobby is full.');
   const player={id,name:name.trim(),color};this.players.push(player);return {...player};
  }
  choose(id,color){if(this.closed||this.phase!=='lobby'||!Object.hasOwn(ROLES,color))return false;const p=this.players.find(p=>p.id===id);if(!p||this.players.some(q=>q.id!==id&&q.color===color))return false;p.color=color;return true;}
