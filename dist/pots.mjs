@@ -5,7 +5,8 @@ export const POT_RADIUS=.032;
 export function generatePots(run,random=Math.random){
  const pots=[];let arenaDone=false;
  for(let room=0;room<run.edges.length;room++){
-  if(!run.edges[room].length)continue;
+  // The shared starting room stays empty, regardless of player count.
+  if(room===run.startRoom||!run.edges[room].length)continue;
   if(arenaRoom(run,room)){if(arenaDone)continue;arenaDone=true}
   const bounds=roomBounds(run,room),count=Math.floor(random()*5);
   for(let i=0;i<count;i++)for(let attempt=0;attempt<50;attempt++){

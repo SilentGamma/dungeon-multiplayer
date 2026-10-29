@@ -11,11 +11,14 @@ let seed=2209;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/
 // Pots are separate props, not encounter slots, and spawn clear of protected areas.
 for(let n=0;n<500;n++){
  const r=createRun([{id:'p',name:'P',color:'coral'}],random,n%5+1),counts=new Map();
- for(const o of r.pots){counts.set(o.room,(counts.get(o.room)||0)+1);assert(o.hp>0);assert(!r.players.some(p=>Math.hypot(p.x-o.x,p.y-o.y)<.16));assert(!r.obstacles.some(w=>touchesSquare(o,POT_RADIUS+.02,w)));assert(!r.keyItems.some(k=>Math.hypot(k.x-o.x,k.y-o.y)<.13));assert(![r.goal,r.mapRoom].some(room=>Math.hypot(room%SIZE+.5-o.x,Math.floor(room/SIZE)+.5-o.y)<.23))}
+ assert.notEqual(r.mapRoom,r.startRoom);assert(!r.enemyRooms[r.startRoom]);assert(!r.keyRooms.includes(r.startRoom));assert(!r.obstacles.some(o=>o.room===r.startRoom));
+ for(const o of r.pots){assert.notEqual(o.room,r.startRoom);counts.set(o.room,(counts.get(o.room)||0)+1);assert(o.hp>0);assert(!r.players.some(p=>Math.hypot(p.x-o.x,p.y-o.y)<.16));assert(!r.obstacles.some(w=>touchesSquare(o,POT_RADIUS+.02,w)));assert(!r.keyItems.some(k=>Math.hypot(k.x-o.x,k.y-o.y)<.13));assert(![r.goal,r.mapRoom].some(room=>Math.hypot(room%SIZE+.5-o.x,Math.floor(room/SIZE)+.5-o.y)<.23))}
  assert([...counts.values()].every(count=>count<=4));assert(r.pots.length<=60);assert(!r.enemies.some(e=>e.kind==='pot'));
  const keyRoom=r.keyRooms[0];assert(!keyVisible(r,keyRoom));assert(keyPending(r,keyRoom));assert(enterRoom(r,r.edges[keyRoom][0],keyRoom));assert(keyVisible(r,keyRoom));
  r.mapCollected=true;const expected={x:r.goal%SIZE+.5,y:Math.floor(r.goal/SIZE)+.5};for(const p of [{hp:12,x:1.01,y:2.5},{hp:12,x:1.99,y:2.5},{hp:12,x:2.01,y:2.5}]){const target=navigationTarget(r,p);assert.equal(target.x,expected.x);assert.equal(target.y,expected.y);assert.equal(target.nextRoom,r.goal)}
 }
+// Boss-stage spawns obey the same empty-start-room rule.
+for(let n=0;n<100;n++){const r=createRun([{id:'p',name:'P',color:'coral'}],random,6);assert(r.pots.every(o=>o.room!==r.startRoom));assert(r.enemies.every(e=>e.room!==r.startRoom));assert.equal(r.mapRoom,-1)}
 function fixture(color='coral'){const r=createRun([{id:'p',name:'P',color}]);r.time=10;r.goal=0;r.obstacles=[];r.enemies=[];r.keyRooms=[];r.keyItems=[];r.pots=[];r.edges=Array.from({length:49},()=>[]);r.lockedRooms=Array(49).fill(false);const p=r.players[0];Object.assign(p,{x:1.2,y:2.5,angle:0,vx:0,vy:0,awaitingLaunch:false,invulnerableUntil:0});return [r,p]}
 const pot=(id,x=1.25,y=2.5)=>({id,kind:'pot',room:15,x,y,hp:1,vx:0,vy:0});
 let [r,p]=fixture();r.pots=[pot('pot')];assert(attack(r,p));assert.equal(r.pots[0].hp,1,'attacks launch rather than shatter pots');assert(r.pots[0].throwing);assert.equal(r.pots[0].throwing.from,p.id);

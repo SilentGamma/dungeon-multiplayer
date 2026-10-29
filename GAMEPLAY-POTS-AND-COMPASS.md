@@ -11,3 +11,7 @@ Pots are separate, nonblocking props and do not count toward enemy limits or roo
 Props use the same proximity filtering, compact position/velocity updates and snapshot interpolation as other moving entities. Broken pots and their render/cache entries are removed. A standard generated dungeon has at most 60 pots; the separate finale has at most eight. Pots replace no enemy slots and do not activate room spawns when thrown across doors.
 
 Validation covers 500 generated dungeon layouts, key reveal before/after entry, direct compass targets on both sides of room boundaries, attack and Wrestler throws, safe stopping, wall/obstacle/entity impacts, shields, owner immunity, pot-to-pot impacts, doorway entry, metadata reconstruction, object removal and rendering.
+
+## Empty starting room
+
+Starting rooms never spawn pots, enemies, keys, walls, or spikes. This applies to all five dungeons and the boss-stage starting room. Players still spawn there normally, and objects may be brought into it during play. The map always spawns outside the start room, including dungeon one; existing key-room reward and distance rules remain in place.

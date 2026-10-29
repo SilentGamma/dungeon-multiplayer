@@ -55,7 +55,8 @@ export function generateDungeon(random=Math.random,round=1){
   const offsets=[[.5,.25],[.75,.5],[.5,.75],[.25,.5]],keyItems=keyRooms.map(room=>{const [x,y]=offsets[Math.floor(random()*offsets.length)];return {room,x:room%SIZE+x,y:Math.floor(room/SIZE)+y}});
   const distance=distances(edges,[startRoom]),nearKeys=keyRooms.filter(room=>distance[room]<=3);
   const farRooms=[...used].filter(room=>room!==goal&&room!==startRoom&&distance[room]>3),ordinaryMaps=farRooms.filter(room=>!keyRooms.includes(room));
-  const mapOptions=nearKeys.length?nearKeys:ordinaryMaps.length?ordinaryMaps:farRooms;
+  // Never place the map in the spawn room, including dungeon one.
+  const mapOptions=(nearKeys.length?nearKeys:ordinaryMaps.length?ordinaryMaps:farRooms).filter(room=>room!==startRoom);
   if(!mapOptions.length)continue;
   const mapRoom=mapOptions[Math.floor(random()*mapOptions.length)],mapRewardRoom=keyRooms.includes(mapRoom)?mapRoom:null;
   const obstacles=generateObstacles(edges,enemyRooms,startRoom,goal,random);
