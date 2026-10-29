@@ -2,6 +2,7 @@ import {SIZE,THROW_SPEED} from './world.mjs';
 import {roomBounds,arenaRoom,sameArea} from './arena.mjs';
 import {touchesSquare} from './obstacles.mjs';
 export const POT_RADIUS=.032;
+export const canThrowPot=player=>player?.color==='teal'||player?.color==='lime';
 export function generatePots(run,random=Math.random){
  const pots=[];let arenaDone=false;
  for(let room=0;room<run.edges.length;room++){
@@ -21,5 +22,5 @@ export function generatePots(run,random=Math.random){
  return pots;
 }
 export function potsInArea(run,p){const room=Math.floor(p.y)*SIZE+Math.floor(p.x);return (run.pots||[]).filter(o=>o.hp>0&&(sameArea(run,o,p)||run.edges[room]?.includes(o.room)))}
-export function launchPot(run,pot,source,angle){if(pot.hp<=0||pot.grabbedBy)return false;pot.angle=angle;pot.throwing={room:pot.room,vx:Math.cos(angle)*THROW_SPEED,vy:Math.sin(angle)*THROW_SPEED,contact:{},from:source.id};return true}
+export function launchPot(run,pot,source,angle){if(!canThrowPot(source)||pot.hp<=0||pot.grabbedBy)return false;pot.angle=angle;pot.throwing={room:pot.room,vx:Math.cos(angle)*THROW_SPEED,vy:Math.sin(angle)*THROW_SPEED,contact:{},from:source.id};return true}
 export function removeBrokenPots(run){if(!run.pots?.some(p=>p.hp<=0))return;const broken=new Set(run.pots.filter(p=>p.hp<=0).map(p=>p.id));run.pots=run.pots.filter(p=>p.hp>0);for(const player of run.players)if(broken.has(player.grappleTarget))player.grappleTarget=null}

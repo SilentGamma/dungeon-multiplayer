@@ -1,4 +1,4 @@
-import {POT_RADIUS,potsInArea,launchPot} from './pots.mjs';
+import {POT_RADIUS,potsInArea,launchPot,canThrowPot} from './pots.mjs';
 import {keyPending,enterKeyRoom} from './keys.mjs';
 import {arenaRoom,inArena,roomBounds,sameArea,tileOf} from './arena.mjs';
 import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
@@ -95,7 +95,7 @@ function resolveSwing(run,p){
  const swing=swings.get(p),now=run.time||0;if(!swing)return;
  if(now>=p.attackUntil||p.hp<=0||p.arrived||p.reviving||p.throwing||p.grabbedBy||now<(p.stunUntil||0)){swings.delete(p);p.attackUntil=0;return}
  const role=roleFor(p.color),aim={...p,angle:swing.angle};
- let targets=[...(run.enemies||[]).filter(e=>e.hp>0),...potsInArea(run,p).filter(o=>!o.grabbedBy)].filter(e=>!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,e.kind==='pot'?POT_RADIUS:enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+ let targets=[...(run.enemies||[]).filter(e=>e.hp>0),...(canThrowPot(p)?potsInArea(run,p).filter(o=>!o.grabbedBy):[])].filter(e=>!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,e.kind==='pot'?POT_RADIUS:enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  if(role.single)targets=swing.hits.size?[]:targets.slice(0,1);
  for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){launchPot(run,e,p,swing.angle);continue}e.hp=Math.max(0,e.hp-swing.damage);e.hitUntil=now+.2;swing.enemyHit=true;if(p.color==='green')applyPoison(e,now,{refresh:true})}
  for(const q of run.players){if(q===p||q.hp<=0||q.arrived||swing.healed.has(q.id)||!clearPath(run,p,q)||Math.hypot(q.x-p.x,q.y-p.y)>2*WIDTH)continue;const heal=p.color==='purple'&&swing.enemyHit?3:p.color==='green'&&inAttack(aim,q)?5:0;if(heal){healAlly(p,q,heal);swing.healed.add(q.id)}}

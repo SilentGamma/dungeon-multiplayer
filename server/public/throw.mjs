@@ -1,4 +1,4 @@
-import {POT_RADIUS} from './pots.mjs';
+import {POT_RADIUS,canThrowPot} from './pots.mjs';
 import {roomBounds,sameArea,inArena,tileOf} from './arena.mjs';
 import {enemyRadius,FLAPPER_TURN_INTERVAL} from './enemies.mjs';
 import {resolveWalls,wallBlocksLine} from './obstacles.mjs';
@@ -11,7 +11,7 @@ const radiusOf=q=>q.kind==='pot'?POT_RADIUS:q.type?enemyRadius(q):PLAYER_RADIUS;
 const roomOf=p=>Math.floor(p.y)*SIZE+Math.floor(p.x);
 export function beginGrapple(run,p){
  const now=run.time||0;if(p.throwing||p.grabbedBy||now<(p.stunUntil||0)||now<(p.nextAttack||0)||p.grappleTarget)return false;
- const targets=[...enemiesInRoom(run,roomOf(p)).filter(e=>e.hp>0),...run.players.filter(q=>q.id!==p.id&&!q.arrived&&!q.deceased),...(run.pots||[]).filter(q=>q.hp>0)].filter(q=>!q.grabbedBy&&!q.throwing&&!wallBlocksLine(run,p,q)&&sameArea(run,q,p)&&Math.hypot(q.x-p.x,q.y-p.y)<=Math.max(WIDTH*1.5,(p.wrestlerState==='lunging'?SHIELD_RADIUS:PLAYER_RADIUS)+radiusOf(q))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
+ const targets=[...enemiesInRoom(run,roomOf(p)).filter(e=>e.hp>0),...run.players.filter(q=>q.id!==p.id&&!q.arrived&&!q.deceased),...(run.pots||[]).filter(q=>q.hp>0&&canThrowPot(p))].filter(q=>!q.grabbedBy&&!q.throwing&&!wallBlocksLine(run,p,q)&&sameArea(run,q,p)&&Math.hypot(q.x-p.x,q.y-p.y)<=Math.max(WIDTH*1.5,(p.wrestlerState==='lunging'?SHIELD_RADIUS:PLAYER_RADIUS)+radiusOf(q))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  const target=targets[0];if(!target)return false;p.grappleTarget=target.id;target.grabbedBy=p.id;target.holding=false;target.usingAttack=false;target.attackUntil=0;target.wrestlerState=null;target.shielding=false;target.reviving=null;target.reviveProgress=0;return true;
 }
 // Wrestler charges in the travel direction and catches on contact.

@@ -19,12 +19,18 @@ for(let n=0;n<500;n++){
 }
 // Boss-stage spawns obey the same empty-start-room rule.
 for(let n=0;n<100;n++){const r=createRun([{id:'p',name:'P',color:'coral'}],random,6);assert(r.pots.every(o=>o.room!==r.startRoom));assert(r.enemies.every(e=>e.room!==r.startRoom));assert.equal(r.mapRoom,-1)}
-function fixture(color='coral'){const r=createRun([{id:'p',name:'P',color}]);r.time=10;r.goal=0;r.obstacles=[];r.enemies=[];r.keyRooms=[];r.keyItems=[];r.pots=[];r.edges=Array.from({length:49},()=>[]);r.lockedRooms=Array(49).fill(false);const p=r.players[0];Object.assign(p,{x:1.2,y:2.5,angle:0,vx:0,vy:0,awaitingLaunch:false,invulnerableUntil:0});return [r,p]}
+function fixture(color='lime'){const r=createRun([{id:'p',name:'P',color}]);r.time=10;r.goal=0;r.obstacles=[];r.enemies=[];r.keyRooms=[];r.keyItems=[];r.pots=[];r.edges=Array.from({length:49},()=>[]);r.lockedRooms=Array(49).fill(false);const p=r.players[0];Object.assign(p,{x:1.2,y:2.5,angle:0,vx:0,vy:0,awaitingLaunch:false,invulnerableUntil:0});return [r,p]}
 const pot=(id,x=1.25,y=2.5)=>({id,kind:'pot',room:15,x,y,hp:1,vx:0,vy:0});
 let [r,p]=fixture();r.pots=[pot('pot')];assert(attack(r,p));assert.equal(r.pots[0].hp,1,'attacks launch rather than shatter pots');assert(r.pots[0].throwing);assert.equal(r.pots[0].throwing.from,p.id);
 const heldHp=p.hp;updateThrows(r,.01);assert.equal(p.hp,heldHp,'throw owner cannot be hurt by their pot');
-// Closest-target roles spend the hit on the pot, and props do not grant enemy-hit healing.
-[r,p]=fixture('blue');r.pots=[pot('front',1.25)];r.enemies=[{id:'behind',type:'walker',room:15,x:1.4,y:2.5,hp:15}];assert(attack(r,p));assert(r.pots[0].throwing);assert.equal(r.enemies[0].hp,15);
+// Only Wrestler and Joker can launch or grab pots; other attacks ignore them.
+for(const color of ['coral','purple','pink','gold','green','blue','teal','lime']){
+ [r,p]=fixture(color);r.pots=[pot('role-check')];const allowed=['teal','lime'].includes(color);
+ assert.equal(launchPot(r,r.pots[0],p,0),allowed,color+' direct pot launch');r.pots[0].throwing=null;
+ if(color!=='teal'){assert(attack(r,p));assert.equal(!!r.pots[0].throwing,allowed,color+' attack pot launch')}
+}
+// A pot does not consume a Sniper hit that should reach an enemy behind it.
+[r,p]=fixture('blue');r.pots=[pot('front',1.25)];r.enemies=[{id:'behind',type:'walker',room:15,x:1.4,y:2.5,hp:15}];assert(attack(r,p));assert(!r.pots[0].throwing);assert(r.enemies[0].hp<15);
 [r,p]=fixture('purple');r.pots=[pot('heal-test',1.25)];r.players.push({...p,id:'ally',x:1.21,hp:1,maxHp:12});assert(attack(r,p));assert.equal(r.players[1].hp,1,'hitting a prop does not trigger enemy-hit healing');
 // A pot stays intact when it runs out of momentum without any impact.
 [r,p]=fixture();r.pots=[pot('rest',1.3)];launchPot(r,r.pots[0],p,0);for(let i=0;i<150;i++){r.time+=1/60;updateThrows(r,1/60)}assert.equal(r.pots[0].hp,1);assert(!r.pots[0].throwing);assert(r.pots[0].x>1.75);

@@ -15,3 +15,7 @@ Validation covers 500 generated dungeon layouts, key reveal before/after entry, 
 ## Empty starting room
 
 Starting rooms never spawn pots, enemies, keys, walls, or spikes. This applies to all five dungeons and the boss-stage starting room. Players still spawn there normally, and objects may be brought into it during play. The map always spawns outside the start room, including dungeon one; existing key-room reward and distance rules remain in place.
+
+## Pot throw roles
+
+Only Wrestler (teal) and Joker (lime) can throw pots. Wrestler uses his grab/orbit/throw controls; Joker launches them with his attack. Other roles ignore pots when selecting attack targets, and cannot launch or grab them. Non-image app assets require cache revalidation so refreshed clients receive deployed code. Existing runs keep their original generated objects; spawn changes apply to newly generated dungeons.
