@@ -14,7 +14,7 @@ Assets are saved in `server/public/` in this repository. Portraits are 512 × 51
 | joker | green lime #a9e64b | joker-portrait-v4.webp | joker-token-v2.webp |
 | brute | gold #ffcf78 | brute-portrait-v3.webp | brute-token-v1.webp |
 | sniper | blue #9ebdff | sniper-portrait-v3.webp | sniper-token-v3.webp |
-| perfumer | purple #d8b1ff | perfumer-portrait-v3.webp | perfumer-token-v1.webp |
+| perfumer | purple #d8b1ff | perfumer-portrait-v1.webp | perfumer-token-v1.webp |
 | dancer | pink #fca1bd | dancer-portrait-v3.webp | dancer-token-v1.webp |
 
 ## Original portrait prompts (v1)
@@ -80,3 +80,7 @@ Six portraits now use natural skin tones and varied facial features and hair tex
 ## Current monochrome cast
 
 This revision supersedes the natural-color palette: every selected portrait and token is monochrome in its role color. Updated facial features and hair textures remain. Wrestler has the requested Filipino/Mexican-inspired features. Perfumer’s sweeping fringe covers one eye, with the eye visibly drawn over the hair. Sniper has a plain circular scope and retains the corrected crosshair only on the rectangular visor. Brawler and Dancer received a final contrast refinement. [Final built-in generation prompts and saved asset paths](ARTWORK-monochrome-prompts.md).
+
+## Perfumer portrait restored
+
+At the user’s direction, Perfumer uses her first monochrome purple portrait (perfumer-portrait-v1.webp), before the face and fringe edits. This supersedes the eye-over-hair revision for Perfumer only. The rest of the monochrome cast revision remains selected.
