@@ -1,6 +1,6 @@
 # Character artwork
 
-Polished from the user's original notebook sketches using the built-in image-generation tool. Eight square selection portraits and eight transparent circular tokens use each role's identifying accent color, with natural skin and hair in the latest six human portraits. Gameplay uses the original collision rules. The displayed player radius is 0.026 room units, matching Normal enemies, while the collision radius remains 0.0196875 (about 32% larger display only).
+Polished from the user's original notebook sketches using the built-in image-generation tool. Eight square selection portraits and eight transparent circular tokens use strict monochrome shades of each role’s identifying color, including skin, hair, lips and eyes. Gameplay uses the original collision rules. The displayed player radius is 0.026 room units, matching Normal enemies, while the collision radius remains 0.0196875 (about 32% larger display only).
 
 ## Final assets
 
@@ -8,14 +8,14 @@ Assets are saved in `server/public/` in this repository. Portraits are 512 × 51
 
 | Role | Color | Portrait | Token |
 |---|---|---|---|
-| brawler | coral peach #ffad83 | brawler-portrait-v3.webp | brawler-token-v3.webp |
-| chef | mint green #99efb1 | chef-portrait-v3.webp | chef-token-v3.webp |
-| wrestler | teal cyan #79e2e4 | wrestler-portrait-v2.webp | wrestler-token-v3.webp |
-| joker | green lime #a9e64b | joker-portrait-v3.webp | joker-token-v2.webp |
-| brute | gold #ffcf78 | brute-portrait-v2.webp | brute-token-v1.webp |
-| sniper | blue #9ebdff | sniper-portrait-v2.webp | sniper-token-v2.webp |
-| perfumer | purple #d8b1ff | perfumer-portrait-v2.webp | perfumer-token-v1.webp |
-| dancer | pink #fca1bd | dancer-portrait-v2.webp | dancer-token-v1.webp |
+| brawler | coral peach #ffad83 | brawler-portrait-v4.webp | brawler-token-v3.webp |
+| chef | mint green #99efb1 | chef-portrait-v4.webp | chef-token-v3.webp |
+| wrestler | teal cyan #79e2e4 | wrestler-portrait-v3.webp | wrestler-token-v3.webp |
+| joker | green lime #a9e64b | joker-portrait-v4.webp | joker-token-v2.webp |
+| brute | gold #ffcf78 | brute-portrait-v3.webp | brute-token-v1.webp |
+| sniper | blue #9ebdff | sniper-portrait-v3.webp | sniper-token-v3.webp |
+| perfumer | purple #d8b1ff | perfumer-portrait-v3.webp | perfumer-token-v1.webp |
+| dancer | pink #fca1bd | dancer-portrait-v3.webp | dancer-token-v1.webp |
 
 ## Original portrait prompts (v1)
 
@@ -76,3 +76,7 @@ Brute, Sniper, Perfumer and Dancer were polished from the second user sketch she
 ## Natural skin and hair revision
 
 Six portraits now use natural skin tones and varied facial features and hair textures, following the user’s direction: Hawaiian-inspired Chef, mixed-heritage-inspired Perfumer, European-inspired Dancer and Japanese Brawler. Brute has straight shoulder-length dark hair, and her weapon remains behind her. Joker retains his one tooth and lime costume. Sniper’s portrait and token have centered visor reticles. Wrestler and the other minimal role-color tokens are unchanged. [Final built-in generation prompts and saved paths](ARTWORK-natural-colors-prompts.md).
+
+## Current monochrome cast
+
+This revision supersedes the natural-color palette: every selected portrait and token is monochrome in its role color. Updated facial features and hair textures remain. Wrestler has the requested Filipino/Mexican-inspired features. Perfumer’s sweeping fringe covers one eye, with the eye visibly drawn over the hair. Sniper has a plain circular scope and retains the corrected crosshair only on the rectangular visor. Brawler and Dancer received a final contrast refinement. [Final built-in generation prompts and saved asset paths](ARTWORK-monochrome-prompts.md).
