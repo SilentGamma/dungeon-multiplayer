@@ -15,3 +15,12 @@ let [r,p]=fixture('teal');applyInput(r,'p',{seq:1,holding:true,attack:true});ass
 [r,p]=fixture();const prediction=createPrediction('p');prediction.latency(0);prediction.set(r,0);prediction.input({seq:1,holding:true,attack:true},0);assert(!prediction.sample(100).shielding);assert(prediction.sample(201).shielding);prediction.input({seq:2,holding:false,attack:false},220);assert(!prediction.sample(230).shielding);
 assert.equal(ACTION_HOLD_SECONDS,.2);
 console.log('PASS: tap-only attack, hold-only shield, threshold, cancellation, delayed packets, unchanged role attacks, Wrestler launch and predicted shield timing');
+
+for(const color of ['coral','purple','pink','gold','green','blue','teal','lime']){
+ const [run,p]=fixture(color);p.nextAttack=run.time+5;const cooldown=p.nextAttack;
+ assert(applyInput(run,'p',{seq:1,holding:true,attack:true}));step(run,.21);assert(p.shielding,color+' shields during cooldown');assert(!p.attackUntil);assert(!p.wrestlerState,color+' does not lunge during cooldown');
+ applyInput(run,'p',{seq:2,holding:false,attack:false,heldFor:.21});assert(!p.shielding);assert(!p.attackUntil);assert.equal(p.nextAttack,cooldown);
+ applyInput(run,'p',{seq:3,holding:true,attack:true});applyInput(run,'p',{seq:4,holding:false,attack:false,heldFor:.05});assert(!p.attackUntil,color+' cooldown still blocks a tap attack');
+ const prediction=createPrediction('p');prediction.latency(0);prediction.set(run,0);prediction.input({seq:5,holding:true,attack:true},0);assert(prediction.sample(220).shielding,color+' predicts shield during cooldown');
+}
+console.log('PASS: all eight roles shield during cooldown without bypassing attack cooldown');

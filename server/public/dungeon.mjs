@@ -73,10 +73,10 @@ export function createRun(players,random=Math.random,round=1){const dungeon=roun
 export function applyInput(run,id,m){
  const p=run.players.find(p=>p.id===id);if(!p||p.hp<=0||p.arrived||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||run.failed||!Number.isSafeInteger(m.seq)||m.seq<=p.inputSeq||typeof m.holding!=='boolean')return false;
  if(p.awaitingLaunch&&!(p.vx||p.vy))m={...m,attack:false};
- if(m.holding&&m.attack===true&&!p.usingAttack&&!p.wrestlerState&&run.time<(p.nextAttack||0))return false;p.inputSeq=m.seq;if(p.reviving){if(m.holding&&m.attack!==true){p.reviveAvoidTarget=p.reviving;p.reviving=null;p.shielding=false}else{p.holding=false;p.shielding=false;return true}}
+ p.inputSeq=m.seq;if(p.reviving){if(m.holding&&m.attack!==true){p.reviveAvoidTarget=p.reviving;p.reviving=null;p.shielding=false}else{p.holding=false;p.shielding=false;return true}}
  if(p.color==='teal'){
   if(p.wrestlerState){if(!m.holding||m.attack!==true){p.wrestlerReleased=true;p.shielding=false;if(m.cancel===true)p.wrestlerCancel=true}return true}
-  if(m.holding&&m.attack===true){startWrestler(run,p);return true}
+  if(m.holding&&m.attack===true&&!p.usingAttack&&startWrestler(run,p))return true;
  }
  if(m.holding)p.aimDirection=m.aimDirection===-1?-1:m.aimDirection===1?1:(p.holding?p.aimDirection:1);
  const wasAttacking=!!p.usingAttack;
