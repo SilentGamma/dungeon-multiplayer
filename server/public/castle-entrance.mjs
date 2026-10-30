@@ -9,15 +9,16 @@ export function createCastleEntrance(isMuted){
  function unlock(){if(pendingSound&&current==='home')play()}
  document.addEventListener('pointerdown',unlock,{capture:true,passive:true});
  document.addEventListener('keydown',unlock,{capture:true});
- async function fade(from,to){const anim=curtain.animate([{opacity:from},{opacity:to}],{duration:reduced()?80:480,easing:'ease-in-out',fill:'forwards'});await anim.finished.catch(()=>{});curtain.style.opacity=String(to);anim.cancel()}
- play();fade(1,0);
+ const duration=()=>Number.isFinite(sound.duration)?sound.duration*1000:6322;
+ async function fade(from,to,milliseconds){const anim=curtain.animate([{opacity:from},{opacity:to}],{duration:reduced()?80:milliseconds,easing:'ease-in-out',fill:'forwards'});await anim.finished.catch(()=>{});curtain.style.opacity=String(to);anim.cancel()}
+ play();fade(1,0,duration());
  return {silence,async change(id,reveal){
   if(id===current){reveal();return}
   const ticket=++serial,throughCastle=id==='home'||current==='home';
   if(!throughCastle){current=id;reveal();return}
-  curtain.style.pointerEvents='auto';await fade(0,1);
+  curtain.style.pointerEvents='auto';const half=duration()/2;await fade(0,1,half);
   if(ticket!==serial)return;
-  current=id;reveal();if(id==='home')play();else pendingSound=false;
-  await fade(1,0);curtain.style.pointerEvents='none';
+  current=id;reveal();pendingSound=false;if(id==='home')silence();
+  await fade(1,0,half);curtain.style.pointerEvents='none';
  }};
 }
