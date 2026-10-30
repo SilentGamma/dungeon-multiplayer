@@ -7,7 +7,7 @@ import {applyPoison,tickPoison,clearPoison,healAlly} from './poison.mjs';
 import {enemyFor,enemyRadius,eligibleEnemies,scaledEnemyHealth,turnFlapper,FLAPPER_TURN_INTERVAL,SLAM_RADIUS,SLAM_INTERVAL,SLAM_WINDUP} from './enemies.mjs';
 import {obstaclesInRoom,touchesSquare,resolveWalls,wallBlocksLine} from './obstacles.mjs';
 import {SIZE,PLAYER_RADIUS,SPEED_MULTIPLIER} from './world.mjs';
-import {roleFor,inAttack,WIDTH} from './roles.mjs';
+import {roleFor,inAttack,WIDTH,sniperRatioDamage} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,SHIELD_RADIUS=.075,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
 export const roomOf=p=>Math.min(SIZE-1,Math.max(0,Math.floor(p.y)))*SIZE+Math.min(SIZE-1,Math.max(0,Math.floor(p.x)));
 export function isEnemyRoom(run,room){return room!==run.goal&&room!==run.startRoom&&run.edges[room]?.length>0&&(run.enemyRooms?!!run.enemyRooms[room]:((room%SIZE+Math.floor(room/SIZE))%2===1))}
@@ -108,7 +108,7 @@ function resolveSwing(run,p){
  const role=roleFor(p.color),aim={...p,angle:swing.angle};
  let targets=[...(run.enemies||[]).filter(e=>e.hp>0),...potsInArea(run,p).filter(o=>!o.grabbedBy)].filter(e=>!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,e.kind==='pot'?POT_RADIUS:enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  if(role.single){const firstEnemy=targets.find(e=>e.kind!=='pot');targets=targets.filter(e=>e.kind==='pot'||(!swing.enemyHit&&e===firstEnemy))}
- for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){e.hp=0;continue}e.hp=Math.max(0,e.hp-swing.damage);e.hitUntil=now+.2;if(p.color!=='blue')emitAttackSound(run,e,'hurt');swing.enemyHit=true;if(p.color==='blue')emitAttackSound(run,e,'sniper-hit');if(p.color==='green')applyPoison(e,now,{refresh:true})}
+ for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){e.hp=0;continue}e.hp=Math.max(0,e.hp-(p.color==='blue'?sniperRatioDamage(aim,e):swing.damage));e.hitUntil=now+.2;if(p.color!=='blue')emitAttackSound(run,e,'hurt');swing.enemyHit=true;if(p.color==='blue')emitAttackSound(run,e,'sniper-hit');if(p.color==='green')applyPoison(e,now,{refresh:true})}
  for(const q of run.players){if(q===p||q.hp<=0||q.arrived||swing.healed.has(q.id)||!clearPath(run,p,q)||Math.hypot(q.x-p.x,q.y-p.y)>2*WIDTH)continue;const heal=p.color==='purple'&&swing.enemyHit?3:p.color==='green'&&inAttack(aim,q)?5:0;if(heal){healAlly(p,q,heal);swing.healed.add(q.id)}}
 }
 export function attack(run,p){

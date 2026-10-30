@@ -5,9 +5,9 @@ const roles=Object.keys(ROLES);
 export function createRoleCarousel(root,onChoose,onBrowse=()=>{}){
  const el=id=>root.querySelector('#'+id);let players=[],me=null,index=0,pending=false;
  function draw(){const color=roles[index],role=roleFor(color),mine=players.find(p=>p.id===me),owner=players.find(p=>p.color===color&&p.id!==me),selected=mine?.color===color;
-  el('role-name').textContent=role.name;el('role-color').textContent=colorName(color)+' · '+role.speedClass;
+  el('role-name').textContent=role.name;const description=el('role-description');if(description)description.textContent=role.description||'';el('role-color').textContent=colorName(color)+' · '+role.speedClass;
   el('role-stage').style.setProperty('--role-color',colorFor(color));el('role-avatar').style.backgroundColor=colorFor(color);const art=ROLE_ART[color],avatar=el('role-avatar');avatar.className='role-avatar'+(art?' has-portrait':'');avatar.style.backgroundImage=art?'url('+art.portrait+')':'';el('role-counter').textContent=`${index+1} / ${roles.length}`;
-  el('role-health').textContent=role.hp;el('role-shield').textContent=role.shield;el('role-damage').textContent=role.damage;el('role-cooldown').textContent=role.cooldown+'s';
+  el('role-health').textContent=role.hp;el('role-shield').textContent=role.shield;el('role-damage').textContent=color==='blue'?'3 / 10 / 12':role.damage;el('role-cooldown').textContent=role.cooldown+'s';
   el('role-status').textContent=owner?'Taken by '+owner.name:selected?'Your selected role':'Available';
   const choose=el('role-select');choose.disabled=pending||!!owner||selected;choose.textContent=pending?'Selecting…':owner?'Already taken':selected?'Selected':'Choose '+role.name;
   for(const [id,offset] of [['role-before',-1],['role-after',1]]){const c=roles[(index+offset+roles.length)%roles.length];el(id).textContent=roleFor(c).name;el(id).style.color=colorFor(c)}
