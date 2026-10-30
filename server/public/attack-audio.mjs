@@ -1,7 +1,7 @@
 // Cached effects: supplied Sniper recordings plus original procedural effects.
-export const SOUND_TYPES=['coral','purple','pink','gold','green','blue','teal','lime','throw','walker','sleeper','flapper','creeper','warden','explosion','shock','sniper-hit','menu','pickup','victory','defeat','round','revive','goal','pot-break','shield-hit','shield-break','hurt','down','heal'];
-export const CLIP_URLS=Object.freeze({blue:'/sniper-fire-v1.mp3','sniper-hit':'/sniper-hit-v1.mp3'});
-const durations={coral:.16,purple:.3,pink:.22,gold:.4,green:.3,blue:.44,teal:.2,lime:.14,throw:.28,walker:.16,sleeper:.3,flapper:.18,creeper:.5,warden:.65,explosion:.7,shock:.26,'sniper-hit':.22,menu:.08,pickup:.3,victory:.85,defeat:.8,round:.6,revive:.65,goal:.5,'pot-break':.25,'shield-hit':.18,'shield-break':.4,hurt:.15,down:.5,heal:.35};
+export const SOUND_TYPES=['coral','purple','pink','gold','green','blue','teal','lime','throw','walker','sleeper','flapper','creeper','warden','explosion','shock','sniper-hit','menu','pickup','victory','defeat','round','revive','goal','pot-break','shield-hit','shield-break','hurt','down','heal','room-clear'];
+export const CLIP_URLS=Object.freeze({blue:'/sniper-fire-v1.mp3','sniper-hit':'/sniper-hit-v1.mp3','room-clear':'/room-clear-v1.mp3',goal:'/goal-fanfare-v1.mp3',round:'/entry-drums-v1.mp3'});
+const durations={coral:.16,purple:.3,pink:.22,gold:.4,green:.3,blue:.44,teal:.2,lime:.14,throw:.28,walker:.16,sleeper:.3,flapper:.18,creeper:.5,warden:.65,explosion:.7,shock:.26,'sniper-hit':.22,menu:.08,pickup:.3,victory:.85,defeat:.8,round:.6,revive:.65,goal:.5,'pot-break':.25,'shield-hit':.18,'shield-break':.4,hurt:.15,down:.5,heal:.35,'room-clear':.7};
 export function soundSamples(type,rate=22050){
  if(!SOUND_TYPES.includes(type))return null;const data=new Float32Array(Math.ceil(durations[type]*rate));let seed=17,prior=0,low=0,peak=0;
  for(let i=0;i<data.length;i++){const t=i/rate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;const noise=seed/2147483648-1,high=noise-prior;prior=noise;low=low*.94+noise*.06;
@@ -13,6 +13,7 @@ export function soundSamples(type,rate=22050){
  case 'defeat':v=tone(220,5,55)+.7*tone(261,5,60);break;
  case 'round':v=tone(440,8)+.7*tone(660,6);break;
  case 'revive':v=tone(620,6,-180)+.5*tone(930,8);break;
+ case 'room-clear':v=tone(392,8)+.5*tone(587,9);break;
  case 'goal':v=tone(740,8)+.5*tone(1110,7);break;
  case 'pot-break':v=high*Math.exp(-24*t)+.5*tone(830,25)+.4*tone(1570,30);break;
  case 'shield-hit':v=tone(350,28)+.6*tone(1050,30);break;

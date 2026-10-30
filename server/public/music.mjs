@@ -7,6 +7,8 @@ export function musicScene(state,me){
 }
 export function createMusic(){
  const tracks=Object.fromEntries(['menu','explore','combat'].map(k=>{const a=new Audio('/music-'+k+'.ogg');a.loop=true;a.preload='none';a.volume=0;return [k,a]}));
+ tracks.explore.addEventListener('loadedmetadata',()=>{tracks.explore.currentTime=Math.min(55,Math.max(0,tracks.explore.duration-1))});
+ tracks.explore.addEventListener('timeupdate',()=>{if(tracks.explore.currentTime<.3&&tracks.explore.readyState>=1)tracks.explore.currentTime=55});
  let scene=null,muted=false,holdCombat=0;
  function attempt(a){if(a.paused)a.play().catch(()=>{})}
  function unlock(){if(!muted&&scene)attempt(tracks[scene])}
