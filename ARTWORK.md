@@ -1,3 +1,9 @@
+## Notebook reference redraw — 2026-10-31
+
+Seven assets adapted directly from Leonardo Camargo’s supplied Key / Heart / Pot / Spike / Wall / Swift Wind / Super Heart sketch sheet. The diamond-headed two-tooth key, organic heart with inset ink marks, round pot with a double zigzag band, three hatched spikes on a base, staggered brick wall, tapered zigzag wind spiral, and segmented armored Super Heart retain the drawing’s defining silhouettes. Colors use the existing clay, charcoal, red and aged-gold palette. Shapes are drawn directly in Canvas; walls remain in the cached static map. No external asset pack or raster dependency was added.
+
+Pickup sizes, pot radius, wall/spike bounds, collisions, loot effects, healing amounts, speed duration and multiplayer behavior are unchanged. Map, projectiles, pot shards, character art and attack animations retain their existing art. Checked at enlarged and gameplay scales, with render, loot, obstacle, room-blueprint, room-integration and loot-network regressions.
+
 # Character artwork
 
 Polished from the user's original notebook sketches using the built-in image-generation tool. Eight square selection portraits and eight transparent circular tokens use strict monochrome shades of each role’s identifying color, including skin, hair, lips and eyes. Gameplay uses the original collision rules. The displayed player radius is 0.026 room units, matching Normal enemies, while the collision radius remains 0.0196875 (about 32% larger display only).
