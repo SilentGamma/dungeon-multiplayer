@@ -5,7 +5,7 @@ import {roleFor,WIDTH,movementSpeed,advanceAim} from './roles.mjs';
 import {AIM_SPEED} from './dungeon.mjs';
 import {SIZE,PLAYER_RADIUS} from './world.mjs';
 import {wallBlocksLine,resolveWalls} from './obstacles.mjs';
-const locked=(run,p)=>!p||p.hp<=0||p.arrived||p.deceased||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||p.wrestlerState==='orbit';
+const locked=(run,p)=>!p||p.paused||p.connectionLost||p.hp<=0||p.arrived||p.deceased||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||p.wrestlerState==='orbit';
 const room=p=>Math.floor(p.y)*SIZE+Math.floor(p.x);
 export function createPrediction(id){
  let run=null,received=0,round=null,pending=[],oneWay=.1,offset={x:0,y:0,time:0};
