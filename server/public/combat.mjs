@@ -12,6 +12,7 @@ import {roleFor,inAttack,WIDTH,sniperRatioDamage} from './roles.mjs';
 export const PLAYER_HP=10,PLAYER_DAMAGE=5,ENEMY_DAMAGE=2,ATTACK_RADIUS=.18,SHIELD_RADIUS=.075,ENEMY_RADIUS=.026,ATTACK_COOLDOWN=.65,HIT_COOLDOWN=.8,SLEEP_RADIUS=.27,ATTACK_IFRAMES=.35,SLEEP_WAKE=.65,SLEEP_REST=2;
 export const roomOf=p=>Math.min(SIZE-1,Math.max(0,Math.floor(p.y)))*SIZE+Math.min(SIZE-1,Math.max(0,Math.floor(p.x)));
 export function isEnemyRoom(run,room){return room!==run.goal&&room!==run.startRoom&&run.edges[room]?.length>0&&(run.enemyRooms?!!run.enemyRooms[room]:((room%SIZE+Math.floor(room/SIZE))%2===1))}
+function spawnKeyGuards(run,room,random){return (run.roomLayouts?.[room]?.walkers||[]).map((p,i)=>{const spec=enemyFor('walker'),hp=scaledEnemyHealth('walker',run.teamSize??run.players.filter(p=>!p.deceased).length),angle=random()*Math.PI*2;return {id:`key-${room}-${i}`,spawnSlot:i,room,type:'walker',...p,vx:Math.cos(angle)*spec.speed,vy:Math.sin(angle)*spec.speed,hp,maxHp:hp,mode:'walking',hitUntil:0}})}
 export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null){
  const enemies=[];
  for(let room=0;room<SIZE*SIZE;room++){
@@ -22,11 +23,13 @@ export function spawnEnemies(run,random=Math.random,onlyRoom=null,fromRoom=null)
    const type=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))],spec=enemyFor(type);
    for(let member=0;member<(type==='flapper'?2:1);member++){
     const angle=random()*Math.PI*2;let x,y;
-    for(let j=0;j<30;j++){
+    const safe=(x,y)=>!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)&&!obstaclesInRoom(run,room).some(o=>touchesSquare({x,y},spec.radius+.015,o));
+    for(let j=0;j<60;j++){
      const dx=fromRoom===null?0:(room%SIZE)-(fromRoom%SIZE),dy=fromRoom===null?0:Math.floor(room/SIZE)-Math.floor(fromRoom/SIZE);
      x=room%SIZE+(dx>0?.64+random()*.2:dx<0?.16+random()*.2:.15+random()*.7);y=Math.floor(room/SIZE)+(dy>0?.64+random()*.2:dy<0?.16+random()*.2:.15+random()*.7);
-     if(!run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)&&!obstaclesInRoom(run,room).some(o=>touchesSquare({x,y},spec.radius+.015,o)))break;
+     if(safe(x,y))break;
     }
+    if(!safe(x,y)){const points=Array.from({length:81},(_,i)=>({x:room%SIZE+(i%9+.5)/9,y:Math.floor(room/SIZE)+(Math.floor(i/9)+.5)/9})).filter(p=>safe(p.x,p.y));if(!points.length)continue;const p=points[Math.min(points.length-1,Math.floor(random()*points.length))];x=p.x;y=p.y}
     const hp=scaledEnemyHealth(type,run.teamSize??run.players.filter(p=>!p.deceased).length);
     enemies.push({id:`${room}-${slot}${member?'-pair':''}`,spawnSlot:slot,room,type,x,y,vx:Math.cos(angle)*spec.speed,vy:Math.sin(angle)*spec.speed,hp,maxHp:hp,directionStep:(slot+member)%5,nextDirectionAt:(run.time||0)+FLAPPER_TURN_INTERVAL,mode:type==='sleeper'?'sleeping':'walking',nextSlam:(run.time||0)+SLAM_INTERVAL,lungeUntil:0,nextLunge:0,hitUntil:0});
    }
@@ -58,7 +61,7 @@ export function refreshEnemyActivity(run,random=Math.random){
 // Spawn an encounter only on first entry; the approach side selects the opposite spawn zone.
 export function enterRoom(run,fromRoom,toRoom,random=Math.random){
  if(fromRoom===toRoom)return false;
- if(keyPending(run,toRoom)){enterKeyRoom(run,toRoom);run.lockedRooms??=Array(SIZE*SIZE).fill(false);run.lockedRooms[toRoom]=true;return true}
+ if(keyPending(run,toRoom)){enterKeyRoom(run,toRoom);run.lockedRooms??=Array(SIZE*SIZE).fill(false);run.lockedRooms[toRoom]=true;run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];if(!run.spawnedEnemyRooms[toRoom]){run.spawnedEnemyRooms[toRoom]=true;run.enemies.push(...spawnKeyGuards(run,toRoom,random))}return true}
  if(!isEnemyRoom(run,toRoom))return false;
  run.spawnedEnemyRooms??=Array(SIZE*SIZE).fill(false);run.lockedRooms??=Array(SIZE*SIZE).fill(false);run.enemies??=[];
  if(run.spawnedEnemyRooms[toRoom])return false;

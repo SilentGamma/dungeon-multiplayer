@@ -12,8 +12,8 @@ let seed=2209;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/
 for(let n=0;n<500;n++){
  const r=createRun([{id:'p',name:'P',color:'coral'}],random,n%5+1),counts=new Map();
  assert.notEqual(r.mapRoom,r.startRoom);assert(!r.enemyRooms[r.startRoom]);assert(!r.keyRooms.includes(r.startRoom));assert(!r.obstacles.some(o=>o.room===r.startRoom));
- for(const o of r.pots){assert.notEqual(o.room,r.startRoom);assert.notEqual(o.room,r.goal);counts.set(o.room,(counts.get(o.room)||0)+1);assert(o.hp>0);assert(!r.players.some(p=>Math.hypot(p.x-o.x,p.y-o.y)<.16));assert(!r.obstacles.some(w=>touchesSquare(o,POT_RADIUS+.02,w)));assert(!r.keyItems.some(k=>Math.hypot(k.x-o.x,k.y-o.y)<.13));assert(![r.goal,r.mapRoom].some(room=>Math.hypot(room%SIZE+.5-o.x,Math.floor(room/SIZE)+.5-o.y)<.23))}
- assert([...counts.values()].every(count=>count<=4));assert(r.pots.length<=60);assert(!r.enemies.some(e=>e.kind==='pot'));
+ for(const o of r.pots){assert.notEqual(o.room,r.startRoom);assert.notEqual(o.room,r.goal);counts.set(o.room,(counts.get(o.room)||0)+1);assert(o.hp>0);assert(!r.players.some(p=>Math.hypot(p.x-o.x,p.y-o.y)<.16));assert(!r.obstacles.some(w=>touchesSquare(o,POT_RADIUS+.02,w)));assert(!r.keyItems.some(k=>Math.hypot(k.x-o.x,k.y-o.y)<.13));assert(![{x:r.goal%SIZE+.5,y:Math.floor(r.goal/SIZE)+.5},r.mapItem].filter(Boolean).some(p=>Math.hypot(p.x-o.x,p.y-o.y)<.23))}
+ assert([...counts.values()].every(count=>count<=6));assert(r.pots.length<=60);assert(!r.enemies.some(e=>e.kind==='pot'));
  const keyRoom=r.keyRooms[0];assert(!keyVisible(r,keyRoom));assert(keyPending(r,keyRoom));assert(enterRoom(r,r.edges[keyRoom][0],keyRoom));assert(keyVisible(r,keyRoom));
  r.mapCollected=true;const expected={x:r.goal%SIZE+.5,y:Math.floor(r.goal/SIZE)+.5};for(const p of [{hp:12,x:1.01,y:2.5},{hp:12,x:1.99,y:2.5},{hp:12,x:2.01,y:2.5}]){const target=navigationTarget(r,p);assert.equal(target.x,expected.x);assert.equal(target.y,expected.y);assert.equal(target.nextRoom,r.goal)}
 }

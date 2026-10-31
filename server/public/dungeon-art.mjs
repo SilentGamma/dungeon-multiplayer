@@ -3,11 +3,11 @@ const stone=['#302c2c','#35302e','#29282b','#3a302b','#2b292b'];
 function path(c,points){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath()}
 export function drawStoneRoom(c,x,y,index,connected){
  c.save();c.translate(x,y);c.fillStyle=connected?'#211e22':'#121014';c.fillRect(.014,.014,.972,.972);
- for(let row=0;row<6;row++)for(let col=0;col<5;col++){
-  const left=.027+col*.19+(row%2?.07:0),top=.027+row*.158,w=Math.min(.183,.973-left);if(w<=0)continue;
-  const seed=(index*19+row*13+col*7)%stone.length;c.fillStyle=connected?stone[seed]:'#171419';c.fillRect(left,top,w,.148);
-  c.strokeStyle='#c69b6220';c.lineWidth=.003;c.beginPath();c.moveTo(left,top+.146);c.lineTo(left,top);c.lineTo(left+w,top);c.stroke();
-  for(let mark=0;mark<5;mark++){const n=(index*31+row*47+col*13+mark*23)%97;c.fillStyle=mark%2?'#c6aa7930':'#100b1740';c.fillRect(left+w*(n/97),top+.02+((n*7)%97)/97*.11,.005+mark*.001,.002)}
+ for(let row=0;row<9;row++)for(let col=0;col<9;col++){
+  const cell=1/9,left=col*cell+.006,top=row*cell+.006,w=cell-.012,h=cell-.012;
+  const seed=(index*19+row*13+col*7)%stone.length;c.fillStyle=connected?stone[seed]:'#171419';c.fillRect(left,top,w,h);
+  c.strokeStyle='#c69b6220';c.lineWidth=.003;c.beginPath();c.moveTo(left,top+h);c.lineTo(left,top);c.lineTo(left+w,top);c.stroke();
+  for(let mark=0;mark<5;mark++){const n=(index*31+row*47+col*13+mark*23)%97;c.fillStyle=mark%2?'#c6aa7930':'#100b1740';c.fillRect(left+w*(n/97),top+.012+((n*7)%97)/97*(h-.024),.005+mark*.001,.002)}
   if((index+row+col)%4===0){c.strokeStyle='#130f16aa';c.lineWidth=.004;c.beginPath();c.moveTo(left+w*.66,top);c.lineTo(left+w*.51,top+.04);c.lineTo(left+w*.65,top+.06);c.stroke()}
  }
  // Corner braces and small chisel cuts, kept away from traversable door gaps.

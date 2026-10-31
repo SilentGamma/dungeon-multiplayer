@@ -1,8 +1,8 @@
+import {placeGridPots,portPoint} from './room-blueprints.mjs';
 import {dropPotLoot} from './loot.mjs';
 import {emitAttackSound} from './audio-events.mjs';
 import {SIZE,THROW_SPEED} from './world.mjs';
 import {roomBounds,arenaRoom,sameArea} from './arena.mjs';
-import {touchesSquare} from './obstacles.mjs';
 export const POT_RADIUS=.032;
 export const canThrowPot=player=>player?.color==='teal'||player?.color==='lime';
 export function generatePots(run,random=Math.random){
@@ -11,15 +11,9 @@ export function generatePots(run,random=Math.random){
   // The shared starting room stays empty, regardless of player count.
   if(room===run.startRoom||room===run.goal||!run.edges[room].length)continue;
   if(arenaRoom(run,room)){if(arenaDone)continue;arenaDone=true}
-  const bounds=roomBounds(run,room),count=Math.floor(random()*5);
-  for(let i=0;i<count;i++)for(let attempt=0;attempt<50;attempt++){
-   const x=bounds.x+.16+random()*(bounds.width-.32),y=bounds.y+.16+random()*(bounds.height-.32),point={x,y};
-   if(run.players.some(p=>Math.hypot(p.x-x,p.y-y)<.16)||pots.some(p=>Math.hypot(p.x-x,p.y-y)<POT_RADIUS*3))continue;
-   if((run.obstacles||[]).some(o=>touchesSquare(point,POT_RADIUS+.02,o)))continue;
-   if((run.keyItems||[]).some(k=>Math.hypot(k.x-x,k.y-y)<.13))continue;
-   if([run.goal,run.mapRoom].some(r=>r>=0&&Math.hypot(r%SIZE+.5-x,Math.floor(r/SIZE)+.5-y)<.23))continue;
-   pots.push({id:`pot-${room}-${i}`,kind:'pot',room:Math.floor(y)*SIZE+Math.floor(x),x,y,hp:1,vx:0,vy:0});break;
-  }
+  const bounds=roomBounds(run,room),clusters=Math.floor(random()*4),avoid=[...run.players.map(p=>({...p,radius:.128})),...(run.keyItems||[]).map(k=>({...k,radius:.098})),...Object.values(run.roomLayouts||{}).flatMap(b=>b.walkers||[]).map(p=>({...p,radius:.05})),...(run.mapItem?[{...run.mapItem,radius:.198}]:[]),...[run.goal,run.mapItem?-1:run.mapRoom].filter(r=>r>=0).map(r=>({x:r%SIZE+.5,y:Math.floor(r/SIZE)+.5,radius:.198}))];
+  const doors=[];for(const n of run.edges[room]){const side=n===room-SIZE?'N':n===room+1?'E':n===room+SIZE?'S':'W',key=`${Math.min(room,n)}:${Math.max(room,n)}`;for(const [lo,hi] of run.doors?.[key]||[[.34,.66]]){const p=portPoint([side,(lo+hi)/2*9-.5]);doors.push({x:bounds.x+p.x*bounds.width,y:bounds.y+p.y*bounds.height})}}
+  const placed=placeGridPots({bounds,obstacles:run.obstacles||[],avoid,doors,existing:pots,clusters,radius:POT_RADIUS,random,room,idPrefix:'pot'});for(const pot of placed)pot.room=Math.floor(pot.y)*SIZE+Math.floor(pot.x);pots.push(...placed);
  }
  return pots;
 }

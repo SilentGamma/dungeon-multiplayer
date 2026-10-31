@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {generateDungeon,createRun,routeToGoal,distances,collectMap,SIZE} from '../dist/dungeon.mjs';
+import {generateRoomLayouts} from './public/room-blueprints.mjs';
 import {keyPending,mapReady,collectKey} from '../dist/keys.mjs';
 import {enterRoom,updateRoomLocks} from '../dist/combat.mjs';
 import {passable} from '../dist/doors.mjs';
@@ -22,9 +23,9 @@ assert(side>main*2,'side paths are strongly favored');assert(rewards>0&&ordinary
 // Locks survive the regular enemy-lock cleanup, then open for the whole team.
 let r=createRun([{id:'p',name:'P',color:'coral'},{id:'q',name:'Q',color:'blue'}],random),room=r.keyRooms[0],key=r.keyItems[0],from=r.edges[room][0];
 assert(enterRoom(r,from,room));assert(r.lockedRooms[room]);updateRoomLocks(r);assert(r.lockedRooms[room]);const gap=r.doors[`${Math.min(room,from)}:${Math.max(room,from)}`][0],mid=(gap[0]+gap[1])/2;assert(!passable(r,room,from,mid));assert(passable(r,from,room,mid));
-const p=r.players[0];Object.assign(p,{x:key.x,y:key.y});assert(collectKey(r,p));assert(!keyPending(r,room));assert(!r.lockedRooms[room]);assert(passable(r,room,from,mid));assert(!collectKey(r,p),'key can only be collected once');assert(!enterRoom(r,from,room),'reentry does not relock a cleared key room');
+const p=r.players[0];Object.assign(p,{x:key.x,y:key.y});assert(collectKey(r,p));assert(!keyPending(r,room));const guards=r.enemies.filter(e=>e.room===room&&e.hp>0);assert.equal(r.lockedRooms[room],guards.length>0);for(const e of guards)e.hp=0;updateRoomLocks(r);assert(!r.lockedRooms[room]);assert(passable(r,room,from,mid));assert(!collectKey(r,p),'key can only be collected once');assert(!enterRoom(r,from,room),'reentry does not relock a cleared key room');
 // A reward map cannot be collected or rendered until its key is collected.
-r=createRun([{id:'p',name:'P',color:'coral'}],random);room=r.keyRooms[0];key=r.keyItems[0];r.mapRoom=room;r.mapRewardRoom=room;const player=r.players[0];Object.assign(player,{x:room%SIZE+.5,y:Math.floor(room/SIZE)+.5});assert(!collectMap(r,player));assert(!r.mapCollected);Object.assign(player,{x:key.x,y:key.y});assert(!collectMap(r,player));assert(mapReady(r));assert(!r.mapCollected);Object.assign(player,{x:room%SIZE+.5,y:Math.floor(room/SIZE)+.5});assert(collectMap(r,player));assert(r.mapCollected);assert(!collectMap(r,player),'one map pickup per dungeon');
+r=createRun([{id:'p',name:'P',color:'coral'}],random);room=r.keyRooms[0];key=r.keyItems[0];r.mapRoom=room;r.mapRewardRoom=room;r.mapItem=generateRoomLayouts(r).mapItem;const player=r.players[0];Object.assign(player,{x:room%SIZE+.5,y:Math.floor(room/SIZE)+.5});assert(!collectMap(r,player));assert(!r.mapCollected);Object.assign(player,{x:key.x,y:key.y});assert(!collectMap(r,player));assert(mapReady(r));assert(!r.mapCollected);Object.assign(player,{x:r.mapItem.x,y:r.mapItem.y});assert(collectMap(r,player));assert(r.mapCollected);assert(!collectMap(r,player),'one map pickup per dungeon');
 // Key pickup state is authoritative and travels in compact frames.
 const container={run:r,snapshot:()=>structuredClone({phase:'playing',run:r})};r.collectedKeys=0;r.mapCollected=false;const cache=new Map();let state=fullFor(container,player.id);r.collectedKeys=1;state=applyFrame(state,frameFor(container,player.id,cache));assert.equal(state.run.collectedKeys,1);assert(!keyPending(state.run,room));
 // Predicted entry also locks a key room, preventing an early predicted escape.
