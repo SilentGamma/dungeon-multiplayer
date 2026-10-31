@@ -6,9 +6,9 @@ import {createRun,applyInput,step,AIM_SPEED} from '../dist/dungeon.mjs';
 import {grapple} from '../dist/throw.mjs';
 import {attack,stepCombat,SHIELD_RADIUS,damagePlayer} from '../dist/combat.mjs';
 import {applyPoison,tickPoison,healAlly} from '../dist/poison.mjs';
-import {cameraScale,DESKTOP_CAMERA,MOBILE_CAMERA} from './public/camera.mjs';
+import {cameraScale,cameraFrame,DESKTOP_CAMERA,MOBILE_CAMERA} from './public/camera.mjs';
 assert.equal(roleFor('purple').speed,6*.8);assert.equal(roleFor('blue').speed,8*.8);assert.equal(roleFor('teal').speed,10*.8);assert.equal(roleFor('purple').speedClass,'Slow');assert.equal(roleFor('blue').speedClass,'Normal');assert.equal(roleFor('teal').speedClass,'Fast');assert.equal(SPEED_MULTIPLIER,.8);assert.equal(roleFor('coral').speed,8*.8);assert.equal(ENEMIES.walker.speed,.19*.8);assert.equal(ENEMIES.flapper.speed,.27*.8);assert.equal(AIM_SPEED,3.6*.8);
-assert(cameraScale(900,700)>Math.min(900/1.25,700/1.08));assert.equal(cameraScale(390,700),Math.min(390/.74,700/1.02));assert.notEqual(DESKTOP_CAMERA,MOBILE_CAMERA);assert.equal(cameraScale(844,390,true),Math.min(844/.74,390/1.02));
+assert(cameraScale(900,700)<Math.min(900/1.12,700/.97));assert(cameraScale(390,700)<390);assert.notEqual(DESKTOP_CAMERA,MOBILE_CAMERA);for(const [w,h,mobile] of [[390,700,true],[844,390,true],[900,700,false],[320,568,true]]){const f=cameraFrame(w,h,mobile),s=f.scale;assert(f.centerX-s/2>=f.side);assert(f.centerX+s/2<=w-f.side);assert(f.centerY-s/2>=f.top);assert(f.centerY+s/2<=h-f.bottom)}
 const poison={id:'p',hp:20};assert(applyPoison(poison,0));for(const [time,hp] of [[1.49,20],[1.5,19],[3,18],[4.5,17],[6,16],[9,16]]){tickPoison(poison,time,d=>poison.hp-=d);assert.equal(poison.hp,hp)}assert.equal(poison.poisonTicks,0);
 applyPoison(poison,10);const ally={id:'ally'};assert(healAlly(ally,poison,1));assert.equal(poison.poisonTicks,0);assert.equal(poison.poisonNext,0);tickPoison(poison,100,()=>assert.fail('cured poison must never tick'));assert(!healAlly(poison,poison,5));
 function fixture(color='coral'){const r=createRun([{id:'p',name:'P',color}]);r.time=10;r.enemies=[];r.pots=[];r.obstacles=[];r.goal=0;r.mapRoom=0;const p=r.players[0];Object.assign(p,{x:1.5,y:2.5,vx:.2,vy:0,angle:0,invulnerableUntil:0});return [r,p]}

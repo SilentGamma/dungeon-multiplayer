@@ -3,14 +3,14 @@ export const ROOM_GRID=9,POT_DOTS=5,DIRECTIONS=['N','E','S','W'];
 const rect=(x,y,w,h)=>Array.from({length:h},(_,j)=>Array.from({length:w},(_,i)=>[x+i,y+j])).flat();
 const unique=cells=>[...new Map(cells.map(p=>[p.join(','),p])).values()];
 export const ROOM_BLUEPRINTS=[
- {id:'key-chamber',kind:'key',name:'Walled chamber',sketch:1,ports:[['W',4]],walls:unique([...rect(1,1,1,7),...rect(2,4,2,1),...rect(4,1,4,1),...rect(7,2,1,5),...rect(4,7,4,1)]),spikes:[],walkers:[],key:[5,4]},
+ {id:'key-chamber',kind:'key',name:'Walled chamber',sketch:1,ports:[['W',4]],walls:unique([...rect(2,1,1,7),...rect(3,4,2,1),...rect(4,1,3,1),...rect(6,2,1,5),...rect(4,7,3,1)]),spikes:[],walkers:[],key:[5,4]},
  {id:'key-thorn-lane',kind:'key',name:'Thorn lane',sketch:2,ports:[['W',4],['E',4],['S',4]],walls:[...rect(1,3,1,3),...rect(7,3,1,3),...rect(3,7,3,1)],spikes:[...rect(3,1,1,6),...rect(5,1,1,6)],walkers:[],key:[4,6]},
  {id:'key-diagonal',kind:'key',name:'Broken diagonal',sketch:3,ports:[['W',4],['E',4]],walls:[[1,1],[2,2],[3,3],[5,5],[6,6],[7,7]],spikes:[[4,4]],walkers:[[7,1],[1,7]],key:[4,6]},
  {id:'key-corners',kind:'key',name:'Divided corners',sketch:4,ports:[['N',4],['E',4],['S',4],['W',4]],walls:[[6,1],[7,1],[7,2],[1,6],[2,6],[2,7]],spikes:[[1,1],[2,1],[1,2],[2,2],[6,5],[7,5],[6,6],[7,6]],walkers:[[6,2],[1,7]],key:[4,4]},
- {id:'regular-barricade',kind:'regular',name:'Wall and thorns',sketch:1,ports:[['W',3],['E',3]],walls:rect(1,1,7,1),spikes:rect(1,7,7,1),walkers:[],key:null},
+ {id:'regular-barricade',kind:'regular',name:'Wall and thorns',sketch:1,ports:[['W',3],['E',3]],walls:rect(1,2,7,1),spikes:rect(1,6,7,1),walkers:[],key:null},
  {id:'regular-pillar',kind:'regular',name:'Lone pillar',sketch:2,ports:[['W',4]],walls:rect(4,2,1,5),spikes:[],walkers:[],key:null},
  {id:'regular-elbow',kind:'regular',name:'Stone elbow',sketch:3,ports:[['N',4],['W',4],['S',5]],walls:unique([...rect(6,2,1,5),...rect(2,6,5,1)]),spikes:[[2,2]],walkers:[],key:null},
- {id:'regular-corners',kind:'regular',name:'Opposed corners',sketch:4,ports:[['N',4],['E',4],['S',4],['W',4]],walls:[[7,1],[1,7]],spikes:[[1,1],[7,7]],walkers:[],key:null}
+ {id:'regular-corners',kind:'regular',name:'Opposed corners',sketch:4,ports:[['N',4],['E',4],['S',4],['W',4]],walls:[[6,2],[2,6]],spikes:[[2,2],[6,6]],walkers:[],key:null}
 ];
 export function rotateCell([x,y],turns=1){for(let n=0;n<((turns%4)+4)%4;n++)[x,y]=[8-y,x];return [x,y]}
 export function rotatePort([side,slot],turns=1){for(let n=0;n<((turns%4)+4)%4;n++){if(side==='E'||side==='W')slot=8-slot;side=DIRECTIONS[(DIRECTIONS.indexOf(side)+1)%4]}return [side,slot]}

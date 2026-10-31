@@ -1,3 +1,4 @@
+import {dropKeyRoomLoot} from './loot.mjs';
 import {shieldActive} from './shield.mjs';
 import {emitAttackSound} from './audio-events.mjs';
 import {GAMBIT_DELAY,GAMBIT_NAMES} from './gambit.mjs';
@@ -67,7 +68,7 @@ export function enterRoom(run,fromRoom,toRoom,random=Math.random){
  if(run.spawnedEnemyRooms[toRoom])return false;
  run.spawnedEnemyRooms[toRoom]=true;const enemies=spawnEnemies(run,random,toRoom,fromRoom);run.enemies.push(...enemies);run.lockedRooms[toRoom]=enemies.some(e=>e.hp>0);return true;
 }
-export function updateRoomLocks(run){if(!run.lockedRooms)return;for(let room=0;room<SIZE*SIZE;room++)if(run.lockedRooms[room]&&!keyPending(run,room)&&!enemiesInRoom(run,room).some(e=>e.hp>0))run.lockedRooms[room]=false}
+export function updateRoomLocks(run,random=Math.random){if(!run.lockedRooms)return;for(let room=0;room<SIZE*SIZE;room++)if(run.lockedRooms[room]&&!keyPending(run,room)&&!enemiesInRoom(run,room).some(e=>e.hp>0)){run.lockedRooms[room]=false;dropKeyRoomLoot(run,room,random)}}
 function clearPath(run,a,b){
  if(wallBlocksLine(run,a,b))return false;const ar=roomOf(a),br=roomOf(b);if(ar===br)return true;
  if(inArena(run,a)&&inArena(run,b))return true;if(!run.edges[ar]?.includes(br))return false;
