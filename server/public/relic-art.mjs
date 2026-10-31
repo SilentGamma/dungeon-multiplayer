@@ -17,17 +17,18 @@ export function drawRelicPot(c,p,r){
  c.strokeStyle='#ebbd83';c.lineWidth=.055;c.beginPath();c.moveTo(-.55,-.82);c.lineTo(.47,-.86);c.moveTo(-.7,-.34);c.quadraticCurveTo(-.84,-.08,-.78,.04);c.moveTo(-.4,.79);c.lineTo(.26,.81);c.stroke();c.restore();
 }
 export function drawRelicThorns(c,size){
- c.save();c.scale(size,size);c.lineJoin='round';c.lineCap='round';c.lineWidth=.022;
- polygon(c,[[.035,.88],[.175,.12],[.35,.57],[.46,.1],[.65,.59],[.77,.13],[.95,.89]],'#b6a184');
+ c.save();c.scale(size,size);c.lineJoin='round';c.lineCap='round';c.lineWidth=.036;
+ polygon(c,[[.02,.025],[.975,.02],[.98,.98],[.025,.985]],'#50443d','#000');
+ polygon(c,[[.035,.88],[.175,.12],[.35,.57],[.46,.1],[.65,.59],[.77,.13],[.95,.89]],'#dfcba4','#000');
  c.strokeStyle='#665047';c.lineWidth=.012;c.beginPath();for(const [x,y] of [[.22,.46],[.49,.43],[.8,.45]])for(let i=0;i<3;i++){c.moveTo(x+i*.022,y+i*.06);c.lineTo(x-.012+i*.022,y+.08+i*.06)}c.stroke();
- polygon(c,[[.015,.86],[.98,.84],[.96,.97],[.045,.99]],'#745044');c.strokeStyle='#c59869';c.lineWidth=.012;c.beginPath();for(let i=0;i<6;i++){c.moveTo(.08+i*.14,.96);c.lineTo(.18+i*.14,.88)}c.stroke();c.restore();
+ c.lineWidth=.036;polygon(c,[[.02,.86],[.98,.84],[.96,.97],[.045,.98]],'#9a7558','#000');c.strokeStyle='#c59869';c.lineWidth=.012;c.beginPath();for(let i=0;i<6;i++){c.moveTo(.08+i*.14,.96);c.lineTo(.18+i*.14,.88)}c.stroke();c.restore();
 }
 export function drawRelicProjectile(c,p){c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(p.vy||0,p.vx??1));c.lineWidth=.003;polygon(c,[[-.1,0],[-.025,-.019],[.014,0],[-.025,.019]],'#6b2b2055','#6b2b2000');polygon(c,[[.043,0],[.008,-.026],[-.031,-.012],[-.024,.018],[.011,.027]],'#ce5c28');polygon(c,[[.029,0],[.003,-.012],[-.012,.001],[.003,.013]],'#f7c66d');c.strokeStyle='#f6d99a';c.lineWidth=.002;c.beginPath();c.moveTo(-.018,-.009);c.lineTo(.008,-.018);c.stroke();c.restore()}
 
 export function drawRelicWall(c,size){
- c.save();c.scale(size,size);c.lineJoin='round';c.lineCap='round';c.lineWidth=.018;
- polygon(c,[[.014,.035],[.97,.008],[.988,.96],[.025,.99]],'#625b59');
- c.strokeStyle='#21191c';c.lineWidth=.022;c.beginPath();for(let row=1;row<4;row++){const y=row/4;c.moveTo(.025,y+.015);c.lineTo(.975,y-.012)}
+ c.save();c.scale(size,size);c.lineJoin='round';c.lineCap='round';c.lineWidth=.04;
+ polygon(c,[[.025,.04],[.965,.025],[.975,.955],[.03,.975]],'#91877f','#000');
+ c.strokeStyle='#000';c.lineWidth=.022;c.beginPath();for(let row=1;row<4;row++){const y=row/4;c.moveTo(.025,y+.015);c.lineTo(.975,y-.012)}
  for(let row=0;row<4;row++)for(const x of row%2?[.24,.68]:[.43,.87]){c.moveTo(x,row/4+.015);c.lineTo(x+.012,(row+1)/4)}c.stroke();
- c.strokeStyle='#9c8676';c.lineWidth=.01;c.beginPath();for(let row=0;row<4;row++){const y=row/4+.045;c.moveTo(.055,y);c.lineTo(.25,y-.006);c.moveTo(.53,y-.004);c.lineTo(.81,y-.012)}c.stroke();c.strokeStyle='#4a3b39';c.lineWidth=.009;c.beginPath();c.moveTo(.15,.11);c.lineTo(.12,.18);c.moveTo(.55,.58);c.lineTo(.6,.64);c.moveTo(.84,.83);c.lineTo(.88,.9);c.stroke();c.restore();
+ c.strokeStyle='#d4c4ae';c.lineWidth=.014;c.beginPath();for(let row=0;row<4;row++){const y=row/4+.045;c.moveTo(.055,y);c.lineTo(.25,y-.006);c.moveTo(.53,y-.004);c.lineTo(.81,y-.012)}c.stroke();c.strokeStyle='#4a3b39';c.lineWidth=.009;c.beginPath();c.moveTo(.15,.11);c.lineTo(.12,.18);c.moveTo(.55,.58);c.lineTo(.6,.64);c.moveTo(.84,.83);c.lineTo(.88,.9);c.stroke();c.restore();
 }
