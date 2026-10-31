@@ -1,0 +1,14 @@
+/* Original wrought-iron seals and etched parchment controls. */
+#attack{border-radius:0;clip-path:polygon(20% 0,79% 3%,100% 23%,96% 80%,76% 100%,19% 96%,0 75%,3% 20%);background:repeating-linear-gradient(164deg,#ffffff06 0 1px,transparent 1px 8px),linear-gradient(135deg,#483329,#21191c 68%);border:2px solid #bd8c50;color:#f0d1a0;box-shadow:inset 0 0 0 5px #201518,inset 0 0 0 6px #735036,0 4px 20px #0009;font-family:Georgia,'Times New Roman',serif;letter-spacing:.06em;text-transform:uppercase;text-shadow:1px 2px #000;font-weight:400}
+#attack[aria-pressed=true]{background:repeating-linear-gradient(164deg,#ffffff08 0 1px,transparent 1px 8px),#24353c;border-color:#8fb6c3;color:#e5e5cc;box-shadow:inset 0 0 0 5px #15212a,inset 0 0 0 6px #537c89}
+.hud-party{background:repeating-linear-gradient(174deg,#c79a6010 0 1px,transparent 1px 12px),#1c1418eb;border-color:#896039;box-shadow:inset 0 0 0 3px #151015,0 5px 15px #0008}
+.hud-exit,#chat-toggle{background:repeating-linear-gradient(162deg,#c9a4710a 0 1px,transparent 1px 7px),#25191a;box-shadow:inset 0 0 0 2px #120d12;color:#dfbe8c;border-color:#997043;text-shadow:1px 1px #000}
+#chat-options{background:repeating-linear-gradient(95deg,#c79a600a 0 1px,transparent 1px 9px),#211719;box-shadow:inset 0 0 0 3px #100c11}
+#chat-options button{background:#32201c;color:#e8c79a;border-color:#805335;text-shadow:1px 1px #160d12}
+#ready-toggle[aria-pressed=true]{background:#493322;border-color:#cda462;color:#f6ddb0}.seat .ready-state[data-ready=true]{color:#ebc78b}
+#options-dialog{background:repeating-linear-gradient(168deg,#e3b47706 0 1px,transparent 1px 10px),#23191a;box-shadow:0 0 0 5px #100c0f,inset 0 0 0 3px #4e3427,0 18px 70px #000c}
+.option-volume input[type=range]{accent-color:#c59a58}.option-check input[type=checkbox]{accent-color:#c59a58}
+.hud-track{box-shadow:inset 0 1px 3px #0009}.hud-health .hud-track>div{background:linear-gradient(90deg,#70261e,#ce5b3b)}.hud-shield .hud-track>div{background:linear-gradient(90deg,#2c4c5b,#8bb4bd)}
+html.high-contrast #attack{background:#111;border-color:#ffe36c;color:#fff;box-shadow:inset 0 0 0 4px #111,inset 0 0 0 6px #ffe36c;text-shadow:none}html.high-contrast #attack[aria-pressed=true]{background:#123e55;color:#fff}
+
+#attack:focus-visible{outline:3px solid #ffe0a0;outline-offset:-7px}
