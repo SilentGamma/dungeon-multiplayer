@@ -18,4 +18,4 @@ assert(applyInput(r,p.id,{seq:1,holding:true,attack:false}));assert(applyInput(r
 Object.assign(p,{x:1+RADIUS+.0001,y:2+RADIUS+.0001,vx:-.16,vy:-.16,holding:false});step(r,.05);assert.equal(r.audioEvents.filter(e=>e.type==='wall-bounce').length,1,'two-axis wall collision emits one rubber bounce');
 const count=r.audioEvents.length,pred=createPrediction(p.id);pred.set(structuredClone(r),0);pred.sample(200);assert.equal(r.audioEvents.length,count,'predicted movement cannot duplicate authoritative sounds');
 const app=await readFile(new URL('./public/app.mjs',import.meta.url),'utf8');assert(!app.includes("attackAudio.play('throw',.4)"),'movement does not also play the old throw cue');
-console.log('PASS: 16 licensed recorded mixes, 26 effect replacements, short bounded assets, unchanged Sniper settings, authoritative sweep/bounce events and no prediction duplication');
+console.log('PASS: 16 licensed recorded mixes, 26 effect replacements, short bounded assets, unchanged Sniper recordings/pitch, authoritative sweep/bounce events and no prediction duplication');

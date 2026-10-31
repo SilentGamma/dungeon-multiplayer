@@ -17,7 +17,7 @@ Exploration playback starts at 00:55 and returns there when looping.
 
 ## CC0 gameplay replacement — 2026-10-31
 
-26 gameplay effect slots now use 16 short recorded mixes (under 100 KB combined). Sniper's shot and hit MP3 files, pitch and gain remain unchanged. Existing music, entry recording and Mixkit fanfares remain unchanged.
+26 gameplay effect slots now use 16 short recorded mixes (under 100 KB combined). Sniper's shot and hit MP3 files and pitch remain unchanged. The newer combat-output calibration applies to all attacks and hits, including Sniper. Existing music, entry recording and Mixkit fanfares remain unchanged.
 
 - Kenney, **Impact Sounds** and **RPG Audio**, CC0 1.0: https://kenney.nl/assets/impact-sounds and https://kenney.nl/assets/rpg-audio . Original clips and license notices obtained from https://github.com/GeorgeQLe/assets-sfx-combat at commit 9662dc1bed3b06ae753045915f9accfac044c7ce.
 - EZduzziteh, **Squish Sounds Effects**, CC0 1.0: https://opengameart.org/content/squish-sounds-effects . Used squishsplat_impact.mp3 for the wet throw/collision layer.
@@ -28,3 +28,5 @@ Permission reference: https://creativecommons.org/publicdomain/zero/1.0/ . Creat
 Processing: source-silence trimming, transient layering, pitch/speed changes, filters, soft saturation, headroom normalization, and short fades. The decoded MP3 outputs were checked for finite samples, audible signal and no clipping. Light movement sweeps and rubber bounces are quiet; role/enemy attacks retain distinct weights and pitches. Thrown impacts now have an assigned wet splat instead of an unrecognized audio event. New movement/bounce sounds come from authoritative simulation, never client prediction.
 
 Full original filenames, source/output SHA-256 hashes, layer recipes and durations are in `server/public/sfx-manifest.json`. Browser credits link `server/public/sfx-licenses.txt`. Rebuild with `python scripts/build-sfx.py /path/to/sfx-sources`; that directory contains the pinned Kenney mirror, squishsplat_impact.mp3 and rubber-bounce.mp3.
+
+Combat mix update: attacks, damage, shield hits, explosions, thrown impacts and pot breaks now use a dedicated transient compressor, stronger output calibration and a party-burst limiter. Music, navigation, utility foley and saved slider values retain their existing levels. Source recordings are unchanged.

@@ -4,7 +4,7 @@ import {SIZE} from '../dist/world.mjs';
 // Per-player presentation snapshots: never used for authoritative combat.
 const RANGE=1.35, POSITION_ERROR=.008, KEYFRAME_SECONDS=.8;
 const stableFields=new Set(['name','color','type','kind','maxHp','maxShield']);
-const playerFields=['id','name','color','deceased','gold','paused','connectionLost','hp','maxHp','shield','maxShield','arrived','holding','usingAttack','shielding','angle','reviving','reviverId','reviveProgress','stunUntil','attackUntil','attackFacing','attackGraceUntil','blockUntil','hurtUntil','shieldBreakUntil','inputSeq','nextAttack','nextMoveInputAt','wrestlerState','invisibleUntil','throwing','grabbedBy','poisonUntil','swiftUntil'];
+const playerFields=['id','name','color','deceased','gold','paused','connectionLost','hp','maxHp','shield','maxShield','arrived','holding','usingAttack','shielding','angle','reviving','reviverId','reviveProgress','stunUntil','attackUntil','attackFacing','attackGraceUntil','blockUntil','hurtUntil','shieldBreakUntil','inputSeq','nextAttack','nextMoveInputAt','wrestlerState','wrestlerUntil','wrestlerAngle','wrestlerOrbitStarted','grappleTarget','invisibleUntil','throwing','grabbedBy','poisonUntil','swiftUntil'];
 const predictionFields=['attackStarted','actionShielded','wrestlerReleased','awaitingLaunch', 'aimDirection', 'lastProcessedInputSeq', 'bounceCount', 'usingAttack', 'airUntil', 'lungeUntil', 'lungeAngle', 'wrestlerAngle', 'wrestlerUntil'];
 const potFields=['id','room','kind','hp','grabbedBy','throwing','variant'];
 const enemyFields=['id','room','type','hp','maxHp','mode','hitUntil','active','attackWindupUntil','attackActiveUntil','slamWindupUntil','slamUntil','stunUntil','poisonUntil','nextBlast','blastStep'];
