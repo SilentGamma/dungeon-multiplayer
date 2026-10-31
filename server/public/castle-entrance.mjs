@@ -6,12 +6,10 @@ export function createCastleEntrance(isMuted){
  const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  function silence(){pendingSound=false;sound.pause();sound.currentTime=0}
  function play(){if(isMuted()){pendingSound=false;return}sound.pause();sound.currentTime=0;pendingSound=false;sound.play().catch(()=>{pendingSound=current==='home'})}
- function unlock(){if(pendingSound&&current==='home')play()}
- document.addEventListener('pointerdown',unlock,{capture:true,passive:true});document.addEventListener('keydown',unlock,{capture:true});
  const duration=()=>Number.isFinite(sound.duration)?sound.duration*1000:6322;
  async function fade(from,to,milliseconds){animation?.cancel();const anim=curtain.animate([{opacity:from},{opacity:to}],{duration:reduced()?60:milliseconds,easing:'ease-in-out',fill:'forwards'});animation=anim;try{await anim.finished}catch{return false}if(animation!==anim)return false;curtain.style.opacity=String(to);animation=null;anim.cancel();return true}
- play();fade(1,0,duration());
- return {silence,async change(id,reveal,{force=false}={}){
+ fade(1,0,duration());
+ return {silence,enter:play,async change(id,reveal,{force=false}={}){
   if(pending?.id===id&&!force){pending.reveal=reveal;return pending.done}
   if(!pending&&id===current&&!force){reveal();return}
   const ticket=++serial,throughCastle=id==='home'||current==='home';

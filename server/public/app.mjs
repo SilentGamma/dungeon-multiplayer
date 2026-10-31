@@ -19,7 +19,7 @@ function updateSound(){music.setMuted(soundMuted);attackAudio.setMuted(soundMute
 const castleEntrance=createCastleEntrance(()=>soundMuted);
 updateSound();$('sound-toggle').onclick=()=>{soundMuted=!soundMuted;localStorage.setItem('larp-muted',String(soundMuted));updateSound();if(!soundMuted)attackAudio.unlock()};
 for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>attackAudio.unlock(),{capture:true,passive:true});
-document.addEventListener('click',e=>{const control=e.target.closest?.('button,summary');if(control&&!control.disabled&&!['role-prev','role-next'].includes(control.id)&&control.id!=='attack'&&control.id!=='sound-toggle')attackAudio.play('menu')},{capture:true});
+document.addEventListener('click',e=>{const control=e.target.closest?.('button,summary');if(control&&!control.disabled&&!['role-prev','role-next'].includes(control.id)&&control.id!=='attack'&&control.id!=='play'&&control.id!=='sound-toggle')attackAudio.play('menu')},{capture:true});
 document.addEventListener('change',e=>{if(e.target.matches('select'))attackAudio.play('menu')});
 const clean=s=>s.replace(/[<>\x00-\x1f]/g,'').trim().slice(0,20);
 const name=()=>clean($('name').value);
@@ -38,7 +38,7 @@ for(const [id,step] of [['favorite-prev',-1],['favorite-next',1]])$(id).onclick=
 $('name').value=localStorage.getItem('larp-name')||sessionStorage.getItem('next-game-name')||'';
 function updateName(){$('profile-label').textContent=name()||'Your player';localStorage.setItem('larp-name',name());sessionStorage.setItem('next-game-name',name())}
 $('name').oninput=updateName;updateName();$('profile-done').onclick=()=>{updateName();if(!name()){$('name').focus();return}$('profile').open=false};
-$('play').onclick=async()=>{await screen('navigation');if(!name()){$('profile').open=true;$('name').focus()}};
+$('play').onclick=async()=>{castleEntrance.enter();await screen('navigation');if(!name()){$('profile').open=true;$('name').focus()}};
 $('nav-back').onclick=()=>screen('home');$('back').onclick=()=>screen('navigation');$('find-lobbies').onclick=()=>{screen('browser');refresh()};$('create').onclick=()=>boot(true);$('join').onclick=()=>boot(false,$('code').value.trim());$('code').oninput=()=>{$('code').value=$('code').value.replace(/\D/g,'')};$('code').onkeydown=e=>{if(e.key==='Enter')boot(false,$('code').value.trim())};$('refresh').onclick=refresh;$('start').onclick=async()=>{try{await post('start')}catch(e){error(e.message)}};$('leave').onclick=async()=>{try{await post('leave')}finally{reset()}};$('exitrun').onclick=$('leave').onclick;$('endleave').onclick=$('leave').onclick;$('copy').onclick=()=>navigator.clipboard.writeText(state.code);
 
 const roleCarousel=createRoleCarousel($('role-carousel'),async color=>{if(!state||state.phase!=='lobby')return;try{const result=await post('role',{color});render(result.state)}catch(err){error(err.message);if(state)render(state)}},()=>attackAudio.play('menu'));

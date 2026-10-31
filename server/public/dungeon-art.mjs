@@ -28,8 +28,8 @@ export function drawRoomEmbers(c,x,y,time){
  c.save();c.translate(x,y);for(const [tx,ty] of [[.14,.12],[.86,.88]]){c.fillStyle='#f7862020';c.beginPath();c.arc(tx,ty,.095,0,Math.PI*2);c.fill();c.fillStyle='#151016';c.fillRect(tx-.014,ty-.005,.028,.047);const flicker=Math.sin(time*7+tx*18)*.006;c.fillStyle='#ba3a12';path(c,[[tx-.02,ty+.008],[tx-.014,ty-.03],[tx,ty-.018],[tx+.008,ty-.055+flicker],[tx+.02,ty+.008]]);c.fill();c.fillStyle='#ffd477';path(c,[[tx-.008,ty+.004],[tx+.003,ty-.028+flicker],[tx+.01,ty+.004]]);c.fill()}
  c.restore();
 }
-export function drawEnemyInk(c,e,r,time,tint,reduced=false){
- const ink='#140f18',accent=e.type==='sleeper'?'#d0a2bd':e.type==='flapper'?'#cfb07d':e.type==='warden'?'#dc9b62':'#e0b78d';
+export function drawEnemyInk(c,e,r,time,tint,reduced=false,flash=null){
+ tint=flash||tint;const ink=flash||'#140f18',accent=flash||(e.type==='sleeper'?'#d0a2bd':e.type==='flapper'?'#cfb07d':e.type==='warden'?'#dc9b62':'#e0b78d');
  c.save();c.fillStyle='#09070b88';c.beginPath();c.ellipse(0,r*.8,r*1.15,r*.45,0,0,Math.PI*2);c.fill();
  const asleep=e.mode==='sleeping'||e.mode==='resting',bob=reduced?0:Math.sin(time*(e.type==='flapper'?16:4)+(e.x||0)*13)*r*.07;c.translate(0,bob);c.lineWidth=r*.16;c.strokeStyle=ink;c.fillStyle=tint;
  if(e.type==='walker'){
@@ -46,5 +46,5 @@ export function drawEnemyInk(c,e,r,time,tint,reduced=false){
  }else{
   path(c,[[-r*.9,r*.65],[-r,-r*.25],[-r*.55,-r*.85],[r*.25,-r],[r*.85,-r*.4],[r,r*.65],[r*.35,r],[-r*.4,r*.9]]);c.fill();c.stroke();c.strokeStyle=ink;c.lineWidth=r*.1;c.beginPath();c.moveTo(-r*.6,-r*.45);c.lineTo(-r*.1,-r*.05);c.lineTo(-r*.35,r*.2);c.moveTo(r*.6,-r*.3);c.lineTo(r*.2,r*.12);c.lineTo(r*.5,r*.5);c.stroke();c.fillStyle=ink;c.fillRect(-r*.65,-r*.22,r*1.3,r*.33);
  }
- c.strokeStyle=asleep?'#987a86':'#fff0bb';c.lineWidth=r*.13;c.beginPath();if(asleep){c.moveTo(-r*.35,r*.05);c.lineTo(r*.35,r*.05)}else{c.moveTo(-r*.42,-r*.08);c.lineTo(-r*.13,r*.01);c.moveTo(r*.13,r*.01);c.lineTo(r*.42,-r*.08)}c.stroke();c.restore();
+ c.strokeStyle=flash||(asleep?'#987a86':'#fff0bb');c.lineWidth=r*.13;c.beginPath();if(asleep){c.moveTo(-r*.35,r*.05);c.lineTo(r*.35,r*.05)}else{c.moveTo(-r*.42,-r*.08);c.lineTo(-r*.13,r*.01);c.moveTo(r*.13,r*.01);c.lineTo(r*.42,-r*.08)}c.stroke();c.restore();
 }
