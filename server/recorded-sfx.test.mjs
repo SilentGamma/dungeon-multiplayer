@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {CLIP_URLS,SFX_TUNING,soundChannel} from './public/attack-audio.mjs';
+import {createRun,applyInput,step,RADIUS} from '../dist/dungeon.mjs';
+import {createPrediction} from './public/prediction.mjs';
+const digest=data=>createHash('sha256').update(data).digest('hex');
+const manifest=JSON.parse(await readFile(new URL('./public/sfx-manifest.json',import.meta.url)));
+assert.equal(manifest.license,'CC0-1.0');assert.equal(Object.keys(manifest.clips).length,16);
+assert(Object.entries(CLIP_URLS).filter(([type,url])=>type!=='blue'&&type!=='sniper-hit'&&url.startsWith('/sfx-')).length>=24);
+for(const [name,info] of Object.entries(manifest.clips)){const bytes=await readFile(new URL('./public/'+name,import.meta.url));assert.equal(digest(bytes),info.sha256);assert(bytes.length>1000&&bytes.length<20000);assert(info.duration>.1&&info.duration<1);assert(info.peak<=.86);assert(info.layers.every(([source])=>manifest.sources[source]));}
+assert.equal(CLIP_URLS.blue,'/sniper-fire-v1.mp3');assert.equal(CLIP_URLS['sniper-hit'],'/sniper-hit-v1.mp3');assert(!SFX_TUNING.blue&&!SFX_TUNING['sniper-hit'],'Sniper has no pitch or gain override');
+assert.equal(digest(await readFile(new URL('./public/sniper-fire-v1.mp3',import.meta.url))),'5c437a4222245b872ea0c12821224dde7bc5719f22c6a89861d08082010bd5bc');assert.equal(digest(await readFile(new URL('./public/sniper-hit-v1.mp3',import.meta.url))),'893bbcae63b1473232fb1a85135c54ac18bba430ed7059427b71fc820f244697');
+const license=await readFile(new URL('./public/sfx-licenses.txt',import.meta.url),'utf8');for(const author of manifest.authors)assert(license.includes(author));
+for(const type of ['move','wall-bounce','impact','throw','pickup','pot-break'])assert.equal(soundChannel(type),'effects');
+const r=createRun([{id:'p',name:'P',color:'coral'}]);r.time=10;r.obstacles=[];r.pots=[];r.enemies=[];r.items=[];r.keyRooms=[];r.keyItems=[];r.mapRoom=0;r.goal=0;r.edges=Array.from({length:49},()=>[]);const p=r.players[0];Object.assign(p,{x:1.5,y:2.5,vx:0,vy:0,hp:12,awaitingLaunch:false});
+assert(applyInput(r,p.id,{seq:1,holding:true,attack:false}));assert(applyInput(r,p.id,{seq:2,holding:false,attack:false,angle:0}));assert.equal(r.audioEvents.filter(e=>e.type==='move').length,1,'movement launch emits a light sweep');
+Object.assign(p,{x:1+RADIUS+.0001,y:2+RADIUS+.0001,vx:-.16,vy:-.16,holding:false});step(r,.05);assert.equal(r.audioEvents.filter(e=>e.type==='wall-bounce').length,1,'two-axis wall collision emits one rubber bounce');
+const count=r.audioEvents.length,pred=createPrediction(p.id);pred.set(structuredClone(r),0);pred.sample(200);assert.equal(r.audioEvents.length,count,'predicted movement cannot duplicate authoritative sounds');
+const app=await readFile(new URL('./public/app.mjs',import.meta.url),'utf8');assert(!app.includes("attackAudio.play('throw',.4)"),'movement does not also play the old throw cue');
+console.log('PASS: 16 licensed recorded mixes, 26 effect replacements, short bounded assets, unchanged Sniper settings, authoritative sweep/bounce events and no prediction duplication');

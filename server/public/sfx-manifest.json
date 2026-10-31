@@ -1,0 +1,417 @@
+{
+  "license": "CC0-1.0",
+  "authors": [
+    "Kenney",
+    "EZduzziteh",
+    "SomeoneCool15"
+  ],
+  "sources": {
+    "impactPunch_medium_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactPunch_medium_000.ogg",
+      "sha256": "486988aa2d6440ffc4c62a0e8ccf3c23673ba84424bd4723378d451b7255eb5c"
+    },
+    "impactSoft_heavy_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactSoft_heavy_000.ogg",
+      "sha256": "49e7ca88743fca974bb8676ea138b751cfd8f9033b5e7af8736c2a215d6edbc1"
+    },
+    "impactPunch_heavy_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactPunch_heavy_000.ogg",
+      "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8"
+    },
+    "impactWood_heavy_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactWood_heavy_000.ogg",
+      "sha256": "15ff82332f342c30e469215539e1cc57e11b221aa2cf7e11e811d313a9927f3d"
+    },
+    "rpg:knifeSlice": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/knifeSlice.ogg",
+      "sha256": "4cd96dc630bed9840c15f1dd2306da2cc56a4da26a5d3f1a03c5a7265ac5e54f"
+    },
+    "rpg:cloth2": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/cloth2.ogg",
+      "sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201"
+    },
+    "squishsplat_impact.mp3": {
+      "file": "squishsplat_impact.mp3",
+      "sha256": "4b347996a324cb23fe82033986c96fb2b098618df626972b7c505e088013bd76"
+    },
+    "rpg:chop": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/chop.ogg",
+      "sha256": "d00c2b3c9fff07e376145c8c8c45c90e5084ec192f6ce0387db233f7b86f1486"
+    },
+    "rpg:cloth1": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/cloth1.ogg",
+      "sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d"
+    },
+    "rpg:cloth3": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/cloth3.ogg",
+      "sha256": "a48632d17a4f1416541d261a32a31612e01267144c407fa3ecab3ff410f0085b"
+    },
+    "rpg:knifeSlice2": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/knifeSlice2.ogg",
+      "sha256": "6c2064d0ef988d1ec3d56868e823ea8823a5cac00f2742560052633529407def"
+    },
+    "impactGlass_heavy_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactGlass_heavy_000.ogg",
+      "sha256": "b44b39a940e8948e74b9bd3776bff980df43cf220abdaf0d467dc4c43c0244a5"
+    },
+    "impactGlass_medium_001": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactGlass_medium_001.ogg",
+      "sha256": "d3d806cb3012c9ddd87010b30295ccb74d6d8b690077d19e67afd09a9d8feb03"
+    },
+    "impactBell_heavy_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactBell_heavy_000.ogg",
+      "sha256": "94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f"
+    },
+    "rpg:handleCoins": {
+      "file": "kenney-mirror/assets/kenney/rpg-audio/Audio/handleCoins.ogg",
+      "sha256": "8a91f969e932df709df80ee124d86a51389eed9b67f22e5e716bc2bbf60d8dab"
+    },
+    "impactMetal_medium_000": {
+      "file": "kenney-mirror/assets/kenney/impact-sounds/Audio/impactMetal_medium_000.ogg",
+      "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003"
+    },
+    "rubber-bounce.mp3": {
+      "file": "rubber-bounce.mp3",
+      "sha256": "46cbbee8bf23f20b388679d315cde434d7d8c14e551cc9d64e6fc2c6acdbf74c"
+    }
+  },
+  "clips": {
+    "sfx-punch-v1.mp3": {
+      "duration": 0.26,
+      "peak": 0.86,
+      "layers": [
+        [
+          "impactPunch_medium_000",
+          1,
+          0.9,
+          0,
+          0.25
+        ],
+        [
+          "impactSoft_heavy_000",
+          0.85,
+          0.28,
+          0,
+          0.2
+        ]
+      ],
+      "sha256": "0becce7e87446f2bd54338ee72d887dc046404398dc1251e60a0f373632b2e0d"
+    },
+    "sfx-heavy-v1.mp3": {
+      "duration": 0.418,
+      "peak": 0.86,
+      "layers": [
+        [
+          "impactPunch_heavy_000",
+          0.78,
+          1,
+          0,
+          0.3
+        ],
+        [
+          "impactWood_heavy_000",
+          0.7,
+          0.4,
+          0.008,
+          0.28
+        ],
+        [
+          "impactSoft_heavy_000",
+          0.65,
+          0.3,
+          0,
+          0.2
+        ]
+      ],
+      "sha256": "b85a8f9beb3833c5594ed029da376ec11db69cf088e4ff173487d0e6d41f655d"
+    },
+    "sfx-swipe-v1.mp3": {
+      "duration": 0.3098,
+      "peak": 0.86,
+      "layers": [
+        [
+          "rpg:knifeSlice",
+          1.18,
+          0.8
+        ],
+        [
+          "impactPunch_medium_000",
+          1.15,
+          0.55,
+          0.025
+        ]
+      ],
+      "sha256": "c6b8bfd3fdb524443ead10cc45c4187902a0671f26544179024f94c7613b8b64"
+    },
+    "sfx-perfume-v1.mp3": {
+      "duration": 0.3308,
+      "peak": 0.86,
+      "layers": [
+        [
+          "rpg:cloth2",
+          0.9,
+          0.9
+        ],
+        [
+          "squishsplat_impact.mp3",
+          1.3,
+          0.3
+        ]
+      ],
+      "sha256": "ba6b0dfe060e2e1b37e4234986ea7ba460037c801c2f247614f605c3981483a7"
+    },
+    "sfx-chop-v1.mp3": {
+      "duration": 0.3245,
+      "peak": 0.86,
+      "layers": [
+        [
+          "rpg:chop",
+          1,
+          1
+        ],
+        [
+          "impactPunch_medium_000",
+          0.92,
+          0.55
+        ]
+      ],
+      "sha256": "1be0876ed225924a0aa5ee864d5a1d7a304ebabd79a3ffc7ebd188c87dd4dca5"
+    },
+    "sfx-jab-v1.mp3": {
+      "duration": 0.3776,
+      "peak": 0.86,
+      "layers": [
+        [
+          "impactPunch_medium_000",
+          1.3,
+          1
+        ],
+        [
+          "rpg:cloth1",
+          1.45,
+          0.3
+        ]
+      ],
+      "sha256": "855cb10b907333c2e583607106153b3499fb57fcfdf94e86ecd5f6a01322a646"
+    },
+    "sfx-move-v1.mp3": {
+      "duration": 0.3075,
+      "peak": 0.65,
+      "layers": [
+        [
+          "rpg:cloth3",
+          1.35,
+          0.65
+        ],
+        [
+          "rpg:knifeSlice2",
+          1.5,
+          0.2
+        ]
+      ],
+      "sha256": "e64c7476af9994e68ef423ff9278615dc04a3e3019ddb31da65816e4e6c77043"
+    },
+    "sfx-throw-v1.mp3": {
+      "duration": 0.5894,
+      "peak": 0.86,
+      "layers": [
+        [
+          "rpg:cloth1",
+          0.92,
+          0.35
+        ],
+        [
+          "squishsplat_impact.mp3",
+          0.85,
+          0.8,
+          0.025
+        ],
+        [
+          "impactPunch_heavy_000",
+          0.88,
+          0.65,
+          0.025,
+          0.27
+        ]
+      ],
+      "sha256": "57ba633b9a80631f203aa1ed47220a92d488df40c6b60070e6783cfd9e026946"
+    },
+    "sfx-splat-v1.mp3": {
+      "duration": 0.3473,
+      "peak": 0.86,
+      "layers": [
+        [
+          "squishsplat_impact.mp3",
+          0.78,
+          1
+        ],
+        [
+          "impactPunch_heavy_000",
+          0.83,
+          0.8,
+          0,
+          0.28
+        ],
+        [
+          "impactSoft_heavy_000",
+          0.7,
+          0.25,
+          0.025,
+          0.2
+        ]
+      ],
+      "sha256": "c54aa2d1499d47b1ecab0718d56557a12281033c686ced372789d5b5d8d88052"
+    },
+    "sfx-pot-v1.mp3": {
+      "duration": 0.417,
+      "peak": 0.86,
+      "layers": [
+        [
+          "impactWood_heavy_000",
+          0.8,
+          0.8
+        ],
+        [
+          "impactGlass_heavy_000",
+          0.9,
+          1,
+          0.022
+        ],
+        [
+          "impactGlass_medium_001",
+          1.1,
+          0.45,
+          0.08
+        ]
+      ],
+      "sha256": "de889736b1e7dc88419823eeda80b4a27d4c8b0f558574b7cbc1cf55101b672f"
+    },
+    "sfx-pickup-v1.mp3": {
+      "duration": 0.3207,
+      "peak": 0.6868,
+      "layers": [
+        [
+          "impactBell_heavy_000",
+          1.7,
+          0.75,
+          0,
+          0.5
+        ],
+        [
+          "rpg:handleCoins",
+          1.4,
+          0.45,
+          0.025,
+          0.4
+        ]
+      ],
+      "sha256": "f5e9ff6d71742b0c054791126f4dc54cc67838f0b7bd4b04c2bfca4efe75a881"
+    },
+    "sfx-heal-v1.mp3": {
+      "duration": 0.4028,
+      "peak": 0.6843,
+      "layers": [
+        [
+          "impactBell_heavy_000",
+          1.4,
+          0.7,
+          0,
+          0.55
+        ],
+        [
+          "impactBell_heavy_000",
+          1.8,
+          0.4,
+          0.11,
+          0.4
+        ]
+      ],
+      "sha256": "14198c96c0a5b185f53a864b13f5eebc30dc11f2e7a4ff38a8811ca05a4e2cff"
+    },
+    "sfx-shield-v1.mp3": {
+      "duration": 0.3315,
+      "peak": 0.7524,
+      "layers": [
+        [
+          "impactMetal_medium_000",
+          1.2,
+          1,
+          0,
+          0.3
+        ],
+        [
+          "impactPunch_medium_000",
+          0.9,
+          0.4
+        ]
+      ],
+      "sha256": "145da7a909b1b866e161c1d3b5279e43487d2fea624d4936ccb7ca4aa1061719"
+    },
+    "sfx-shield-break-v1.mp3": {
+      "duration": 0.2502,
+      "peak": 0.7681,
+      "layers": [
+        [
+          "impactGlass_heavy_000",
+          1.25,
+          0.85,
+          0,
+          0.5
+        ],
+        [
+          "impactMetal_medium_000",
+          0.75,
+          0.65,
+          0,
+          0.25
+        ]
+      ],
+      "sha256": "7f7e4d688082c8b5e3e0c93feb51c2838befa37f4ec3705848d71946c404adfe"
+    },
+    "sfx-blast-v1.mp3": {
+      "duration": 0.8306,
+      "peak": 0.86,
+      "layers": [
+        [
+          "impactPunch_heavy_000",
+          0.55,
+          0.8
+        ],
+        [
+          "impactWood_heavy_000",
+          0.55,
+          0.8,
+          0.02
+        ],
+        [
+          "impactGlass_heavy_000",
+          0.65,
+          0.35,
+          0.03
+        ]
+      ],
+      "sha256": "1964810b6e458bf7ea5e9f47398341c537a8c90beb3895616e54e73431786c64"
+    },
+    "sfx-bounce-v1.mp3": {
+      "duration": 0.3629,
+      "peak": 0.86,
+      "layers": [
+        [
+          "rubber-bounce.mp3",
+          0.68,
+          1,
+          0,
+          0.24
+        ],
+        [
+          "impactSoft_heavy_000",
+          0.65,
+          0.2,
+          0,
+          0.2
+        ]
+      ],
+      "sha256": "71efe04d33505ff31f467a0535fe86af87da31e0ca7584ea0a8f4e6f6133894d"
+    }
+  }
+}
