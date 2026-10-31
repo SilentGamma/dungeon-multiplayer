@@ -1,0 +1,14 @@
+import {SIZE,PLAYER_RADIUS} from './world.mjs';
+import {touchesSquare,wallBlocksLine} from './obstacles.mjs';
+import {enemyRadius} from './enemies.mjs';
+import {emitAttackSound} from './audio-events.mjs';
+export const HEART_CHANCE=.25,SHARD_CHANCE=.05,SUPER_HEART_CHANCE=.12,SWIFT_CHANCE=.08,SWIFT_SECONDS=5,SWIFT_MULTIPLIER=1.5;
+const roomOf=p=>Math.floor(p.y)*SIZE+Math.floor(p.x);
+function add(run,kind,x,y){const item={id:'loot-'+run.round+'-'+(run.lootSerial=(run.lootSerial||0)+1),kind,room:roomOf({x,y}),x,y};(run.items??=[]).push(item);return item}
+export function spawnKeyLoot(run,random=Math.random){run.items=[];run.lootSerial=0;for(const room of run.keyRooms||[])for(const [kind,chance] of [['super-heart',SUPER_HEART_CHANCE],['swift-wind',SWIFT_CHANCE]]){if(room===run.goal||room===run.startRoom||random()>=chance)continue;for(let n=0;n<40;n++){const x=room%SIZE+.25+random()*.5,y=Math.floor(room/SIZE)+.25+random()*.5;if((run.obstacles||[]).some(o=>touchesSquare({x,y},.06,o))||(run.pots||[]).some(p=>Math.hypot(p.x-x,p.y-y)<.1)||(run.keyItems||[]).some(k=>Math.hypot(k.x-x,k.y-y)<.12)||run.items.some(k=>Math.hypot(k.x-x,k.y-y)<.12))continue;add(run,kind,x,y);break}}}
+export function dropPotLoot(run,pot,random=Math.random){if(pot.variant==='shard'||pot.lootResolved)return;pot.lootResolved=true;const roll=random();if(roll<HEART_CHANCE)add(run,'heart',pot.x,pot.y);else if(roll<HEART_CHANCE+SHARD_CHANCE){(run.pots??=[]).push({id:'shard-'+run.round+'-'+(run.lootSerial=(run.lootSerial||0)+1),kind:'pot',variant:'shard',room:roomOf(pot),x:pot.x,y:pot.y,hp:1,vx:0,vy:0,armedAt:run.time+.3,lootResolved:true})}}
+export function stepLoot(run,damage){const now=run.time||0,consumed=new Set();for(const item of run.items||[]){for(const p of run.players){if(p.hp<=0||p.deceased||p.arrived||p.throwing||p.grabbedBy||roomOf(p)!==item.room||Math.hypot(p.x-item.x,p.y-item.y)>.055||wallBlocksLine(run,p,item))continue;if(item.kind==='swift-wind'){p.swiftUntil=now+SWIFT_SECONDS;emitAttackSound(run,p,'pickup')}else{const cap=p.maxHp;if(p.hp>=cap)continue;p.hp=Math.min(cap,p.hp+(item.kind==='super-heart'?5:1));emitAttackSound(run,p,'heal')}consumed.add(item.id);break}}
+ run.items=(run.items||[]).filter(i=>!consumed.has(i.id));
+ for(const shard of run.pots||[]){if(shard.variant!=='shard'||shard.hp<=0||shard.throwing||shard.grabbedBy||now<(shard.armedAt||0))continue;for(const target of [...run.players,...run.enemies]){if(target.hp<=0||target.deceased||target.arrived||roomOf(target)!==shard.room||Math.hypot(target.x-shard.x,target.y-shard.y)>.032+(target.type?enemyRadius(target):PLAYER_RADIUS)||wallBlocksLine(run,shard,target))continue;if(target.type){target.hp=Math.max(0,target.hp-1);target.hitUntil=now+.2;emitAttackSound(run,target,'hurt')}else if(!damage(target,1))continue;shard.hp=0;emitAttackSound(run,shard,'pot-break');break}}
+ run.pots=(run.pots||[]).filter(p=>p.variant!=='shard'||p.hp>0);
+}

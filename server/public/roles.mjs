@@ -20,3 +20,5 @@ export function advanceAim(run,p,dt,rate=3.6*SPEED_MULTIPLIER){p.angle+=(p.aimDi
 
 // Ratio measures forward distance along the released shot, not radial distance.
 export function sniperRatioDamage(aim,target){const length=attackGeometry('blue').length,forward=(target.x-aim.x)*Math.cos(aim.angle||0)+(target.y-aim.y)*Math.sin(aim.angle||0);return forward<=length*.25?3:forward>=length*.75?12:10}
+
+export function movementSpeed(p,time){return roleFor(p.color).speed*WIDTH*(time<(p.swiftUntil||0)?1.5:1)}

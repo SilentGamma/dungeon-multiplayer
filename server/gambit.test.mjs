@@ -13,7 +13,7 @@ for(let outcome=0;outcome<6;outcome++){
  run.time=10.2;stepCombat(run,0,random);assert.equal(rolls,1);assert.equal(run.gambitCue.outcome,GAMBIT_NAMES[outcome]);assert(!j.gambitPending);
  if(outcome===0){assert.equal(j.hp,0);assert.equal(a.hp,0)}
  if(outcome===1)assert.equal(j.invisibleUntil,17.2);
- if(outcome===2)assert.equal(a.hp,11);
+ if(outcome===2)assert.equal(a.hp,Math.round(a.maxHp*.8*10)/10,'Gambit healing retains the ability cap');
  if(outcome===3)assert.equal(a.stunUntil,14.2);
  if(outcome===4)assert.equal(j.airUntil,15.2);
  if(outcome===5)assert.equal(a.hp,0);

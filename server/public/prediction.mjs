@@ -1,7 +1,7 @@
 import {advanceActionShield} from './action.mjs';
 import {keyPending} from './keys.mjs';
 import {movePlayer} from './movement.mjs';
-import {roleFor,WIDTH,advanceAim} from './roles.mjs';
+import {roleFor,WIDTH,movementSpeed,advanceAim} from './roles.mjs';
 import {AIM_SPEED} from './dungeon.mjs';
 import {SIZE,PLAYER_RADIUS} from './world.mjs';
 import {wallBlocksLine,resolveWalls} from './obstacles.mjs';
@@ -25,7 +25,7 @@ export function createPrediction(id){
    if(m.holding)p.aimDirection=m.aimDirection===-1?-1:m.aimDirection===1?1:(p.holding?p.aimDirection:1);
    const wasAttack=!!p.usingAttack;if(m.holding&&!p.holding)p.angle=(p.vx||p.vy)?Math.atan2(p.vy,p.vx):(p.angle||0);if(m.holding&&m.attack&&!wasAttack){p.attackAngle=p.angle;p.usingAttack=true;p.actionShielded=false;p.attackStarted=sim.time}
    if(!m.holding&&p.awaitingLaunch&&m.cancel){p.holding=false;p.usingAttack=false;p.shielding=false;p.vx=0;p.vy=0;return}if(!m.holding)p.awaitingLaunch=false;p.holding=m.holding;if(!m.holding||!m.attack)p.shielding=false;else advanceActionShield(sim,p);
-   if(!m.holding){if(Number.isFinite(m.angle))p.angle=m.angle;p.usingAttack=false;p.shielding=false;const speed=roleFor(p.color).speed*WIDTH;p.vx=Math.cos(p.angle)*speed;p.vy=Math.sin(p.angle)*speed}
+   if(!m.holding){if(Number.isFinite(m.angle))p.angle=m.angle;p.usingAttack=false;p.shielding=false;const speed=movementSpeed(p,sim.time);p.vx=Math.cos(p.angle)*speed;p.vy=Math.sin(p.angle)*speed}
    else if(!m.attack)p.usingAttack=false;
   }
   for(const event of pending){if(event.at>end||now-event.created>750)continue;stepTo(Math.max(sim.time,event.at));apply(event.message)}stepTo(end);return p;

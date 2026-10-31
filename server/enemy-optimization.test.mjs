@@ -6,8 +6,8 @@ const sleeping={id:'s',room:17,type:'sleeper',mode:'sleeping',x:3.5,y:2.5,vx:0,v
 const run={players:[player],enemies:[walker,sleeping],edges:Array.from({length:49},()=>[]),lockedRooms:Array(49).fill(false),time:1};
 run.lockedRooms[15]=true;
 assert.deepEqual(enemiesInRoom(run,15),[walker]);assert.deepEqual(enemiesInRoom(run,17),[sleeping]);
-stepCombat(run,0,()=>.5);assert.equal(player.hp,12,'contact outside an attack causes no damage');assert(walker.attackWindupUntil>run.time);
-run.time=1.21;stepCombat(run,0,()=>.5);assert.equal(player.hp,9,'the active attack window damages nearby players');
+stepCombat(run,0,()=>.5);assert.equal(player.hp,9,'body contact damages outside an attack');assert(walker.attackWindupUntil>run.time);
+run.time=1.21;stepCombat(run,0,()=>.5);assert.equal(player.hp,9,'hit immunity prevents a second hit during the active attack window');
 walker.hp=0;removeDefeatedEnemies(run);updateRoomLocks(run);
 assert.deepEqual(enemiesInRoom(run,15),[]);assert.equal(run.enemies.length,1);assert.equal(run.lockedRooms[15],false);
-console.log('PASS: enemies indexed by room, attack-only contact damage, removal, and room unlock');
+console.log('PASS: enemies indexed by room, contact damage and hit immunity, removal, and room unlock');

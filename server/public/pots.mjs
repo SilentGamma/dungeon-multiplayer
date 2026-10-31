@@ -1,3 +1,4 @@
+import {dropPotLoot} from './loot.mjs';
 import {emitAttackSound} from './audio-events.mjs';
 import {SIZE,THROW_SPEED} from './world.mjs';
 import {roomBounds,arenaRoom,sameArea} from './arena.mjs';
@@ -24,4 +25,4 @@ export function generatePots(run,random=Math.random){
 }
 export function potsInArea(run,p){const room=Math.floor(p.y)*SIZE+Math.floor(p.x);return (run.pots||[]).filter(o=>o.hp>0&&(sameArea(run,o,p)||run.edges[room]?.includes(o.room)))}
 export function launchPot(run,pot,source,angle){if(!canThrowPot(source)||pot.hp<=0||pot.grabbedBy)return false;pot.angle=angle;pot.throwing={room:pot.room,vx:Math.cos(angle)*THROW_SPEED,vy:Math.sin(angle)*THROW_SPEED,contact:{},from:source.id};return true}
-export function removeBrokenPots(run){if(!run.pots?.some(p=>p.hp<=0))return;const broken=new Set(run.pots.filter(p=>p.hp<=0).map(p=>{emitAttackSound(run,p,'pot-break');return p.id}));run.pots=run.pots.filter(p=>p.hp>0);for(const player of run.players)if(broken.has(player.grappleTarget))player.grappleTarget=null}
+export function removeBrokenPots(run,random=Math.random){if(!run.pots?.some(p=>p.hp<=0))return;const broken=run.pots.filter(p=>p.hp<=0),ids=new Set(broken.map(p=>p.id));for(const p of broken){emitAttackSound(run,p,'pot-break');dropPotLoot(run,p,random)}run.pots=run.pots.filter(p=>p.hp>0);for(const player of run.players)if(ids.has(player.grappleTarget))player.grappleTarget=null}
