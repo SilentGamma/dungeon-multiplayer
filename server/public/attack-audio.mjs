@@ -44,18 +44,18 @@ export function soundSamples(type,rate=22050){
  if(peak)for(let i=0;i<data.length;i++)data[i]*=.8/peak;return data;
 }
 export function createAttackAudio({loadClip=async url=>{const response=await fetch(url);if(!response.ok)throw Error('Audio unavailable');return response.arrayBuffer()},contextFactory=()=>{const C=globalThis.AudioContext||globalThis.webkitAudioContext;return C?new C():null}}={}){
- let context=null,master=null,muted=false;const buffers=new Map(),seen=new Set(),voices=[];
+ let context=null,master=null,effectsBus=null,menuBus=null,muted=false,effectsLevel=.7,menuLevel=.5;const buffers=new Map(),seen=new Set(),voices=[];
  const clipData=Promise.all(Object.entries(CLIP_URLS).map(async([type,url])=>{try{return [type,await loadClip(url)]}catch{return [type,null]}}));
  let decoding=false,clipReady=Promise.resolve();
  function loadRecordings(){if(decoding||!context)return;decoding=true;clipReady=clipData.then(async clips=>{await Promise.all(clips.map(async([type,bytes])=>{if(!bytes)return;try{buffers.set(type,await context.decodeAudioData(bytes.slice(0)))}catch{/* Keep the local fallback if loading/decoding fails. */}}))})}
 
- function unlock(){if(muted)return;try{if(!context){context=contextFactory();if(!context)return;master=context.createGain();master.gain.value=.3;const compressor=context.createDynamicsCompressor();master.connect(compressor);compressor.connect(context.destination);for(const type of SOUND_TYPES){const samples=soundSamples(type),buffer=context.createBuffer(1,samples.length,22050);buffer.copyToChannel(samples,0);buffers.set(type,buffer)}loadRecordings()}if(context.state!=='running'){const resumed=context.resume();resumed?.catch?.(()=>{});}}catch{}}
+ function unlock(){if(muted)return;try{if(!context){context=contextFactory();if(!context)return;master=context.createGain();master.gain.value=.3;effectsBus=context.createGain();menuBus=context.createGain();effectsBus.gain.value=effectsLevel;menuBus.gain.value=menuLevel;effectsBus.connect(master);menuBus.connect(master);const compressor=context.createDynamicsCompressor();master.connect(compressor);compressor.connect(context.destination);for(const type of SOUND_TYPES){const samples=soundSamples(type),buffer=context.createBuffer(1,samples.length,22050);buffer.copyToChannel(samples,0);buffers.set(type,buffer)}loadRecordings()}if(context.state!=='running'){const resumed=context.resume();resumed?.catch?.(()=>{});}}catch{}}
  function stop(){for(const v of voices.splice(0)){try{v.source.stop()}catch{}}}
  function play(type,volume=.7){if(muted||!context||context.state!=='running'||!buffers.has(type))return;
    while(voices.length>=12){const old=voices.shift();try{old.source.stop()}catch{}}
-   const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffers.get(type);gain.gain.value=volume;source.connect(gain);gain.connect(master);const voice={source,gain};voices.push(voice);source.onended=()=>{const index=voices.indexOf(voice);if(index>=0)voices.splice(index,1);source.disconnect();gain.disconnect()};source.start();
+   const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffers.get(type);gain.gain.value=volume;source.connect(gain);gain.connect(type==='menu'?menuBus:effectsBus);const voice={source,gain};voices.push(voice);source.onended=()=>{const index=voices.indexOf(voice);if(index>=0)voices.splice(index,1);source.disconnect();gain.disconnect()};source.start();
  }
- return {unlock,play,ready:()=>clipReady,setMuted(value){muted=!!value;if(muted)stop()},reset(){seen.clear();stop()},
+ return {unlock,play,setVolumes({effects=effectsLevel,menu=menuLevel}={}){if(Number.isFinite(effects))effectsLevel=Math.max(0,Math.min(1,effects));if(Number.isFinite(menu))menuLevel=Math.max(0,Math.min(1,menu));if(effectsBus)effectsBus.gain.value=effectsLevel;if(menuBus)menuBus.gain.value=menuLevel},ready:()=>clipReady,setMuted(value){muted=!!value;if(muted)stop()},reset(){seen.clear();stop()},
   set(run,me){if(!run)return;const player=run.players.find(p=>p.id===me);for(const event of run.audioEvents||[]){if(seen.has(event.id))continue;seen.add(event.id);if(seen.size>128)seen.delete(seen.values().next().value);if(muted||!context||context.state!=='running'||(run.time||0)-event.time>1.2||!buffers.has(event.type))continue;
    const distance=player?Math.hypot(player.x-event.x,player.y-event.y):1;if(distance>1.5)continue;
    play(event.type,.85/(1+distance*1.8));
