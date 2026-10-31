@@ -92,14 +92,14 @@ function resolveGambit(run,p,random){
  const outcome=Math.floor(random()*6);p.gambit=outcome;p.gambitUntil=now+1;
  run.gambitCue={...run.gambitCue,id:pending.id,outcome:GAMBIT_NAMES[outcome],expiresAt:now+1.2};
  const near=(x,n)=>clearPath(run,p,x)&&Math.hypot(p.x-x.x,p.y-x.y)<=n*WIDTH;
- if(outcome===0){emitAttackSound(run,p,'explosion');for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,6))damagePlayer(run,q,20,random);for(const e of run.enemies||[])if(e.hp>0&&near(e,6)){e.hp=Math.max(0,e.hp-20);e.hitUntil=now+.2;}down(p)}
+ if(outcome===0){emitAttackSound(run,p,'explosion');for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,6))damagePlayer(run,q,20,random);for(const e of run.enemies||[])if(e.hp>0&&near(e,6)){e.lastHitBy=p.id;e.hp=Math.max(0,e.hp-20);e.hitUntil=now+.2;}down(p)}
  else if(outcome===1)p.invisibleUntil=now+7;
  else if(outcome===2){for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&near(q,2))healAlly(p,q,10)}
  else if(outcome===3){emitAttackSound(run,p,'shock');for(const q of run.players)if(q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)&&near(q,2)){q.stunUntil=now+4;q.reviving=null;q.reviveInterruptedUntil=now+4}for(const e of run.enemies||[])if(e.hp>0&&near(e,2))e.stunUntil=now+4}
  else if(outcome===4)p.airUntil=now+5;
  else p.finalDrawUntil=now+1;
 }
-function finalDraw(run,p){if(!p.finalDrawUntil||p.hp<=0||p.arrived||p.throwing||p.grabbedBy)return;const now=run.time||0;if(now>p.finalDrawUntil){p.finalDrawUntil=0;return}const targets=[...run.players.filter(q=>q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)),...(run.enemies||[]).filter(e=>e.hp>0)].filter(q=>clearPath(run,p,q)).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y));const target=targets[0];if(target){emitAttackSound(run,p,'blue');if(run.players.includes(target))down(target);else target.hp=0;p.finalDrawUntil=0}}
+function finalDraw(run,p){if(!p.finalDrawUntil||p.hp<=0||p.arrived||p.throwing||p.grabbedBy)return;const now=run.time||0;if(now>p.finalDrawUntil){p.finalDrawUntil=0;return}const targets=[...run.players.filter(q=>q!==p&&q.hp>0&&!q.arrived&&!guarded(run,q)),...(run.enemies||[]).filter(e=>e.hp>0)].filter(q=>clearPath(run,p,q)).sort((a,b)=>Math.hypot(p.x-a.x,p.y-a.y)-Math.hypot(p.x-b.x,p.y-b.y));const target=targets[0];if(target){emitAttackSound(run,p,'blue');if(run.players.includes(target))down(target);else{target.lastHitBy=p.id;target.hp=0};p.finalDrawUntil=0}}
 export const ATTACK_DURATION=.28;
 const swings=new WeakMap();
 function resolveSwing(run,p){
@@ -108,7 +108,7 @@ function resolveSwing(run,p){
  const role=roleFor(p.color),aim={...p,angle:swing.angle};
  let targets=[...(run.enemies||[]).filter(e=>e.hp>0),...potsInArea(run,p).filter(o=>!o.grabbedBy)].filter(e=>!swing.hits.has(e.id)&&clearPath(run,p,e)&&inAttack(aim,e,e.kind==='pot'?POT_RADIUS:enemyRadius(e))).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));
  if(role.single){const firstEnemy=targets.find(e=>e.kind!=='pot');targets=targets.filter(e=>e.kind==='pot'||(!swing.enemyHit&&e===firstEnemy))}
- for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){e.hp=0;continue}e.hp=Math.max(0,e.hp-(p.color==='blue'?sniperRatioDamage(aim,e):swing.damage));e.hitUntil=now+.2;if(p.color!=='blue')emitAttackSound(run,e,'hurt');swing.enemyHit=true;if(p.color==='blue')emitAttackSound(run,e,'sniper-hit');if(p.color==='green')applyPoison(e,now,{refresh:true})}
+ for(const e of targets){swing.hits.add(e.id);if(e.kind==='pot'){e.hp=0;continue}e.lastHitBy=p.id;e.hp=Math.max(0,e.hp-(p.color==='blue'?sniperRatioDamage(aim,e):swing.damage));e.hitUntil=now+.2;if(p.color!=='blue')emitAttackSound(run,e,'hurt');swing.enemyHit=true;if(p.color==='blue')emitAttackSound(run,e,'sniper-hit');if(p.color==='green')applyPoison(e,now,{refresh:true})}
  for(const q of run.players){if(q===p||q.hp<=0||q.arrived||swing.healed.has(q.id)||!clearPath(run,p,q)||Math.hypot(q.x-p.x,q.y-p.y)>2*WIDTH)continue;const heal=p.color==='purple'&&swing.enemyHit?3:p.color==='green'&&inAttack(aim,q)?5:0;if(heal){healAlly(p,q,heal);swing.healed.add(q.id)}}
 }
 export function attack(run,p){
@@ -120,10 +120,10 @@ export function attack(run,p){
 function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
  const now=run.time||0;if(p.hp<=0||p.arrived||guarded(run,p)||now<(p.invulnerableUntil||0)||!clearPath(run,e,p))return false;
  const shielded=p.shielding&&p.shield>0;
- if(shielded&&p.color==='coral'&&now-(p.shieldRaisedAt||0)<=.3){e.hp=Math.max(0,e.hp-2);e.hitUntil=now+.2;e.vx*=-1;e.vy*=-1}
+ if(shielded&&p.color==='coral'&&now-(p.shieldRaisedAt||0)<=.3){e.lastHitBy=p.id;e.hp=Math.max(0,e.hp-2);e.hitUntil=now+.2;e.vx*=-1;e.vy*=-1}
  damagePlayer(run,p,enemyFor(e).damage,random);p.invulnerableUntil=now+HIT_COOLDOWN;p.reviving=null;p.reviveInterruptedUntil=now+HIT_COOLDOWN;
  if(p.hp>0&&stun){p.stunUntil=Math.max(p.stunUntil||0,now+stun);p.holding=false;p.shielding=false;p.usingAttack=false;p.wrestlerState=null;}
- if(poison&&p.hp>0)applyPoison(p,now)
+ if(poison&&!shielded&&p.hp>0)applyPoison(p,now)
  return true;
 }
 function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;emitAttackSound(run,p,'hurt');p.hp=Math.max(0,p.hp-damage);if(!p.hp)emitAttackSound(run,p,'down');p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}

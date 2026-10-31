@@ -36,4 +36,4 @@ Cleanup passes explicitly request flat two-color ink, no gradients, shading, smu
 
 ## Runtime
 
-Closed eyes start when the authoritative attack hitbox activates (or Wrestler lunge starts), last two seconds, and do not restart from repeated network frames. Holding an active shield keeps eyes closed. Sniper is excluded. Status-color flashes remain solid and take rendering precedence. A new round and disconnect clear expression timers. Both token variants preload once and reuse cached images; fallback is the normal icon if an expression is still loading.
+Closed eyes start when the authoritative attack hitbox activates (or Wrestler lunge starts), last 180 milliseconds, and do not restart from repeated network frames. Holding an active shield keeps eyes closed. Sniper is excluded. Status-color flashes remain solid and take rendering precedence. A new round and disconnect clear expression timers. Both token variants preload once and reuse cached images; fallback is the normal icon if an expression is still loading.

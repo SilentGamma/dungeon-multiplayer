@@ -1,4 +1,4 @@
-export const ATTACK_BLINK_MS=2000;
+export const ATTACK_BLINK_MS=180;
 export function createBlinkState(){
  let previous=new Map(),until=new Map(),round=null;
  return {reset(){previous.clear();until.clear();round=null},set(run,now){
