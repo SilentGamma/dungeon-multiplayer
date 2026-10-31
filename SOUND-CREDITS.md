@@ -1,3 +1,19 @@
+## Six-scene soundtrack restoration — 2026-10-31
+
+- Menu: DTChords — Stories by the Campfire, supplied `dtchords-stories-by-the-campfire-214763.mp3`.
+- Exploration: DonutThePerson — Mysterious Cave in the Outer Wilds, supplied `donuttheperson-mysterious-cave-in-the-outer-wilds-161722.mp3`; start and loop at 00:55.
+- Combat: Sonican — Action Fight, supplied `sonican-action-fight-239712.mp3`.
+- Warden: Mumarmds — Final Battle II, supplied `mumarmds-final-battle-ii-epic-cinematic-battle-music-with-intense-orchestral-361155.mp3`.
+- Victory: Alex_Morgan — Victory, supplied `alex-morgan-victory-591331.mp3`.
+
+These five user-supplied tracks are distributed by Pixabay under https://pixabay.com/service/license-summary/ .
+
+F rank: **Game Over**, **Kistol**, https://opengameart.org/content/game-over . Official page identifies CC0 and says attribution is optional. Original download: https://opengameart.org/sites/default/files/Game%20Over_1.ogg . License: https://creativecommons.org/publicdomain/zero/1.0/ . Retrieved 2026-10-31; voluntarily credited in game. No royalties or attribution requirement under CC0.
+
+All six recordings use two-pass EBU R128 normalization targeting -18 LUFS, -2 dBTP and 11 LU LRA, then stereo 44.1 kHz / 128 kbps MP3 conversion. Source/output hashes and final decoded loudness/peaks are in `server/public/music-manifest.json`. Playback uses the same music gain for all six tracks, independently of combat SFX. Victory and failure play once; personal F rank selects failure even when teammates win. One theme owner prevents overlap; short gameplay cues temporarily suppress themes. Castle title remains silent except for its explicit entrance recording.
+
+Earlier entries below describe previous releases.
+
 ## Theme removal — 2026-10-31
 
 Menu, exploration and combat theme recordings have been removed. Background theme playback is disabled. Short gameplay cues, entrance recording and combat sound effects remain. Earlier music credits below describe previous releases.

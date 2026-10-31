@@ -1,0 +1,50 @@
+{
+  "menu": {
+    "source": "dtchords-stories-by-the-campfire-214763.mp3",
+    "source_sha256": "3e2f6669b66bdaf8e309a4c9c9dcf373020a7a91e6df1b1cb309d2407f7a8283",
+    "file": "music-menu-v2.mp3",
+    "sha256": "1209607f7efb8f46e39cbc393e8f64b7f2ff3d5b1b1bf7ebea60c3c25cb88021",
+    "integrated_lufs": -18.45,
+    "true_peak_dbtp": -4.38
+  },
+  "explore": {
+    "source": "donuttheperson-mysterious-cave-in-the-outer-wilds-161722.mp3",
+    "source_sha256": "97bad3f67ad5462df816579daa78094e9c4733e57516a2632a2f9fdbf21651eb",
+    "file": "music-explore-v2.mp3",
+    "sha256": "29f08badb429da2ffb6253734520a980a32ba42d148598284f7ea87e09682c34",
+    "integrated_lufs": -18.49,
+    "true_peak_dbtp": -2.02
+  },
+  "combat": {
+    "source": "sonican-action-fight-239712.mp3",
+    "source_sha256": "27eaf93a269e11182b7cc32d102af7a9b070aec0db9e2b14f8087119d5ceacd0",
+    "file": "music-combat-v2.mp3",
+    "sha256": "44cbc9d9b67d55af93f212a172a0e5903c8e158d9fd00182623ecf02cac1cfdf",
+    "integrated_lufs": -18.42,
+    "true_peak_dbtp": -4.57
+  },
+  "warden": {
+    "source": "mumarmds-final-battle-ii-epic-cinematic-battle-music-with-intense-orchestral-361155.mp3",
+    "source_sha256": "743732eeaf5355ddd511b5206f21661bdbe712d410f7e9be1e7c603cb0e94f73",
+    "file": "music-warden-v2.mp3",
+    "sha256": "1734637d1c0736ae4525bc5ffe4fb78d21e8f637dec9bb12aa737ca51aa69982",
+    "integrated_lufs": -18.38,
+    "true_peak_dbtp": -7.16
+  },
+  "victory": {
+    "source": "alex-morgan-victory-591331.mp3",
+    "source_sha256": "fcbedf72ec22aca364a1158a1f5335ae7051f07feb0e650afda934f0d0e8f768",
+    "file": "music-victory-v2.mp3",
+    "sha256": "5ed42146e11b9623091a3e265cda190024994a1e291f469813a0699d70862de0",
+    "integrated_lufs": -18.42,
+    "true_peak_dbtp": -6.95
+  },
+  "defeat": {
+    "source": "kistol-game-over.ogg",
+    "source_sha256": "eb16aeb17fed5b13575702e082b54db00b296f6f4f2e9ee89c63aca895bc085e",
+    "file": "music-defeat-v2.mp3",
+    "sha256": "b1049092ecb4f1a30dae3c8a37c0ce6f9c71d3b528e9163ca7902f0358f0eb95",
+    "integrated_lufs": -18.44,
+    "true_peak_dbtp": -6.33
+  }
+}
