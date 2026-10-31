@@ -1,0 +1,13 @@
+# Party coordination and GOLD
+
+Host succession follows the explicit join-order list of player IDs and names. The oldest remaining member is host; after that member leaves, succession moves to the next entry. New arrivals append to the list. Five-second reconnection grace retains a host's place; expiration or confirmed Leave removes it. Names do not determine identity, so duplicate names do not affect ordering.
+
+Everyone, including the host, must ready up before starting. The server rejects start requests unless all current members are connected and ready. A role change marks that player unready. Disconnecting clears that player's readiness. Returning from a run clears everyone's readiness. Leaving members are removed from the ready count. The host starts after the gate opens.
+
+An S-rank completion awards GOLD to the role used in that run. The party session maintains the unlock inventory separately from public snapshots. The browser profile saves the private role-to-GOLD value, retaining it across tab refreshes, name changes, lobbies and future visits on that browser. Only the selected role's visible cosmetic flag is sent to party members. There is no account sign-in or cross-device profile synchronization in the current game. Clearing browser storage removes these saved cosmetics. Persisted cosmetic preferences are restored on join; they do not affect ranks or gameplay stats.
+
+GOLD uses cached luminance-mapped token artwork and a moving specular highlight. Closed-eye action artwork receives the same material, while Sniper keeps the existing eye treatment. Portraits use a matching gold finish. Action flashes retain priority, including solid-white damage and Swift Wind flashes. The gold ramp preserves dark facial line work. The visual effect changes no collision, attack, health, shield or speed values.
+
+Party quick chat offers eight preset messages: Help!, This way!, Wait!, Need healing!, Found a key!, To the stairs!, Thanks!, and Good run!. Open Chat with its button or C, choose a message, and Escape closes the picker. Messages are server-attributed, available to the whole party regardless of room visibility, limited to one per player per 1.5 seconds, expire after eight seconds, and retain at most five entries. Free-form text and unknown message IDs are rejected. The picker does not pause gameplay.
+
+Validation: npm test; party-features.test.mjs; party-features-network.test.mjs; run-flow tests; browser checks of ready controls, preset chat, scorecard return, and the GOLD material. Older gameplay fixtures explicitly ready their parties before starting.

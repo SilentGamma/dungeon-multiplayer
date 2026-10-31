@@ -1,3 +1,4 @@
+import {startReadyParty} from './test-party.mjs';
 import assert from 'node:assert/strict';
 import {createRun,applyInput,step,SIZE} from '../dist/dungeon.mjs';
 import {stepWarden} from '../dist/warden.mjs';
@@ -34,5 +35,5 @@ Object.assign(boss,{x:4.99,y:3,vx:.048,vy:0,room:25});stepCombat(r,1,()=>.5);ass
 // Compact frames restore stable metadata and carry boss/projectile state.
 r=bossRun();p=r.players[0];Object.assign(p,{x:3,y:3.5});r.bossActive=true;r.enemies[0].active=true;r.projectiles=[{id:'b',x:3,y:3,vx:.55,vy:0,expires:8}];const room={run:r,snapshot:()=>structuredClone({phase:'playing',run:r})},cache=new Map();let state=fullFor(room,p.id);state=applyFrame(state,frameFor(room,p.id,cache));r.time=.1;const frame=frameFor(room,p.id,cache);assert(!('name' in frame.players[0]));state=applyFrame(state,frame);assert.equal(state.run.players[0].name,'P');assert.equal(state.run.enemies[0].type,'warden');assert.equal(state.run.projectiles.length,1);
 // The fifth dungeon advances into the finale; only boss defeat completes the run.
-const s=new Session({code:'boss'});s.join({id:'p',name:'P'});s.start('p');s.run.round=5;s.run.players[0].arrived=true;s.tick(.02);assert.equal(s.phase,'playing');assert.equal(s.run.kind,'boss');s.run.enemies[0].hp=0;s.tick(.02);assert.equal(s.phase,'completed');assert(!s.closed);
+const s=new Session({code:'boss'});s.join({id:'p',name:'P'});startReadyParty(s,'p');s.run.round=5;s.run.players[0].arrived=true;s.tick(.02);assert.equal(s.phase,'playing');assert.equal(s.run.kind,'boss');s.run.enemies[0].hp=0;s.tick(.02);assert.equal(s.phase,'completed');assert(!s.closed);
 console.log('PASS: fixed stationary octagon slots, launch input, separate Warden finale, team HP, spawn caps, alternating blasts, shield hits, arena bounds and network state');

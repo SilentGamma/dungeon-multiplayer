@@ -5,7 +5,7 @@ async function post(path,body={},token=''){const res=await fetch(base+'/api/'+pa
 try {
  const host=await post('create',{name:'A'});const response=await fetch(base+'/api/events',{headers:{authorization:'Bearer '+host.token},signal:controller.signal});const reader=response.body.getReader(),decoder=new TextDecoder();let pending='';
  async function nextEvent(){for(;;){const i=pending.indexOf('\n\n');if(i>=0){const line=pending.slice(0,i);pending=pending.slice(i+2);if(line.startsWith('data: '))return JSON.parse(line.slice(6))}const {value,done}=await reader.read();assert(!done);pending+=decoder.decode(value,{stream:true})}}
- await nextEvent();await post('start',{},host.token);let first;do{first=await nextEvent()}while(first.phase!=='playing');assert.equal(first.run.round,1);
+ await nextEvent();await post('ready',{ready:true},host.token);await post('start',{},host.token);let first;do{first=await nextEvent()}while(first.phase!=='playing');assert.equal(first.run.round,1);
  room.run.players[0].arrived=true;
  let second;do{second=await nextEvent()}while(!(second.phase==='playing'&&second.run?.round===2));
  assert(second.run.edges&&second.run.doors,'new round sends the full dungeon');assert.equal(second.run.players[0].hp,second.run.players[0].maxHp);

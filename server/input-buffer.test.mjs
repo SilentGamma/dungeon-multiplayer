@@ -1,3 +1,4 @@
+import {startReadyParty} from './test-party.mjs';
 import assert from 'node:assert/strict';
 import {createInputBuffer} from './public/input-buffer.mjs';
 import {Session} from './session.mjs';
@@ -10,7 +11,7 @@ buffer.push({seq:3});await Promise.resolve();
 assert(sent[0].signal.aborted,'oldest request is removed when the buffer is full');
 assert(!sent[2].signal.aborted);
 buffer.close();assert(sent[1].signal.aborted&&sent[2].signal.aborted);
-const session=new Session({code:'1'});session.join({id:'p',name:'Player'});session.start('p');
+const session=new Session({code:'1'});session.join({id:'p',name:'Player'});startReadyParty(session,'p');
 const player=session.run.players[0];player.awaitingLaunch=false;
 assert(session.input('p',{seq:2,holding:true,attack:true,sentAt:Date.now()}));
 assert(!session.input('p',{seq:1,holding:false,sentAt:Date.now()}),'out-of-order release is discarded');

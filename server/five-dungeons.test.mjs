@@ -1,3 +1,4 @@
+import {startReadyParty} from './test-party.mjs';
 import assert from 'node:assert/strict';
 import {Session} from './session.mjs';
 import {createRun,step,applyInput,distances,SIZE} from '../dist/dungeon.mjs';
@@ -7,7 +8,7 @@ for(let k=0;k<200;k++){
  const r=createRun([{id:'p',name:'P',color:'coral'}]);const encounters=r.enemyRooms.map((x,i)=>x?i:-1).filter(i=>i>=0);assert(encounters.length>0);assert(!r.enemyRooms[r.goal]);assert(!r.enemyRooms[r.startRoom]);
  for(const a of encounters){const d=distances(r.edges,[a]);for(const b of encounters)if(a!==b)assert(d[b]>=2,'encounters must have a safe room between them')}
 }
-const s=new Session({code:'1'});for(const id of ['a','b','c'])s.join({id,name:id});s.start('a');assert.equal(s.run.round,1);s.leave('b');
+const s=new Session({code:'1'});for(const id of ['a','b','c'])s.join({id,name:id});startReadyParty(s,'a');assert.equal(s.run.round,1);s.leave('b');
 let old=s.run;old.players.find(p=>p.id==='a').arrived=true;const downed=old.players.find(p=>p.id==='c');downed.hp=0;downed.shield=0;downed.poisonUntil=100;old.enemies.push({id:'old',room:0,hp:0});s.tick(.02);
 assert.equal(s.run.round,2);assert.notEqual(s.run,old);assert(!s.run.players.some(p=>p.id==='b'));assert(!s.players.some(p=>p.id==='b'));let restored=s.run.players.find(p=>p.id==='c');assert.equal(restored.hp,restored.maxHp);assert.equal(restored.shield,restored.maxShield);assert(!restored.poisonUntil);assert.equal(s.run.enemies.length,0);assert(!s.run.mapCollected);
 assert(!s.input('a',{seq:1,round:1,holding:true,attack:false}),'old-round inputs cannot affect the new dungeon');assert(s.input('a',{seq:2,round:2,holding:true,attack:false}));

@@ -7,7 +7,7 @@ try{
  const host=await post('create',{name:'Host'}),guest=await post('join',{name:'Guest',code:host.code});
  const stream=await fetch(base+'/api/events',{headers:{authorization:'Bearer '+guest.token},signal:controller.signal});
  const reader=stream.body.getReader();await reader.read();
- await post('start',{},host.token);controller.abort();
+ await post('ready',{ready:true},host.token);await post('ready',{ready:true},guest.token);await post('start',{},host.token);controller.abort();
  await new Promise(resolve=>setTimeout(resolve,5500));
  const result=await post('role',{color:'green'},host.token);
  assert.equal(result.state.phase,'playing');assert(result.state.run.players.find(p=>p.id===guest.player.id).deceased);
