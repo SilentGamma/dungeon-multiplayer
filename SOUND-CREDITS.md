@@ -1,3 +1,7 @@
+## Theme removal — 2026-10-31
+
+Menu, exploration and combat theme recordings have been removed. Background theme playback is disabled. Short gameplay cues, entrance recording and combat sound effects remain. Earlier music credits below describe previous releases.
+
 # Gameplay sound credits
 
 Downloaded 2026-10-29 from Mixkit's royalty-free sound-effect library.
