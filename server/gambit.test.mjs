@@ -7,7 +7,7 @@ import {applyFrame} from './public/wire.mjs';
 import {createGambitAnnouncement} from './public/gambit-announcement.mjs';
 for(let outcome=0;outcome<6;outcome++){
  const run=createRun([{id:'j',name:'J',color:'lime'},{id:'a',name:'A',color:'coral'}]);run.time=10;run.enemies=[];run.obstacles=[];
- const [j,a]=run.players;Object.assign(j,{shielding:true,shield:1,awaitingLaunch:false});Object.assign(a,{x:j.x+.03,y:j.y,hp:1,awaitingLaunch:false});let rolls=0;const random=()=>{rolls++;return (outcome+.5)/6};
+ const [j,a]=run.players;Object.assign(j,{holding:true,usingAttack:true,shielding:true,shield:1,awaitingLaunch:false});Object.assign(a,{x:j.x+.03,y:j.y,hp:1,awaitingLaunch:false});let rolls=0;const random=()=>{rolls++;return (outcome+.5)/6};
  assert(damagePlayer(run,j,2,random));assert.equal(rolls,0);assert.equal(run.gambitCue.outcome,null);assert.equal(j.hp,8);assert(!j.stunUntil);
  run.time=10.199;stepCombat(run,0,random);assert.equal(rolls,0);assert.equal(a.hp,1);
  run.time=10.2;stepCombat(run,0,random);assert.equal(rolls,1);assert.equal(run.gambitCue.outcome,GAMBIT_NAMES[outcome]);assert(!j.gambitPending);

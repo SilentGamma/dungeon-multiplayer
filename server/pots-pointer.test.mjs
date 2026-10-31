@@ -37,7 +37,7 @@ for(const color of ['coral','purple','pink','gold','green','blue','teal','lime']
 // Wall and entity impacts break pots immediately and keep standard impact damage.
 [r,p]=fixture();r.pots=[pot('wall',1.96)];launchPot(r,r.pots[0],p,0);updateThrows(r,.1);assert.equal(r.pots[0].hp,0);removeBrokenPots(r,()=>.99);assert.equal(r.pots.length,0);assert(r.audioEvents.some(e=>e.type==='pot-break'));
 [r,p]=fixture();r.pots=[pot('enemy',1.45)];r.enemies=[{id:'e',type:'walker',room:15,x:1.51,y:2.5,hp:15}];launchPot(r,r.pots[0],p,0);updateThrows(r,.05);assert.equal(r.pots[0].hp,0);assert.equal(r.enemies[0].hp,10);
-[r,p]=fixture();const q={...p,id:'q',color:'coral',hp:12,maxHp:12,x:1.51,shielding:true,shield:1};r.players.push(q);r.pots=[pot('shield',1.4)];launchPot(r,r.pots[0],p,0);updateThrows(r,.05);assert.equal(r.pots[0].hp,0);assert.equal(q.shield,0);assert.equal(q.hp,q.maxHp,'shield absorbs pot impact without overflow');
+[r,p]=fixture();const q={...p,id:'q',color:'coral',hp:12,maxHp:12,x:1.51,holding:true,usingAttack:true,shielding:true,shield:1};r.players.push(q);r.pots=[pot('shield',1.4)];launchPot(r,r.pots[0],p,0);updateThrows(r,.05);assert.equal(r.pots[0].hp,0);assert.equal(q.shield,0);assert.equal(q.hp,q.maxHp,'shield absorbs pot impact without overflow');
 [r,p]=fixture();r.pots=[pot('a',1.4),pot('b',1.47)];launchPot(r,r.pots[0],p,0);updateThrows(r,.05);assert(r.pots.every(o=>o.hp===0),'pots break against each other');
 [r,p]=fixture();r.obstacles=[{id:'block',room:15,type:'wall',x:1.45,y:2.4,size:.2}];r.pots=[pot('obstacle',1.4)];launchPot(r,r.pots[0],p,0);updateThrows(r,.05);assert.equal(r.pots[0].hp,0,'obstacle walls also break thrown pots');
 // Props can fly into another room without spawning its encounter or revealing its key.

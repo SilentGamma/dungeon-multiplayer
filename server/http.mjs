@@ -1,3 +1,4 @@
+import {requirePlayerName} from './public/player-name.mjs';
 import {publicOrigin,renderSeo,robotsText,sitemapXml,legacyRedirect} from './seo.mjs';
 import {attachInputSockets} from './input-socket.mjs';
 import {createDiagnostics} from './diagnostics.mjs';
@@ -33,9 +34,9 @@ if(req.method==='GET'&&url.pathname==='/health')return reply(res,200,{ok:true,di
    if((req.method==='GET'||req.method==='HEAD')&&!url.pathname.startsWith('/api/')){const file=path.basename(url.pathname==='/'?'index.html':url.pathname);if(!/^[\w.-]+$/.test(file))return reply(res,404,{error:'Not found'});try{let bytes=await readFile(path.join(publicDir,file));if(file==='index.html')bytes=Buffer.from(renderSeo(bytes.toString('utf8'),publicOrigin()));res.writeHead(200,{'Content-Type':file.endsWith('.ttf')?'font/ttf':file.endsWith('.txt')?'text/plain; charset=utf-8':file.endsWith('.png')?'image/png':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.ogg')?'audio/ogg':file.endsWith('.mp3')?'audio/mpeg':file.endsWith('.webp')?'image/webp':file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8','X-Content-Type-Options':'nosniff',...((file.endsWith('.ogg')||file.endsWith('.webp')||file.endsWith('.mp3')||file.endsWith('.png'))?{'Cache-Control':'public, max-age=31536000, immutable'}:{'Cache-Control':'no-cache'})});return res.end(bytes)}catch{return reply(res,404,{error:'Not found'})}}if(req.method!=='POST')return reply(res,404,{error:'Not found'});
    let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>4096)return reply(res,413,{error:'Request too large'})}const body=raw?JSON.parse(raw):{};
    if(url.pathname==='/api/create'||url.pathname==='/api/join'){
-    const id=token(),key=token();let room;
+    const playerName=requirePlayerName(body.name),id=token(),key=token();let room;
     if(url.pathname==='/api/create'){if(rooms.size>=100)return reply(res,503,{error:'Server is full'});const roomCode=code();room=new Session({code:roomCode,visibility:body.visibility==='public'?'public':'private'});rooms.set(roomCode,room);onSessionCreated?.(room)}else room=rooms.get(String(body.code));
-    if(!room)return reply(res,404,{error:'Lobby not found'});const player=room.join({id,name:body.name,preferredRole:body.preferredRole,goldRoles:body.goldRoles});credentials.set(key,{id,code:room.code});publish(room.code,true);return reply(res,200,{token:key,player,code:room.code,serverNow:Date.now(),state:fullFor(room,id)});
+    if(!room)return reply(res,404,{error:'Lobby not found'});const player=room.join({id,name:playerName,preferredRole:body.preferredRole,goldRoles:body.goldRoles});credentials.set(key,{id,code:room.code});publish(room.code,true);return reply(res,200,{token:key,player,code:room.code,serverNow:Date.now(),state:fullFor(room,id)});
    }
    if(!auth)return reply(res,401,{error:'Unauthorized'});const room=rooms.get(auth.code);if(!room)return reply(res,404,{error:'Lobby closed'});
    if(url.pathname==='/api/resume'){const player=room.players.find(p=>p.id===auth.id);if(room.closed||!player)return reply(res,401,{error:'Your place in this party has expired.'});return reply(res,200,{token:key,player,code:room.code,serverNow:Date.now(),state:fullFor(room,auth.id)})}

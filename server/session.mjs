@@ -1,3 +1,4 @@
+import {requirePlayerName} from './public/player-name.mjs';
 import {QUICK_CHAT} from './public/quick-chat-data.mjs';
 import {createRunLedger} from './scoring.mjs';
 // Authoritative room logic, independent of any particular connection transport.
@@ -8,7 +9,7 @@ export class Session {
  constructor({code,visibility='private',random=Math.random,clock=()=>Date.now()}){this.visibility=visibility;this.code=code;this.random=random;this.phase='lobby';this.players=[];this.run=null;this.accumulator=0;this.closed=false;this.endReason=null;this.latestInput=new Map();this.clock=clock;this.ledger=null;this.results=null;this.donePlayers=new Set();this.joinOrder=[];this.goldAwards=new Map();this.chatMessages=[];this.chatSerial=0;this.chatTimes=new Map();}
  join({id,name,preferredRole,goldRoles=[]}){
   if(this.closed||this.phase!=='lobby')throw Error('Lobby is no longer accepting players.');
-  if(typeof id!=='string'||!id||id.length>128||typeof name!=='string'||!name.trim()||name.length>20||this.players.some(p=>p.id===id))throw Error('Invalid player.');
+  if(typeof id!=='string'||!id||id.length>128||this.players.some(p=>p.id===id))throw Error('Invalid player.');name=requirePlayerName(name);
   const available=Object.keys(ROLES).filter(c=>!this.players.some(p=>p.color===c));const color=available.includes(preferredRole)?preferredRole:available[0];if(!color)throw Error('Lobby is full.');
   const awards=new Set(Array.isArray(goldRoles)?goldRoles.filter(c=>Object.hasOwn(ROLES,c)):[]);this.goldAwards.set(id,awards);const player={id,name:name.trim(),color,ready:false,gold:awards.has(color)};this.players.push(player);this.joinOrder.push({id,name:player.name});return {...player};
  }

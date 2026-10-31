@@ -1,3 +1,4 @@
+import {shieldActive} from './shield.mjs';
 import {emitAttackSound} from './audio-events.mjs';
 import {GAMBIT_DELAY,GAMBIT_NAMES} from './gambit.mjs';
 import {POT_RADIUS,potsInArea} from './pots.mjs';
@@ -73,11 +74,11 @@ function clearPath(run,a,b){
  const pos=horizontal?(a.y+(b.y-a.y)*t-ay):(a.x+(b.x-a.x)*t-ax),key=`${Math.min(ar,br)}:${Math.max(ar,br)}`;
  return (run.doors?.[key]||[[.34,.66]]).some(([lo,hi])=>pos>=lo&&pos<=hi);
 }
-function guarded(run,p){return run.players.some(b=>b!==p&&b.hp>0&&!b.arrived&&b.color==='gold'&&b.shielding&&b.shield>0&&clearPath(run,b,p)&&Math.hypot(b.x-p.x,b.y-p.y)<=3*WIDTH)}
+function guarded(run,p){return run.players.some(b=>b!==p&&b.hp>0&&!b.arrived&&b.color==='gold'&&shieldActive(b,run.time||0)&&clearPath(run,b,p)&&Math.hypot(b.x-p.x,b.y-p.y)<=3*WIDTH)}
 function down(p){p.hp=0;p.holding=false;p.shielding=false;p.arrived=false;p.reviving=null;p.attackUntil=0;clearPoison(p);p.stunUntil=0}
 export function damagePlayer(run,p,damage,random=Math.random){
  const now=run.time||0;if(p.hp<=0||p.arrived||now<(p.invulnerableUntil||0)||guarded(run,p))return false;
- p.invulnerableUntil=now+HIT_COOLDOWN;if(p.shielding&&p.shield>0){emitAttackSound(run,p,'shield-hit');p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;if(!p.shield){emitAttackSound(run,p,'shield-break');p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
+ p.invulnerableUntil=now+HIT_COOLDOWN;if(shieldActive(p,run.time||0)){emitAttackSound(run,p,'shield-hit');p.shield=Math.max(0,p.shield-damage);p.blockUntil=now+.16;if(!p.shield){emitAttackSound(run,p,'shield-break');p.shieldBreakUntil=now+.45;p.shielding=false;if(p.color==='lime')jokerGambit(run,p,random);else p.stunUntil=now+5}return true}
  emitAttackSound(run,p,'hurt');p.hp=Math.max(0,p.hp-damage);if(!p.hp)emitAttackSound(run,p,'down');p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p);return true;
 }
 function jokerGambit(run,p){
@@ -119,7 +120,7 @@ export function attack(run,p){
 }
 function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
  const now=run.time||0;if(p.hp<=0||p.arrived||now<(e.contactSafeUntil||0)||guarded(run,p)||now<(p.invulnerableUntil||0)||!clearPath(run,e,p))return false;
- const shielded=p.shielding&&p.shield>0;
+ const shielded=shieldActive(p,run.time||0);
  if(shielded&&p.color==='coral'&&now-(p.shieldRaisedAt||0)<=.3){e.lastHitBy=p.id;e.hp=Math.max(0,e.hp-2);e.hitUntil=now+.2;e.vx*=-1;e.vy*=-1}
  damagePlayer(run,p,enemyFor(e).damage,random);p.invulnerableUntil=now+HIT_COOLDOWN;p.reviving=null;p.reviveInterruptedUntil=now+HIT_COOLDOWN;
  if(p.hp>0&&stun){p.stunUntil=Math.max(p.stunUntil||0,now+stun);p.holding=false;p.shielding=false;p.usingAttack=false;p.wrestlerState=null;}
@@ -129,7 +130,7 @@ function enemyHit(run,e,p,random,{poison=false,stun=0}={}){
 function tickPlayerPoison(run,p){const now=run.time||0;if(p.hp<=0||p.arrived){clearPoison(p);return}tickPoison(p,now,damage=>{if(guarded(run,p))return;emitAttackSound(run,p,'hurt');p.hp=Math.max(0,p.hp-damage);if(!p.hp)emitAttackSound(run,p,'down');p.hurtUntil=now+.22;p.reviving=null;p.reviveInterruptedUntil=now+.01;if(p.hp===0)down(p)})}
 // Hold non-attacking enemies at the shield boundary through their windup.
 // Bouncing them away before an attack activates makes shield contact miss.
-function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!p.shielding||p.shield<=0||!sameArea(run,p,e)||!clearPath(run,e,p))continue;const bounds=roomBounds(run,e.room),r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(bounds.x+r,Math.min(bounds.x+bounds.width-r,p.x+nx*reach));e.y=Math.max(bounds.y+r,Math.min(bounds.y+bounds.height-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;const attacking=e.type==='sleeper'?e.mode==='lunging':run.time<(e.attackActiveUntil||0);if(attacking&&dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
+function repelFromShields(run,e){for(const p of run.players){if(p.hp<=0||p.arrived||!shieldActive(p,run.time||0)||!sameArea(run,p,e)||!clearPath(run,e,p))continue;const bounds=roomBounds(run,e.room),r=enemyRadius(e),reach=SHIELD_RADIUS+r,dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);if(d>=reach)continue;const nx=d>1e-8?dx/d:1,ny=d>1e-8?dy/d:0,oldX=e.x,oldY=e.y;e.x=Math.max(bounds.x+r,Math.min(bounds.x+bounds.width-r,p.x+nx*reach));e.y=Math.max(bounds.y+r,Math.min(bounds.y+bounds.height-r,p.y+ny*reach));resolveWalls(run,e,oldX,oldY,r);const dot=e.vx*nx+e.vy*ny;const attacking=e.type==='sleeper'?e.mode==='lunging':run.time<(e.attackActiveUntil||0);if(attacking&&dot<0){e.vx-=2*dot*nx;e.vy-=2*dot*ny}}}
 function moveEnemy(run,e,dt,random){
  const bounds=roomBounds(run,e.room),r=enemyRadius(e),spec=enemyFor(e),loX=bounds.x+r,hiX=bounds.x+bounds.width-r,loY=bounds.y+r,hiY=bounds.y+bounds.height-r,oldX=e.x,oldY=e.y;
  e.x+=e.vx*dt;e.y+=e.vy*dt;
@@ -145,7 +146,7 @@ export function stepCombat(run,dt,random=Math.random){
   if(e.active===false||e.hp<=0)continue;
   tickPoison(e,now,damage=>{e.hp=Math.max(0,e.hp-damage);e.hitUntil=now+.2})
   if(e.hp<=0||e.throwing||e.grabbedBy||now<(e.stunUntil||0))continue;
-  const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&(sameArea(run,p,e)||(p.shielding&&p.shield>0&&run.edges[e.room]?.includes(roomOf(p))))),visible=targets.filter(p=>now>=(p.invisibleUntil||0));
+  const targets=run.players.filter(p=>p.hp>0&&!p.arrived&&(sameArea(run,p,e)||(shieldActive(p,run.time||0)&&run.edges[e.room]?.includes(roomOf(p))))),visible=targets.filter(p=>now>=(p.invisibleUntil||0));
   if(e.type==='warden'){for(const p of targets)if(Math.hypot(e.x-p.x,e.y-p.y)<=enemyRadius(e)+PLAYER_RADIUS)enemyHit(run,e,p,random);moveEnemy(run,e,dt,random);repelFromShields(run,e);continue}
   if(e.type==='sleeper'){
    const nearest=visible.reduce((best,p)=>!best||Math.hypot(p.x-e.x,p.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?p:best,null);
@@ -158,7 +159,7 @@ export function stepCombat(run,dt,random=Math.random){
    for(const p of targets)if(Math.hypot(e.x-p.x,e.y-p.y)<=enemyRadius(e)+PLAYER_RADIUS)enemyHit(run,e,p,random);
    e.nextSlam??=now+SLAM_INTERVAL;
    if(!e.slamWindupUntil&&now>=e.nextSlam-SLAM_WINDUP){e.slamWindupUntil=e.nextSlam;e.mode='winding'}
-   if(e.slamWindupUntil&&now>=e.slamWindupUntil){e.slamWindupUntil=0;e.nextSlam=now+SLAM_INTERVAL;e.slamUntil=now+.25;emitAttackSound(run,e,'creeper');e.mode='walking';for(const p of targets){const reach=SLAM_RADIUS+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS);if(Math.hypot(p.x-e.x,p.y-e.y)<=reach)enemyHit(run,e,p,random,{stun:1.5})}}
+   if(e.slamWindupUntil&&now>=e.slamWindupUntil){e.slamWindupUntil=0;e.nextSlam=now+SLAM_INTERVAL;e.slamUntil=now+.25;emitAttackSound(run,e,'creeper');e.mode='walking';for(const p of targets){const reach=SLAM_RADIUS+(shieldActive(p,run.time||0)?SHIELD_RADIUS:PLAYER_RADIUS);if(Math.hypot(p.x-e.x,p.y-e.y)<=reach)enemyHit(run,e,p,random,{stun:1.5})}}
    if(!e.slamWindupUntil)moveEnemy(run,e,dt,random);
    repelFromShields(run,e);continue;
   }
@@ -166,15 +167,15 @@ export function stepCombat(run,dt,random=Math.random){
   if(e.type==='walker'||e.type==='flapper'||e.mode==='lunging')moveEnemy(run,e,dt,random);
   if(e.type==='walker'||e.type==='flapper'){
    if(e.attackWindupUntil&&now>=e.attackWindupUntil){e.attackWindupUntil=0;e.attackActiveUntil=now+.25;emitAttackSound(run,e,e.type);e.nextContactAttack=now+1.1}
-   if(!e.attackWindupUntil&&now>=(e.attackActiveUntil||0)&&now>=(e.nextContactAttack||0)&&visible.some(p=>clearPath(run,e,p)&&Math.hypot(e.x-p.x,e.y-p.y)<(p.shielding&&p.shield>0?SHIELD_RADIUS+enemyRadius(e)+.02:.09)))e.attackWindupUntil=now+.2;
+   if(!e.attackWindupUntil&&now>=(e.attackActiveUntil||0)&&now>=(e.nextContactAttack||0)&&visible.some(p=>clearPath(run,e,p)&&Math.hypot(e.x-p.x,e.y-p.y)<(shieldActive(p,run.time||0)?SHIELD_RADIUS+enemyRadius(e)+.02:.09)))e.attackWindupUntil=now+.2;
   }
   const attacking=e.type==='sleeper'?e.mode==='lunging':now<(e.attackActiveUntil||0);
-  for(const p of targets){const bodyContact=Math.hypot(e.x-p.x,e.y-p.y)<=enemyRadius(e)+PLAYER_RADIUS+1e-7;if(!attacking&&!bodyContact)continue;const reach=enemyRadius(e)+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS)+1e-7;if(Math.abs(e.x-p.x)<=reach&&Math.abs(e.y-p.y)<=reach&&Math.hypot(e.x-p.x,e.y-p.y)<=reach)enemyHit(run,e,p,random,{poison:e.type==='flapper'})}
+  for(const p of targets){const bodyContact=Math.hypot(e.x-p.x,e.y-p.y)<=enemyRadius(e)+PLAYER_RADIUS+1e-7;if(!attacking&&!bodyContact)continue;const reach=enemyRadius(e)+(shieldActive(p,run.time||0)?SHIELD_RADIUS:PLAYER_RADIUS)+1e-7;if(Math.abs(e.x-p.x)<=reach&&Math.abs(e.y-p.y)<=reach&&Math.hypot(e.x-p.x,e.y-p.y)<=reach)enemyHit(run,e,p,random,{poison:e.type==='flapper'})}
   repelFromShields(run,e);
  }
  for(const p of run.players)resolveSwing(run,p);run.failed=run.players.length>0&&run.players.every(p=>p.hp<=0);
 }
 
 export function stepHazards(run,random=Math.random){
- for(const p of run.players){if(p.hp<=0||p.arrived||p.deceased)continue;const touching=obstaclesInRoom(run,roomOf(p)).some(o=>o.type==='spikes'&&touchesSquare(p,p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS,o)&&!wallBlocksLine(run,p,{x:o.x+o.size/2,y:o.y+o.size/2}));if(touching&&run.time>=(p.nextSpikeAt||0)&&run.time>=(p.invulnerableUntil||0)&&damagePlayer(run,p,1,random)){p.nextSpikeAt=run.time+1;p.reviveInterruptedUntil=run.time+.1}}
+ for(const p of run.players){if(p.hp<=0||p.arrived||p.deceased)continue;const touching=obstaclesInRoom(run,roomOf(p)).some(o=>o.type==='spikes'&&touchesSquare(p,shieldActive(p,run.time||0)?SHIELD_RADIUS:PLAYER_RADIUS,o)&&!wallBlocksLine(run,p,{x:o.x+o.size/2,y:o.y+o.size/2}));if(touching&&run.time>=(p.nextSpikeAt||0)&&run.time>=(p.invulnerableUntil||0)&&damagePlayer(run,p,1,random)){p.nextSpikeAt=run.time+1;p.reviveInterruptedUntil=run.time+.1}}
 }

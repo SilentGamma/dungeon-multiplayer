@@ -1,3 +1,4 @@
+import {shieldActive} from './shield.mjs';
 import {emitAttackSound} from './audio-events.mjs';
 import {enemyFor,scaledEnemyHealth,FLAPPER_TURN_INTERVAL} from './enemies.mjs';
 import {damagePlayer,SHIELD_RADIUS,HIT_COOLDOWN} from './combat.mjs';
@@ -22,7 +23,7 @@ export function stepWarden(run,dt){
   const ox=b.x,oy=b.y;b.x+=b.vx*dt;b.y+=b.vy*dt;
   if(b.expires<=run.time||b.x<1||b.x>5||b.y<1||b.y>5)return false;
   for(const p of run.players){if(p.hp<=0||p.arrived||!inArena(run,p)||run.time<(p.invulnerableUntil||0))continue;
-   const r=.035+(p.shielding&&p.shield>0?SHIELD_RADIUS:PLAYER_RADIUS),dx=b.x-ox,dy=b.y-oy,len=dx*dx+dy*dy,t=len?Math.max(0,Math.min(1,((p.x-ox)*dx+(p.y-oy)*dy)/len)):0;
+   const r=.035+(shieldActive(p,run.time||0)?SHIELD_RADIUS:PLAYER_RADIUS),dx=b.x-ox,dy=b.y-oy,len=dx*dx+dy*dy,t=len?Math.max(0,Math.min(1,((p.x-ox)*dx+(p.y-oy)*dy)/len)):0;
    if(Math.hypot(p.x-(ox+dx*t),p.y-(oy+dy*t))<=r){if(damagePlayer(run,p,7))p.invulnerableUntil=run.time+HIT_COOLDOWN;return false}
   }return true;
  }).slice(-12);
