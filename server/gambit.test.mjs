@@ -8,12 +8,12 @@ import {createGambitAnnouncement} from './public/gambit-announcement.mjs';
 for(let outcome=0;outcome<6;outcome++){
  const run=createRun([{id:'j',name:'J',color:'lime'},{id:'a',name:'A',color:'coral'}]);run.time=10;run.enemies=[];run.obstacles=[];
  const [j,a]=run.players;Object.assign(j,{holding:true,usingAttack:true,shielding:true,shield:1,awaitingLaunch:false});Object.assign(a,{x:j.x+.03,y:j.y,hp:1,awaitingLaunch:false});let rolls=0;const random=()=>{rolls++;return (outcome+.5)/6};
- assert(damagePlayer(run,j,2,random));assert.equal(rolls,0);assert.equal(run.gambitCue.outcome,null);assert.equal(j.hp,8);assert(!j.stunUntil);
+ assert(damagePlayer(run,j,2,random));assert.equal(rolls,0);assert.equal(run.gambitCue.outcome,null);assert.equal(j.hp,j.maxHp);assert(!j.stunUntil);
  run.time=10.199;stepCombat(run,0,random);assert.equal(rolls,0);assert.equal(a.hp,1);
  run.time=10.2;stepCombat(run,0,random);assert.equal(rolls,1);assert.equal(run.gambitCue.outcome,GAMBIT_NAMES[outcome]);assert(!j.gambitPending);
  if(outcome===0){assert.equal(j.hp,0);assert.equal(a.hp,0)}
  if(outcome===1)assert.equal(j.invisibleUntil,17.2);
- if(outcome===2)assert.equal(a.hp,Math.round(a.maxHp*.8*10)/10,'Gambit healing retains the ability cap');
+ if(outcome===2)assert.equal(a.hp,Math.min(11,Math.round(a.maxHp*.8*10)/10),'Gambit heals 10 HP up to the ability cap');
  if(outcome===3)assert.equal(a.stunUntil,14.2);
  if(outcome===4)assert.equal(j.airUntil,15.2);
  if(outcome===5)assert.equal(a.hp,0);

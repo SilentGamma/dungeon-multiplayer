@@ -73,6 +73,12 @@ export function collectMap(run,p,random=Math.random){collectKey(run,p,random);if
 export function createRun(players,random=Math.random,round=1){const dungeon=round===6?bossLayout():generateDungeon(random,round);const startRoom=dungeon.startRoom;const run={...dungeon,startRoom,round,teamSize:players.filter(p=>!p.deceased).length,tick:0,time:0,failed:false,players:players.map((p,i)=>{const angle=-Math.PI/2+i*Math.PI/4;return {...p,x:startRoom%SIZE+.5+Math.cos(angle)*.14,y:Math.floor(startRoom/SIZE)+.5+Math.sin(angle)*.14,vx:0,vy:0,awaitingLaunch:true,angle,holding:false,shielding:false,hp:roleFor(p.color).hp,maxHp:roleFor(p.color).hp,shield:roleFor(p.color).shield,maxShield:roleFor(p.color).shield,invulnerableUntil:.8,arrived:false,inputSeq:0}})};run.enemies=round===6?[createWarden(run.teamSize)]:[];if(round===6){run.projectiles=[];run.bossActive=false;run.bossDefeated=false;run.bossHp=run.enemies[0].hp;run.bossMaxHp=run.enemies[0].maxHp}run.pots=generatePots(run,random);spawnKeyLoot(run,random);run.spawnedEnemyRooms=Array(SIZE*SIZE).fill(false);run.lockedRooms=Array(SIZE*SIZE).fill(false);refreshEnemyActivity(run,random);return run}
 export function applyInput(run,id,m){
  const p=run.players.find(p=>p.id===id);if(!p||p.paused||p.connectionLost||p.hp<=0||p.arrived||p.throwing||p.grabbedBy||run.time<(p.stunUntil||0)||run.failed||!Number.isSafeInteger(m.seq)||m.seq<=p.inputSeq||typeof m.holding!=='boolean')return false;
+ if(m.launch===true){
+  if(m.holding||m.attack===true||m.cancel||!Number.isFinite(m.angle)||p.usingAttack||p.wrestlerState)return false;
+  p.inputSeq=m.seq;if(p.reviving){p.reviveAvoidTarget=p.reviving;p.reviving=null}
+  p.angle=m.angle%(Math.PI*2);p.holding=false;p.usingAttack=false;p.shielding=false;p.awaitingLaunch=false;
+  const speed=movementSpeed(p,run.time);p.vx=Math.cos(p.angle)*speed;p.vy=Math.sin(p.angle)*speed;emitAttackSound(run,p,'move');return true;
+ }
  if(p.awaitingLaunch&&!(p.vx||p.vy))m={...m,attack:false};
  p.inputSeq=m.seq;if(p.reviving){if(m.holding&&m.attack!==true){p.reviveAvoidTarget=p.reviving;p.reviving=null;p.shielding=false}else{p.holding=false;p.shielding=false;return true}}
  if(p.color==='teal'){

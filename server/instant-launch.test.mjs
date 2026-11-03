@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {createRun,applyInput,step} from '../dist/dungeon.mjs';
+import {ROLES,movementSpeed} from '../dist/roles.mjs';
+import {ROLES as clientRoles} from './public/roles.mjs';
+import {createPrediction} from './public/prediction.mjs';
+import {Session} from './session.mjs';
+import {startReadyParty} from './test-party.mjs';
+const before={coral:12,purple:10,pink:12,gold:16,green:12,blue:10,teal:14,lime:8};
+for(const [color,hp] of Object.entries(before)){assert.equal(ROLES[color].hp,Number((hp*1.2).toFixed(1)));assert.equal(clientRoles[color].hp,ROLES[color].hp);for(const round of [1,2,6]){const p=createRun([{id:'p',name:'P',color}],()=>.4,round).players[0];assert.equal(p.hp,ROLES[color].hp);assert.equal(p.maxHp,p.hp)}}
+function fixture(){const run=createRun([{id:'p',name:'P',color:'coral'}]);run.time=10;run.enemies=[];run.pots=[];run.obstacles=[];const p=run.players[0];Object.assign(p,{x:1.5,y:2.5,vx:0,vy:0,angle:1,awaitingLaunch:true});return [run,p]}
+for(const angle of [0,Math.PI/2,Math.PI,-Math.PI/2,Math.PI/4]){const [r,p]=fixture(),prediction=createPrediction('p');prediction.latency(0);prediction.set(structuredClone(r),0);const message={seq:1,holding:false,launch:true,angle};prediction.input(message,0);const predicted=prediction.sample(0);assert(applyInput(r,'p',message));assert(!p.awaitingLaunch&&!p.holding);assert.equal(p.angle,angle);assert(Math.abs(p.vx-Math.cos(angle)*movementSpeed(p,r.time))<1e-10);assert(Math.abs(p.vy-Math.sin(angle)*movementSpeed(p,r.time))<1e-10);assert.equal(predicted.angle,p.angle);assert.equal(predicted.vx,p.vx);assert.equal(predicted.vy,p.vy);assert.equal(r.audioEvents.filter(e=>e.type==='move').length,1);assert(!applyInput(r,'p',message),'duplicate packet rejected');}
+for(const patch of [{hp:0},{paused:true},{connectionLost:true},{arrived:true},{grabbedBy:'q'},{throwing:{}},{stunUntil:20},{usingAttack:true},{wrestlerState:'orbit'}]){const [r,p]=fixture();Object.assign(p,patch);assert(!applyInput(r,'p',{seq:1,holding:false,launch:true,angle:0}),JSON.stringify(patch));}
+for(const bad of [{angle:NaN},{angle:Infinity},{angle:'0'},{angle:0,holding:true},{angle:0,attack:true},{angle:0,cancel:true}]){const [r,p]=fixture();assert(!applyInput(r,'p',{seq:1,holding:false,launch:true,...bad}));assert(p.awaitingLaunch);assert.equal(p.vx,0)}
+{const [r,p]=fixture();p.reviving='friend';assert(applyInput(r,'p',{seq:1,holding:false,launch:true,angle:0}));assert.equal(p.reviving,null);assert.equal(p.reviveAvoidTarget,'friend');}
+const s=new Session({code:'test'});s.join({id:'p',name:'P'});startReadyParty(s,'p');assert(s.input('p',{seq:1,holding:false,launch:true,angle:0,round:1}));assert(!s.input('p',{seq:2,holding:false,launch:true,angle:1,round:1}),'instant steering retains movement cooldown');s.tick(.21);assert(s.input('p',{seq:3,holding:false,launch:true,angle:1,round:1}));assert(!s.input('p',{seq:4,holding:false,launch:true,angle:2,round:0}),'old-round clicks rejected');assert(!s.input('p',{seq:5,holding:false,launch:true,angle:2,round:1,sentAt:Date.now()-1000}),'stale click never launches');assert.equal(s.run.players[0].angle,1);
+console.log('PASS: exactly 20% HP for all eight roles and all floors, atomic launch angles, matching prediction, movement sound, validation, action lockouts, revive cancellation, cooldown, duplicate/stale/round safety');

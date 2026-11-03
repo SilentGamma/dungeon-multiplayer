@@ -18,7 +18,12 @@ export function createPrediction(id){
    if(p.holding&&p.wrestlerState!=='lunging'){if(!p.usingAttack||p.color==='blue'){advanceAim(sim,p,dt,AIM_SPEED);if(p.usingAttack)p.attackAngle=p.angle}continue}
    movePlayer(sim,p,dt,{onEnter:(_,to)=>{if(((sim.enemyRooms?.[to]&&!sim.spawnedEnemyRooms?.[to])||keyPending(sim,to))&&sim.lockedRooms)sim.lockedRooms[to]=true},onSubstep:()=>{if(sim.kind!=='boss'&&Math.hypot(p.x-(sim.goal%SIZE+.5),p.y-(Math.floor(sim.goal/SIZE)+.5))<.14){p.predictedGoal=true;p.vx=0;p.vy=0;return true}return false}});
   }}
-  function apply(m){if(locked(sim,p))return;if(p.awaitingLaunch&&!(p.vx||p.vy))m={...m,attack:false};
+  function apply(m){if(locked(sim,p))return;if(m.launch===true){
+    if(m.holding||m.attack===true||m.cancel||!Number.isFinite(m.angle)||p.usingAttack||p.wrestlerState||sim.time+1e-9<(p.nextMoveInputAt||0))return;
+    if(p.reviving){p.reviveAvoidTarget=p.reviving;p.reviving=null}p.angle=m.angle%(Math.PI*2);p.holding=false;p.usingAttack=false;p.shielding=false;p.awaitingLaunch=false;
+    const speed=movementSpeed(p,sim.time);p.vx=Math.cos(p.angle)*speed;p.vy=Math.sin(p.angle)*speed;p.nextMoveInputAt=sim.time+.2;return;
+   }
+   if(p.awaitingLaunch&&!(p.vx||p.vy))m={...m,attack:false};
    if(p.reviving){if(m.holding&&!m.attack)p.reviving=null;else return}
    if(p.color==='teal'&&p.wrestlerState){if(!m.holding||!m.attack){p.wrestlerReleased=true;p.shielding=false}return}
    if(p.color==='teal'&&m.holding&&m.attack&&!p.wrestlerState&&!p.usingAttack&&sim.time>=(p.nextAttack||0)){if(!(p.shield>0))return;p.wrestlerReleased=false;p.wrestlerState='lunging';p.wrestlerUntil=sim.time+.32;p.wrestlerAngle=p.angle;p.vx=Math.cos(p.angle);p.vy=Math.sin(p.angle)}
